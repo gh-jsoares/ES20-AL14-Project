@@ -19,11 +19,11 @@ public class Discussion {
     private String message;
 
     @ManyToOne
-    @JoinColumn(name = "student_key")
+    @JoinColumn(name = "student_id")
     private User student;
 
     @ManyToOne
-    @JoinColumn(name = "teacher_key")
+    @JoinColumn(name = "teacher_id")
     private User teacher;
 
     @ManyToOne

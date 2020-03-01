@@ -12,9 +12,6 @@ import java.util.List;
 @Repository
 @Transactional
 public interface DiscussionRepository extends JpaRepository<Discussion, Integer> {
-    @Query(value = "SELECT * FROM discussions d WHERE d.id = :id", nativeQuery = true)
-    Discussion findDiscussion(int id);
-
-    @Query(value = "SELECT * FROM discussions d WHERE d.question_id = :questionId AND d.student_key = :studentKey AND d.teacher_key = :teacherKey", nativeQuery = true)
-    List<Discussion> findDiscussions(int studentKey, int teacherKey, int questionId);
+    @Query(value = "SELECT * FROM discussions d WHERE d.question_id = :questionId AND d.student_id = :studentId AND d.teacher_id = :teacherId", nativeQuery = true)
+    List<Discussion> findDiscussions(int studentId, int teacherId, int questionId);
 }

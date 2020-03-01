@@ -17,7 +17,19 @@ public class DiscussionDto implements Serializable {
         this.message = discussion.getMessage();
     }
 
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId() {
+        this.id = id;
+    }
+
     public String getMessage() {
         return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 }

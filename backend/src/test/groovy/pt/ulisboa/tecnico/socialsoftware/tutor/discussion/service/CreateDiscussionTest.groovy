@@ -46,7 +46,7 @@ class CreateDiscussionTest extends Specification {
         discussionDto.setMessage(MESSAGE)
 
         when: "create discussion in the repository"
-        discussionService.createDiscussion(student, teacher, question, discussionDto)
+        discussionService.createDiscussion(student.getId(), teacher.getId(), question.getId(), discussionDto)
 
         then: "insert discussion in the repository"
         discussionRepository.findAll().size() == 1
@@ -72,7 +72,7 @@ class CreateDiscussionTest extends Specification {
         def discussionDto = new DiscussionDto()
 
         when: "create another discussion with the same student, professor and question"
-        discussionService.createDiscussion(student, teacher, question, discussionDto)
+        discussionService.createDiscussion(student.getId(), teacher.getId(), question.getId(), discussionDto)
 
         then: "an error occurs"
         def exception = thrown(TutorException)
@@ -85,7 +85,7 @@ class CreateDiscussionTest extends Specification {
         discussionDto.setStudentMessage(msg)
 
         when: "add the discussion"
-        discussionService.createDiscussion(student, teacher, question, discussionDto)
+        discussionService.createDiscussion(student.getId(), teacher.getId(), question.getId(), discussionDto)
 
         then: "an error occurs"
         def exception = thrown(TutorException)
