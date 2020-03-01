@@ -1,6 +1,9 @@
 package pt.ulisboa.tecnico.socialsoftware.tutor.exceptions;
 
 public enum ErrorMessage {
+
+    DISCUSSION_MESSAGE_EMPTY("The message is an empty string."),
+
     QUIZ_NOT_FOUND("Quiz not found with id %d"),
     QUIZ_QUESTION_NOT_FOUND("Quiz question not found with id %d"),
     QUIZ_ANSWER_NOT_FOUND("Quiz answer not found with id %d"),
@@ -25,6 +28,7 @@ public enum ErrorMessage {
     QUIZ_OPTION_MISMATCH("Quiz Question %d does not have option %d"),
     COURSE_EXECUTION_MISMATCH("Course Execution %d does not have quiz %d"),
 
+    DUPLICATE_DISCUSSION("Duplicate discussion: %s"),
     DUPLICATE_TOPIC("Duplicate topic: %s"),
     DUPLICATE_USER("Duplicate user: %s"),
     DUPLICATE_COURSE_EXECUTION("Duplicate course execution: %s"),
