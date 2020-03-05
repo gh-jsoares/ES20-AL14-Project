@@ -19,7 +19,7 @@ class TournamentEnrollSpockTest extends Specification{
         expect: false
     }
 
-    def "the tournament and tournament enroll both exist for the username"() {
+    def "the tournament and tournament enroll both exist for the user"() {
         //an exception is thrown
         expect: false
     }
@@ -29,7 +29,12 @@ class TournamentEnrollSpockTest extends Specification{
         expect: false
     }
 
-    def "the username does not exist"() {
+    def "the user does not exist"() {
+        //an exception is thrown
+        expect: false
+    }
+
+    def "the user is a student"() {
         //an exception is thrown
         expect: false
     }
