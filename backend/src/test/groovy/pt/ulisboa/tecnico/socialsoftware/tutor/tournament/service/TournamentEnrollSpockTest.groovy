@@ -34,7 +34,7 @@ class TournamentEnrollSpockTest extends Specification{
         expect: false
     }
 
-    def "the user is a student"() {
+    def "the user is not a student"() {
         //an exception is thrown
         expect: false
     }
