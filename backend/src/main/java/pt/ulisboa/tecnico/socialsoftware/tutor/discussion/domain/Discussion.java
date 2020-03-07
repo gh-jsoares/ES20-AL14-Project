@@ -5,7 +5,6 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.user.User;
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.dto.DiscussionDto;
 
 import javax.persistence.*;
-import java.util.*;
 
 //TODO:check annotations (if missing, incorrect, ect)
 @Entity
@@ -16,17 +15,13 @@ public class Discussion {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    private String messageFromStudent;
+    private String messageFromStudent = null;
 
-    private String teacherAnswer;
+    private String teacherAnswer = null;
 
     @ManyToOne
     @JoinColumn(name = "student_id")
     private User student;
-
-    @ManyToOne
-    @JoinColumn(name = "teacher_id")
-    private User teacher;
 
     @ManyToOne
     @JoinColumn(name = "question_id")
@@ -35,11 +30,11 @@ public class Discussion {
     public Discussion() {
     }
 
-    public Discussion(User student, User teacher, Question question, DiscussionDto dto) {
+    public Discussion(User student, Question question, DiscussionDto dto) {
         this.student = student;
-        this.teacher = teacher;
         this.question = question;
         this.messageFromStudent = dto.getMessageFromStudent();
+        this.teacherAnswer = dto.getTeacherAnswer();
     }
 
     public Integer getId() {
@@ -54,14 +49,6 @@ public class Discussion {
 
     public void setStudent(User student) {
         this.student = student;
-    }
-
-    public User getTeacher() {
-        return teacher;
-    }
-
-    public void setTeacher(User teacher) {
-        this.teacher = teacher;
     }
 
     public Question getQuestion() {

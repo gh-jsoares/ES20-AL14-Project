@@ -58,14 +58,12 @@ class CreateDiscussionTest extends Specification {
 
     public static final String MESSAGE = "message"
     public static final String STUDENT_NAME = "student_test"
-    public static final String TEACHER_NAME = "teacher_test"
     public static final String COURSE_NAME = "course_test"
     public static final String COURSE_ACRONYM = "acronym_test"
     public static final String COURSE_ACADEMIC_TERM = "academic_term_test"
 
     Question question
     User student
-    User teacher
     Course course
     CourseExecution courseExecution
     Quiz quiz
@@ -88,11 +86,8 @@ class CreateDiscussionTest extends Specification {
         question.setCourse(course)
 
         student = new User('student', STUDENT_NAME, 1, User.Role.STUDENT)
-        teacher = new User('teacher', TEACHER_NAME, 2, User.Role.TEACHER)
         student.getCourseExecutions().add(courseExecution)
-        teacher.getCourseExecutions().add(courseExecution)
         courseExecution.addUser(student)
-        courseExecution.addUser(teacher)
 
         quiz = new Quiz()
         quiz.setKey(1)
@@ -104,16 +99,15 @@ class CreateDiscussionTest extends Specification {
 
         questionRepository.save(question)
         userRepository.save(student)
-        userRepository.save(teacher)
     }
 
     def "create a discussion"() {
         given: "the definition of the discussion"
         def discussionDto = new DiscussionDto()
-        discussionDto.setMessage(MESSAGE)
+        discussionDto.setMessageFromStudent(MESSAGE)
 
         when: "create discussion in the repository"
-        discussionService.createDiscussion(student.getId(), teacher.getId(), question.getId(), discussionDto)
+        discussionService.createDiscussion(student.getId(), question.getId(), discussionDto)
 
         then: "get discussion from the repository"
         discussionRepository.findAll().size() == 1
@@ -121,14 +115,10 @@ class CreateDiscussionTest extends Specification {
         result.getId() != null
         result.getStudent() != null
         result.getStudent().getKey() == student.getKey()
-        result.getTeacher() != null
-        result.getTeacher().getKey() == teacher.getKey()
         result.getQuestion() != null
         result.getQuestion().getId() == question.getId()
 
         student.getRole() == User.Role.STUDENT
-        teacher.getRole() == User.Role.TEACHER
-        courseExecution.getUsers().contains(teacher)
         courseExecution.getUsers().contains(student)
         courseExecution.getQuizzes().contains(quiz)
         quiz.getCourseExecution() == courseExecution
@@ -140,19 +130,18 @@ class CreateDiscussionTest extends Specification {
         quizQuestion.getQuestionAnswers().contains(questionAnswer)
     }
 
-    def "create a discussion with the same student, professor and question"() {
+    def "create a discussion with the same student and question"() {
         given: "the definition of the discussion"
         Discussion discussion = new Discussion()
         discussion.setQuestion(question)
         discussion.setStudent(student)
-        discussion.setTeacher(teacher)
         discussionRepository.save(discussion)
         and: "the creation of the DiscussionDto"
         def discussionDto = new DiscussionDto()
-        discussionDto.setMessage("TEST")
+        discussionDto.setMessageFromStudent("TEST")
 
-        when: "create another discussion with the same student, professor and question"
-        discussionService.createDiscussion(student.getId(), teacher.getId(), question.getId(), discussionDto)
+        when: "create another discussion with the same student and question"
+        discussionService.createDiscussion(student.getId(), question.getId(), discussionDto)
 
         then: "an error occurs"
         def exception = thrown(TutorException)
@@ -165,7 +154,7 @@ class CreateDiscussionTest extends Specification {
         discussionDto.setMessageFromStudent(msg)
 
         when: "add the discussion"
-        discussionService.createDiscussion(student.getId(), teacher.getId(), question.getId(), discussionDto)
+        discussionService.createDiscussion(student.getId(), question.getId(), discussionDto)
 
         then: "an error occurs"
         def exception = thrown(TutorException)
@@ -178,13 +167,13 @@ class CreateDiscussionTest extends Specification {
     def "create a discussion with user not enrolled in course execution"() {
         given: "the definition of the discussion"
         def discussionDto = new DiscussionDto()
-        discussionDto.setMessage(MESSAGE)
+        discussionDto.setMessageFromStudent(MESSAGE)
         and: "the definition of the invalid user"
-        User invalidStudent = new User('student2', "invalid student", 3, User.Role.STUDENT)
+        User invalidStudent = new User('student2', "invalid student", 2, User.Role.STUDENT)
         userRepository.save(invalidStudent)
 
         when: "try to create discussion in the repository"
-        discussionService.createDiscussion(invalidStudent.getId(), teacher.getId(), question.getId(), discussionDto)
+        discussionService.createDiscussion(invalidStudent.getId(), question.getId(), discussionDto)
 
         then: "user not enrolled exception"
         def exception = thrown(TutorException)
@@ -194,15 +183,15 @@ class CreateDiscussionTest extends Specification {
     def "create a discussion before student submitting answer"() {
         given: "the definition of the discussion"
         def discussionDto = new DiscussionDto()
-        discussionDto.setMessage(MESSAGE)
+        discussionDto.setMessageFromStudent(MESSAGE)
         and: "the definition of the invalid user"
-        User invalidStudent = new User('student2', "invalid student", 3, User.Role.STUDENT)
+        User invalidStudent = new User('student2', "invalid student", 2, User.Role.STUDENT)
         invalidStudent.addCourse(courseExecution)
         courseExecution.addUser(invalidStudent)
         userRepository.save(invalidStudent)
 
         when: "try to create discussion in the repository"
-        discussionService.createDiscussion(invalidStudent.getId(), teacher.getId(), question.getId(), discussionDto)
+        discussionService.createDiscussion(invalidStudent.getId(), question.getId(), discussionDto)
 
         then: "discussion question not answered exception"
         def exception = thrown(TutorException)

@@ -8,15 +8,16 @@ public class DiscussionDto implements Serializable {
 
     private Integer id;
 
-    private String messageFromStudent;
+    private String messageFromStudent = null;
 
-    private String teacherAnswer;
+    private String teacherAnswer = null;
 
     public DiscussionDto() {}
 
     public DiscussionDto(Discussion discussion) {
         this.id = discussion.getId();
         this.messageFromStudent = discussion.getMessageFromStudent();
+        this.teacherAnswer = discussion.getTeacherAnswer();
     }
 
     public Integer getId() {

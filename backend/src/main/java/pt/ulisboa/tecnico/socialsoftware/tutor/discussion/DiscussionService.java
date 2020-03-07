@@ -1,7 +1,6 @@
 package pt.ulisboa.tecnico.socialsoftware.tutor.discussion;
 
 import pt.ulisboa.tecnico.socialsoftware.tutor.answer.domain.QuizAnswer;
-import pt.ulisboa.tecnico.socialsoftware.tutor.course.Course;
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecution;
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.repository.DiscussionRepository;
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.dto.DiscussionDto;
@@ -46,15 +45,11 @@ public class DiscussionService {
     @PersistenceContext
     EntityManager entityManager;
 
-    public Discussion createDiscussion() {
-        return new Discussion();
-    }
-
     @Retryable(
         value = { SQLException.class },
         backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
-    public DiscussionDto createDiscussion(Integer studentId, Integer teacherId, Integer questionId, DiscussionDto discussionDto) {
+    public DiscussionDto createDiscussion(Integer studentId, Integer questionId, DiscussionDto discussionDto) {
 
         String message = discussionDto.getMessageFromStudent();
         if (message == null || message.isBlank() || message.isEmpty()) {
@@ -62,29 +57,20 @@ public class DiscussionService {
         }
 
         User student = userRepository.findById(studentId).orElseThrow(() -> new TutorException(USER_NOT_FOUND, studentId));
-        User teacher = userRepository.findById(teacherId).orElseThrow(() -> new TutorException(USER_NOT_FOUND, teacherId));
         Question question = questionRepository.findById(questionId).orElseThrow(() -> new TutorException(QUESTION_NOT_FOUND, questionId));
 
-        if (discussionRepository.findDiscussions(studentId, teacherId, questionId).size() != 0) {
+        if (discussionRepository.findDiscussions(studentId, questionId).size() != 0) {
             throw new TutorException(DUPLICATE_DISCUSSION);
         }
 
-        //verifies if users are enrolled in same course execution as question
-        List<CourseExecution> teacherEnrolledInQuestionCourse = question.getQuizQuestions().stream()
-                .map(QuizQuestion::getQuiz)
-                .map(Quiz::getCourseExecution)
-                .filter(courseExecution -> teacher.getCourseExecutions().contains(courseExecution))
-                .collect(Collectors.toList());
-
+        //verifies if student is enrolled in same course execution as question
         List<CourseExecution> studentEnrolledInQuestionCourse = question.getQuizQuestions().stream()
                 .map(QuizQuestion::getQuiz)
                 .map(Quiz::getCourseExecution)
                 .filter(courseExecution -> student.getCourseExecutions().contains(courseExecution))
                 .collect(Collectors.toList());
 
-        if (teacherEnrolledInQuestionCourse.isEmpty())
-            throw new TutorException(USER_NOT_ENROLLED_IN_COURSE, teacher.getName());
-        else if (studentEnrolledInQuestionCourse.isEmpty())
+        if (studentEnrolledInQuestionCourse.isEmpty())
             throw new TutorException(USER_NOT_ENROLLED_IN_COURSE, student.getName());
 
         //TODO:perguntar ao professor se e' preferivel passar pelo quiz ou pelo questionAnswer
@@ -96,21 +82,13 @@ public class DiscussionService {
                 .filter(quizQuestion -> quizQuestion.getId().equals(questionId))
                 .collect(Collectors.toList());
 
-        if (answeredQuestions.size() == 0) {
+        if (answeredQuestions.isEmpty()) {
             throw new TutorException(DISCUSSION_QUESTION_NOT_ANSWERED, studentId);
         }
 
-        Discussion discussion = new Discussion(student, teacher, question, discussionDto);
+        Discussion discussion = new Discussion(student, question, discussionDto);
         this.entityManager.persist(discussion);
         return new DiscussionDto(discussion);
-    }
-
-    @Transactional(isolation = Isolation.REPEATABLE_READ)
-    public UserDto getDiscussionTeacher(int discussionId) {
-        return discussionRepository.findById(discussionId)
-            .map(Discussion::getTeacher)
-            .map(UserDto::new)
-            .orElseThrow(() -> new TutorException(DISCUSSION_NOT_FOUND, discussionId));
     }
 
     @Transactional(isolation = Isolation.REPEATABLE_READ)
