@@ -68,8 +68,8 @@ public class Discussion {
         return teacher;
     }
 
-    public void setTeacher(User student) {
-        this.student = student;
+    public void setTeacher(User teacher) {
+        this.teacher = teacher;
     }
 
     public Question getQuestion() {
