@@ -102,7 +102,6 @@ class TournamentEnrollSpockTest extends Specification{
     }
 
     def "the tournament exists and is open but the student is already enrolled"() {
-        //an exception is thrown
         given: "an open tournament"
             tournament.setState(Tournament.State.ENROLL)
         and: "a tournamentDto"
