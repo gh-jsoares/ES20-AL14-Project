@@ -65,21 +65,23 @@ public class DiscussionService {
             throw new TutorException(DUPLICATE_DISCUSSION);
         }
 
-        //verify if users are enrolled in course
-        List<Course> teacherEnrolledInCourse = teacher.getCourseExecutions().stream()
-                .map(CourseExecution::getCourse)
-                .filter(course -> course.getId() == question.getCourse().getId())
+        //verifies if users are enrolled in same course execution as question
+        List<CourseExecution> teacherEnrolledInQuestionCourse = question.getQuizQuestions().stream()
+                .map(QuizQuestion::getQuiz)
+                .map(Quiz::getCourseExecution)
+                .filter(courseExecution -> teacher.getCourseExecutions().contains(courseExecution))
                 .collect(Collectors.toList());
 
-        List<Course> studentEnrolledInCourse = student.getCourseExecutions().stream()
-                .map(CourseExecution::getCourse)
-                .filter(course -> course.getId() == question.getCourse().getId())
+        List<CourseExecution> studentEnrolledInQuestionCourse = question.getQuizQuestions().stream()
+                .map(QuizQuestion::getQuiz)
+                .map(Quiz::getCourseExecution)
+                .filter(courseExecution -> student.getCourseExecutions().contains(courseExecution))
                 .collect(Collectors.toList());
 
-        if (teacherEnrolledInCourse.isEmpty())
-            throw new TutorException(USER_NOT_ENROLLED, teacher.getName());
-        else if (studentEnrolledInCourse.isEmpty())
-        throw new TutorException(USER_NOT_ENROLLED, student.getName());
+        if (teacherEnrolledInQuestionCourse.isEmpty())
+            throw new TutorException(USER_NOT_ENROLLED_IN_COURSE, teacher.getName());
+        else if (studentEnrolledInQuestionCourse.isEmpty())
+            throw new TutorException(USER_NOT_ENROLLED_IN_COURSE, student.getName());
 
         //TODO:perguntar ao professor se e' preferivel passar pelo quiz ou pelo questionAnswer
         List<Question> answeredQuestions = student.getQuizAnswers().stream()

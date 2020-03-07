@@ -188,7 +188,7 @@ class CreateDiscussionTest extends Specification {
 
         then: "user not enrolled exception"
         def exception = thrown(TutorException)
-        exception.errorMessage == ErrorMessage.USER_NOT_ENROLLED
+        exception.errorMessage == ErrorMessage.USER_NOT_ENROLLED_IN_COURSE
     }
 
     def "create a discussion before student submitting answer"() {
