@@ -74,7 +74,7 @@ class TournamentEnrollSpockTest extends Specification{
         when:
             result = tournamentService.tournamentEnrollStudent(tournamentDto, user);
         then: "student enrolled in the tournament"
-            result.getNumberOfEnrolls == 1
+            result.getNumberOfEnrolls() == 1
             def students = tournamentService.getTournamentStudents(result)
             def userIn = false
             for (UserDto student: students)
