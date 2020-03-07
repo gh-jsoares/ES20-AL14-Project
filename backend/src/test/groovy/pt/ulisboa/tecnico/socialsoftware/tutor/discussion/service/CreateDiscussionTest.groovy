@@ -162,7 +162,7 @@ class CreateDiscussionTest extends Specification {
     def "create a discussion with an empty message is #msg"() {
         given: "the definition of the discussion"
         def discussionDto = new DiscussionDto()
-        discussionDto.setMessage(msg)
+        discussionDto.setMessageFromStudent(msg)
 
         when: "add the discussion"
         discussionService.createDiscussion(student.getId(), teacher.getId(), question.getId(), discussionDto)

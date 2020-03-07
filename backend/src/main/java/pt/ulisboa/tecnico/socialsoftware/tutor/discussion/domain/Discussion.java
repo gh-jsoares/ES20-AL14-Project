@@ -16,7 +16,9 @@ public class Discussion {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    private String message;
+    private String messageFromStudent;
+
+    private String teacherAnswer;
 
     @ManyToOne
     @JoinColumn(name = "student_id")
@@ -37,24 +39,14 @@ public class Discussion {
         this.student = student;
         this.teacher = teacher;
         this.question = question;
-        this.message = dto.getMessage();
+        this.messageFromStudent = dto.getMessageFromStudent();
     }
 
     public Integer getId() {
         return id;
     }
 
-    public void setId() {
-        this.id = id;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
+    public void setId(Integer id) { this.id = id; }
 
     public User getStudent() {
         return student;
@@ -79,4 +71,12 @@ public class Discussion {
     public void setQuestion(Question question) {
         this.question = question;
     }
+
+    public String getMessageFromStudent() { return messageFromStudent; }
+
+    public void setMessageFromStudent(String messageFromStudent) { this.messageFromStudent = messageFromStudent; }
+
+    public String getTeacherAnswer() { return teacherAnswer; }
+
+    public void setTeacherAnswer(String teacherAnswer) { this.teacherAnswer = teacherAnswer; }
 }

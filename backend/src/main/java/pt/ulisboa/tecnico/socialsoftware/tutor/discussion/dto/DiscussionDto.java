@@ -8,13 +8,15 @@ public class DiscussionDto implements Serializable {
 
     private Integer id;
 
-    private String message;
+    private String messageFromStudent;
+
+    private String teacherAnswer;
 
     public DiscussionDto() {}
 
     public DiscussionDto(Discussion discussion) {
         this.id = discussion.getId();
-        this.message = discussion.getMessage();
+        this.messageFromStudent = discussion.getMessageFromStudent();
     }
 
     public Integer getId() {
@@ -25,11 +27,11 @@ public class DiscussionDto implements Serializable {
         this.id = id;
     }
 
-    public String getMessage() {
-        return message;
-    }
+    public String getMessageFromStudent() { return messageFromStudent; }
 
-    public void setMessage(String message) {
-        this.message = message;
-    }
+    public void setMessageFromStudent(String messageFromStudent) { this.messageFromStudent = messageFromStudent; }
+
+    public String getTeacherAnswer() { return teacherAnswer; }
+
+    public void setTeacherAnswer(String teacherAnswer) { this.teacherAnswer = teacherAnswer; }
 }

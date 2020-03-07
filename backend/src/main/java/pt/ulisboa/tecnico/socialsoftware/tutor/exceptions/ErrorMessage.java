@@ -47,6 +47,7 @@ public enum ErrorMessage {
     USER_NOT_ENROLLED("%s - Not enrolled in any available course"),
     QUIZ_NO_LONGER_AVAILABLE("This quiz is no longer available"),
     QUIZ_NOT_YET_AVAILABLE("This quiz is not yet available"),
+    TEACHER_NOT_IN_COURSE_EXECUTION("This teacher is not in the course execution"),
 
     NO_CORRECT_OPTION("Question does not have a correct option"),
     NOT_ENOUGH_QUESTIONS("Not enough questions to create a quiz"),
@@ -55,6 +56,8 @@ public enum ErrorMessage {
     QUESTION_CHANGE_CORRECT_OPTION_HAS_ANSWERS("Can not change correct option of answered question"),
     QUIZ_HAS_ANSWERS("Quiz already has answers"),
     QUIZ_ALREADY_COMPLETED("Quiz already completed"),
+    DISCUSSION_ALREADY_ANSWERED("This request was already answered"),
+    EMPTY_ANSWER("The answer needs to have more than zero characters"),
     QUIZ_QUESTION_HAS_ANSWERS("Quiz question has answers"),
     FENIX_ERROR("Fenix Error"),
     AUTHENTICATION_ERROR("Authentication Error"),

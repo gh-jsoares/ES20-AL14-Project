@@ -46,13 +46,17 @@ public class DiscussionService {
     @PersistenceContext
     EntityManager entityManager;
 
+    public Discussion createDiscussion() {
+        return new Discussion();
+    }
+
     @Retryable(
         value = { SQLException.class },
         backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public DiscussionDto createDiscussion(Integer studentId, Integer teacherId, Integer questionId, DiscussionDto discussionDto) {
 
-        String message = discussionDto.getMessage();
+        String message = discussionDto.getMessageFromStudent();
         if (message == null || message.isBlank() || message.isEmpty()) {
             throw new TutorException(DISCUSSION_MESSAGE_EMPTY);
         }
@@ -115,5 +119,8 @@ public class DiscussionService {
             .map(Discussion::getStudent)
             .map(UserDto::new)
             .orElseThrow(() -> new TutorException(DISCUSSION_NOT_FOUND, discussionId));
+    }
+
+    public void teacherAnswersStudent(User teacher, String teacherAnswer) {
     }
 }
