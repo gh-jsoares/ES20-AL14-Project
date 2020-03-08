@@ -6,6 +6,8 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.user.dto.UserDto;
 import java.util.List;
 
 public class TournamentService {
+    public TournamentDto createTournament(int courseExecutionId, TournamentDto tournDto, User user) {return null;}
+
     public void  tournamentEnrollStudent(TournamentDto tournDto, User user){
     }
 
