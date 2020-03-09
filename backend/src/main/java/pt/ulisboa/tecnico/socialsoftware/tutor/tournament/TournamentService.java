@@ -29,19 +29,20 @@ public class TournamentService {
             value = { SQLException.class },
             backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
-    public TournamentDto  tournamentEnrollStudent(TournamentDto tournamentDto, User user){
+    public TournamentDto  tournamentEnrollStudent(TournamentDto tournamentDto, User user) {
         if (tournamentDto.getId() == null)
             throw new TutorException(TOURNAMENT_NOT_FOUND);
         Tournament tournament = tournamentRepository.findById(tournamentDto.getId()).orElseThrow(() -> new TutorException(TOURNAMENT_NOT_FOUND, tournamentDto.getId()));
-        if (tournament == null){
+        if (tournament == null) {
             throw new TutorException(TOURNAMENT_NOT_FOUND, tournamentDto.getId());
         }
         tournament.addEnrolledStudent(user);
 
 
         return new TournamentDto(tournament);
-
     }
+
+    public TournamentDto createTournament(int courseExecutionId, TournamentDto tournDto, User user) {return null;}
 
     public List<UserDto> getTournamentStudents(TournamentDto tournDto){
         return null;
