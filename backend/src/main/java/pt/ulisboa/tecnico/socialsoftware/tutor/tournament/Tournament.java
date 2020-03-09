@@ -1,43 +1,64 @@
 package pt.ulisboa.tecnico.socialsoftware.tutor.tournament;
 
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecution;
+import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Topic;
 import pt.ulisboa.tecnico.socialsoftware.tutor.quiz.domain.Quiz;
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.User;
 
+import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
+import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.*;
+
+@Entity
+@Table(name = "tournaments")
 public class Tournament {
     public enum State {ENROLL, ONGOING, CLOSED}
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    private Integer key;
+    @Enumerated(EnumType.STRING)
+    private State state = State.CLOSED;
 
-    private State state;
+    @Column(nullable = false)
+    private String title;
 
-    private String title = "Title";
-
+    @Column(name = "creation_date")
     private LocalDateTime creationDate;
 
+    @Column(name = "available_date")
     private LocalDateTime availableDate;
 
+    @Column(name = "conclusion_date")
     private LocalDateTime conclusionDate;
 
+    @Column(columnDefinition = "boolean default false")
     private boolean scramble = false;
 
+    @Column(name = "number_of_questions", columnDefinition = "integer default 0")
+    private Integer numberOfQuestions = 0;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
     private User creator;
 
+    @ManyToMany(fetch = FetchType.LAZY)
     private Set<User> enrolledStudents = new HashSet<>();
 
+    @ManyToMany(mappedBy = "tournaments")
     private Set<Topic> topics = new HashSet<>();
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="quiz_id")
     private Quiz quiz;
 
-    private Integer numberOfQuestions;
-
+    @ManyToOne
+    @JoinColumn(name = "course_execution_id")
     private CourseExecution courseExecution;
 
     private Integer series;
@@ -48,12 +69,10 @@ public class Tournament {
     }
 
     public Tournament(TournamentDto tournamentDto){
-        setKey(tournamentDto.getKey());
         setTitle(tournamentDto.getTitle());
         setNumberOfQuestions(tournamentDto.getNumberOfQuestions());
         setState(tournamentDto.getState());
         setScramble(tournamentDto.isScramble());
-        setCreationDate(tournamentDto.getCreationDate());
         setAvailableDate(tournamentDto.getAvailableDate());
         setConclusionDate(tournamentDto.getConclusionDate());
         setSeries(tournamentDto.getSeries());
@@ -66,14 +85,6 @@ public class Tournament {
 
     public void setId(Integer id) {
         this.id = id;
-    }
-
-    public Integer getKey() {
-        return key;
-    }
-
-    public void setKey(Integer key) {
-        this.key = key;
     }
 
     public State getState() {
@@ -137,6 +148,16 @@ public class Tournament {
     }
 
     public void addEnrolledStudent(User user) {
+        if (user == null)
+            throw new TutorException(USER_IS_NULL);
+        if (user.getRole() != User.Role.STUDENT)
+            throw new TutorException(TOURNAMENT_USER_IS_NOT_STUDENT, user.getId());
+        if (!user.getCourseExecutions().contains(this.getCourseExecution()))
+            throw new TutorException(TOURNAMENT_STUDENT_NOT_ENROLLED_IN_TOURNAMENT_COURSE, user.getId());
+        if (getEnrolledStudents().contains(user))
+            throw new TutorException(DUPLICATE_USER);
+        if (this.getState() != State.ENROLL)
+            throw new TutorException(TOURNAMENT_NOT_OPEN, getId());
         this.enrolledStudents.add(user);
     }
 

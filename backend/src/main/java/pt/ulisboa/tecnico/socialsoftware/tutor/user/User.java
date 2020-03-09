@@ -8,6 +8,7 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.answer.domain.QuizAnswer;
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecution;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Question;
 import pt.ulisboa.tecnico.socialsoftware.tutor.quiz.domain.Quiz;
+import pt.ulisboa.tecnico.socialsoftware.tutor.tournament.Tournament;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -56,6 +57,12 @@ public class User implements UserDetails {
 
     @ManyToMany
     private Set<CourseExecution> courseExecutions = new HashSet<>();
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "creator", fetch=FetchType.LAZY, orphanRemoval=true)
+    private Set<Tournament> createdTournaments = new HashSet<>();
+
+    @ManyToMany(mappedBy = "enrolledStudents", fetch=FetchType.LAZY)
+    private Set<Tournament> enrolledTournaments = new HashSet<>();
 
     public User() {
     }

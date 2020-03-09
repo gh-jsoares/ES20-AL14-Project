@@ -1,26 +1,18 @@
 package pt.ulisboa.tecnico.socialsoftware.tutor.tournament;
 
-import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecution;
-import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Topic;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.TopicDto;
-import pt.ulisboa.tecnico.socialsoftware.tutor.quiz.domain.Quiz;
 import pt.ulisboa.tecnico.socialsoftware.tutor.quiz.dto.QuizDto;
-import pt.ulisboa.tecnico.socialsoftware.tutor.user.User;
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.dto.UserDto;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class TournamentDto implements Serializable {
     private Integer id;
-    private Integer key;
     private Tournament.State state;
     private String title;
-    private LocalDateTime creationDate = null;
     private LocalDateTime availableDate = null;
     private LocalDateTime conclusionDate = null;
     private boolean scramble;
@@ -37,12 +29,11 @@ public class TournamentDto implements Serializable {
     }
 
     public TournamentDto(Tournament tournament){
-        setKey(tournament.getKey());
+        setId(tournament.getId());
         setTitle(tournament.getTitle());
         setNumberOfQuestions(tournament.getNumberOfQuestions());
         setState(tournament.getState());
         setScramble(tournament.isScramble());
-        setCreationDate(tournament.getCreationDate());
         setNumberOfEnrolls(tournament.getEnrolledStudents().size());
         setAvailableDate(tournament.getAvailableDate());
         setConclusionDate(tournament.getConclusionDate());
@@ -56,14 +47,6 @@ public class TournamentDto implements Serializable {
 
     public void setId(Integer id) {
         this.id = id;
-    }
-
-    public Integer getKey() {
-        return key;
-    }
-
-    public void setKey(Integer key) {
-        this.key = key;
     }
 
     public Tournament.State getState() {
@@ -80,14 +63,6 @@ public class TournamentDto implements Serializable {
 
     public void setTitle(String title) {
         this.title = title;
-    }
-
-    public LocalDateTime getCreationDate() {
-        return creationDate;
-    }
-
-    public void setCreationDate(LocalDateTime creationDate) {
-        this.creationDate = creationDate;
     }
 
     public LocalDateTime getAvailableDate() {
