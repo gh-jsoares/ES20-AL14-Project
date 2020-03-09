@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.StudentQuestionService
+import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Option
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.StudentQuestionRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.StudentQuestion
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.OptionDto
@@ -51,6 +52,8 @@ class CreateStudentQuestionSpockTest extends Specification {
         studentQuestionDto.setTitle(QUESTION_TITLE)
         studentQuestionDto.setContent(QUESTION_CONTENT)
         studentQuestionDto.setStatus(StudentQuestion.Status.AWAITING_APPROVAL.name())
+        and: "a username"
+        USER_USERNAME
 
         and: "4 optionId"
         def options = new HashSet<OptionDto>()
@@ -64,7 +67,7 @@ class CreateStudentQuestionSpockTest extends Specification {
         studentQuestionDto.setOptions(options)
 
         when:
-        studentQuestionService.createStudentQuestion(studentQuestionDto)
+        studentQuestionService.createStudentQuestion(USER_USERNAME, studentQuestionDto)
 
         then: "the correct question is inside the repository"
         studentQuestionRepository.count() == 1L
@@ -79,7 +82,7 @@ class CreateStudentQuestionSpockTest extends Specification {
         result.getStudent().getUsername() == USER_USERNAME
         user.getStudentQuestions().contains(result)
         result.getOptions().stream().allMatch({ o -> o.getContent() == OPTION_CONTENT })
-        result.getOptions().first().getCorrect()
+        result.getOptions().stream().filter({ o -> o.getCorrect() }).count() == 1L
     }
 
     def "invalid arguments: title=#title | content=#content | status=#status || errorMessage=#errorMessage"() {
@@ -90,8 +93,11 @@ class CreateStudentQuestionSpockTest extends Specification {
         studentQuestionDto.setContent(content)
         studentQuestionDto.setStatus(status)
 
+        and: "a username"
+        USER_USERNAME
+        
         when: "create a student question with invalid data"
-        studentQuestionService.createStudentQuestion(studentQuestionDto)
+        studentQuestionService.createStudentQuestion(USER_USERNAME, studentQuestionDto)
 
         then:
         def error = thrown(TutorException)
@@ -124,9 +130,12 @@ class CreateStudentQuestionSpockTest extends Specification {
             options.add(optionDto)
         }
         studentQuestionDto.setOptions(options)
+        
+        and: "a username"
+        USER_USERNAME
 
         when:
-        studentQuestionService.createStudentQuestion(studentQuestionDto)
+        studentQuestionService.createStudentQuestion(USER_USERNAME, studentQuestionDto)
 
         then: "an error occurs"
         def exception = thrown(TutorException)
@@ -152,8 +161,11 @@ class CreateStudentQuestionSpockTest extends Specification {
         options.first().setCorrect(true)
         studentQuestionDto.setOptions(options)
 
+        and: "a username"
+        USER_USERNAME
+
         when:
-        studentQuestionService.createStudentQuestion(studentQuestionDto)
+        studentQuestionService.createStudentQuestion(USER_USERNAME, studentQuestionDto)
 
         then: "an error occurs"
         def exception = thrown(TutorException)
@@ -178,8 +190,11 @@ class CreateStudentQuestionSpockTest extends Specification {
         }
         studentQuestionDto.setOptions(options)
 
+        and: "a username"
+        USER_USERNAME
+
         when: "create a student question with more than one correct option"
-        studentQuestionService.createStudentQuestion(studentQuestionDto)
+        studentQuestionService.createStudentQuestion(USER_USERNAME, studentQuestionDto)
 
         then: "an error occurs"
         def exception = thrown(TutorException)
@@ -192,13 +207,20 @@ class CreateStudentQuestionSpockTest extends Specification {
         studentQuestion.setKey(1)
         studentQuestion.setTitle(QUESTION_TITLE)
         studentQuestion.setContent(QUESTION_CONTENT)
+        studentQuestion.setStudent(userRepository.findByUsername(USER_USERNAME))
         studentQuestionRepository.save(studentQuestion)
+
         and: "a studentquestiondto with the same title"
         def studentQuestionDto = new StudentQuestionDto()
-        studentQuestion.setTitle(QUESTION_TITLE)
+        studentQuestionDto.setTitle(QUESTION_TITLE)
+        studentQuestionDto.setContent(QUESTION_CONTENT)
+        studentQuestionDto.setStatus(StudentQuestion.Status.AWAITING_APPROVAL.name())
+
+        and: "a username"
+        USER_USERNAME
 
         when: "create another student question with the same title"
-        studentQuestionService.createStudentQuestion(studentQuestionDto)
+        studentQuestionService.createStudentQuestion(USER_USERNAME, studentQuestionDto)
 
         then: "an error occurs"
         def exception = thrown(TutorException)

@@ -360,6 +360,10 @@ public class User implements UserDetails {
         this.courseExecutions.add(course);
     }
 
+    public void addStudentQuestion(StudentQuestion studentQuestion) {
+        this.studentQuestions.add(studentQuestion);
+    }
+
     @Override
     public String toString() {
         return "User{" +

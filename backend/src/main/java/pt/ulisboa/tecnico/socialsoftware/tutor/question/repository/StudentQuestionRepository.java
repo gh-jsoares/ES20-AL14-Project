@@ -12,6 +12,13 @@ import java.util.Optional;
 @Repository
 @Transactional
 public interface StudentQuestionRepository extends JpaRepository<StudentQuestion, Integer> {
-    @Query(value = "SELECT * FROM student_questions q WHERE q.key = :key", nativeQuery = true)
+
+    @Query(value = "SELECT * FROM student_questions sq WHERE sq.title = :title", nativeQuery = true)
+    StudentQuestion findStudentQuestionByTitle(String title);
+
+    @Query(value = "SELECT * FROM student_questions sq WHERE sq.key = :key", nativeQuery = true)
     Optional<StudentQuestion> findByKey(Integer key);
+
+    @Query(value = "SELECT MAX(key) FROM student_questions", nativeQuery = true)
+    Integer getMaxQuestionNumber();
 }
