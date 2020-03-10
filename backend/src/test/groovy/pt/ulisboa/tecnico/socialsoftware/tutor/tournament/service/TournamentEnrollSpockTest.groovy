@@ -19,6 +19,8 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.user.UserRepository
 import spock.lang.Specification
 import spock.lang.Unroll
 
+import java.time.LocalDateTime
+
 @DataJpaTest
 class TournamentEnrollSpockTest extends Specification{
     public static final String COURSE_NAME = "Software Architecture"
@@ -62,6 +64,9 @@ class TournamentEnrollSpockTest extends Specification{
 
         tournament = new Tournament();
         tournament.setTitle(TOURNAMENT_NAME)
+        tournament.setCreationDate(LocalDateTime.now())
+        tournament.setAvailableDate(LocalDateTime.now().plusDays(1))
+        tournament.setConclusionDate(LocalDateTime.now().plusDays(2))
         tournamentRepository.save(tournament)
         tournament.setCourseExecution(courseExecution)
 
