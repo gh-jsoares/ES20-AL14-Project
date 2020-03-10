@@ -17,9 +17,7 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.tournament.TournamentService
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.User
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.UserRepository
 import spock.lang.Specification
-
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
+import spock.lang.Unroll
 
 @DataJpaTest
 class TournamentEnrollSpockTest extends Specification{
@@ -45,33 +43,20 @@ class TournamentEnrollSpockTest extends Specification{
     @Autowired
     UserRepository userRepository
 
-    def userCreator
     def user
-    def course
     def courseExecution
-    def creationDate
-    def availableDate
-    def conclusionDate
-    def result
     def tournament
-    def formatter
-    def error
 
 
     def setup() {
-        formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
 
-        course = new Course(COURSE_NAME, Course.Type.TECNICO)
+        def course = new Course(COURSE_NAME, Course.Type.TECNICO)
         courseRepository.save(course)
 
         courseExecution = new CourseExecution(course, ACRONYM, ACADEMIC_TERM, Course.Type.TECNICO)
         courseExecutionRepository.save(courseExecution)
 
-        creationDate = LocalDateTime.now()
-        availableDate = LocalDateTime.now()
-        conclusionDate = LocalDateTime.now().plusDays(1)
-
-        userCreator = new User('name', USERNAMECREATOR, 1, User.Role.STUDENT)
+        def userCreator = new User('name', USERNAMECREATOR, 1, User.Role.STUDENT)
         userCreator.addCourse(courseExecution)
         courseExecution.addUser(userCreator)
 
@@ -85,126 +70,96 @@ class TournamentEnrollSpockTest extends Specification{
     def "the tournament both exists and is open and student enrolls in tournament"() {
         //the tournament enroll is created for the username
         given: 'an open tournament'
-            tournament.setState(Tournament.State.ENROLL)
-        and: "a tournamentDto"
-            def tournamentDto = new TournamentDto(tournament)
-
-        and: "a student"
-            user = new User('name2', USERNAME, 1, User.Role.STUDENT)
-            userRepository.save(user)
-            user.addCourse(courseExecution)
-            courseExecution.addUser(user)
-        when:
-            result = tournamentService.tournamentEnrollStudent(tournamentDto, user);
-        then: "student enrolled in the tournament"
-            result.getNumberOfEnrolls() == 1
-            def tournamentResult = tournamentRepository.findById(tournamentDto.getId()).get()
-            tournamentResult != null
-            def students = tournamentResult.getEnrolledStudents()
-            def userIn = false
-            for (User student: students)
-                if (student.getUsername() == USERNAME)
-                    userIn = true
-            userIn
-    }
-
-    def "the tournament exists but is not open"() {
-        //an exception is thrown
-        given: "a closed tournament"
-            tournament.setState(Tournament.State.CLOSED)
-        and: "a tournamentDto"
-            def tournamentDto = new TournamentDto(tournament)
-            tournamentDto.setNumberOfEnrolls(0)
-
-        and: "a student"
-            user = new User('name2', USERNAME, 1, User.Role.STUDENT)
-            userRepository.save(user)
-            user.addCourse(courseExecution)
-            courseExecution.addUser(user)
-        when:
-            result = tournamentService.tournamentEnrollStudent(tournamentDto, user);
-        then:
-            error = thrown(TutorException)
-            error.getErrorMessage() == ErrorMessage.TOURNAMENT_NOT_OPEN
-    }
-
-    def "the tournament exists and is open but the student is already enrolled"() {
-        given: "an open tournament"
-            tournament.setState(Tournament.State.ENROLL)
-        and: "a tournamentDto"
-            def tournamentDto = new TournamentDto(tournament)
-        and: "a student enrolled in the tournament"
-            user = new User('name2', USERNAME, 1, User.Role.STUDENT)
-            userRepository.save(user)
-            user.addCourse(courseExecution)
-            courseExecution.addUser(user)
-            result = tournamentService.tournamentEnrollStudent(tournamentDto, user);
-        when:
-            result = tournamentService.tournamentEnrollStudent(tournamentDto, user);
-        then:
-            error = thrown(TutorException)
-            error.getErrorMessage() == ErrorMessage.DUPLICATE_USER
-    }
-
-    def "the tournament does not exist"() {
-        //an exception is thrown
-        given: "A tournamentDto"
-            def tournamentDto = new TournamentDto()
-        and: "a student"
-            user = new User('name2', USERNAME, 1, User.Role.STUDENT)
-            userRepository.save(user)
-        when:
-            result = tournamentService.tournamentEnrollStudent(tournamentDto, user);
-        then:
-            error = thrown(TutorException)
-            error.getErrorMessage() == ErrorMessage.TOURNAMENT_NOT_FOUND
-    }
-
-    def "the user does not exist"() {
-        given: "an open tournament"
-            tournament.setState(Tournament.State.ENROLL)
-        and: "a tournamentDto"
-            def tournamentDto = new TournamentDto(tournament)
-            tournamentDto.setNumberOfEnrolls(0)
-        when:
-            result = tournamentService.tournamentEnrollStudent(tournamentDto, null);
-        then:
-            error = thrown(TutorException)
-            error.getErrorMessage() == ErrorMessage.USER_IS_NULL
-    }
-
-    def "the user is not a student"() {
-        given: "an open tournament"
-            tournament.setState(Tournament.State.ENROLL)
+        tournament.setState(Tournament.State.ENROLL)
         and: "a tournamentDto"
         def tournamentDto = new TournamentDto(tournament)
-            tournamentDto.setNumberOfEnrolls(0)
-        and: "a student not in the course execution"
-            user = new User('name2', USERNAME, 1, User.Role.TEACHER)
-            userRepository.save(user)
-            user.addCourse(courseExecution)
-            courseExecution.addUser(user)
+
+        and: "a student"
+        user = new User('name2', USERNAME, 1, User.Role.STUDENT)
+        userRepository.save(user)
+        user.addCourse(courseExecution)
+        courseExecution.addUser(user)
         when:
-            result = tournamentService.tournamentEnrollStudent(tournamentDto, user);
-        then:
-            error = thrown(TutorException)
-            error.getErrorMessage() == ErrorMessage.TOURNAMENT_USER_IS_NOT_STUDENT
+        def result = tournamentService.tournamentEnrollStudent(tournamentDto, user);
+        then: "student enrolled in the tournament"
+        result.getNumberOfEnrolls() == 1
+        def tournamentResult = tournamentRepository.findById(tournamentDto.getId()).get()
+        tournamentResult != null
+        def students = tournamentResult.getEnrolledStudents()
+        def userIn = false
+        for (User student: students)
+            if (student.getUsername() == USERNAME)
+                userIn = true
+        userIn
     }
 
-    def "the student does not belong to the course execution of the tournament"() {
-        given: "an open tournament"
-            tournament.setState(Tournament.State.ENROLL)
+    @Unroll
+    def "invalid data in database where tournament is #isTournament, user is #isUser, and errorMessage id #errorMessage"() {
+        given: "a user"
+            createUser(isUser, User.Role.STUDENT)
+        and: "a tournamentDto"
+            def tournamentDto = isTournament ? (new TournamentDto(tournament)) : new TournamentDto()
+
+        when:
+            tournamentService.tournamentEnrollStudent(tournamentDto, user);
+
+        then:
+            def error = thrown(TutorException)
+            error.errorMessage == errorMessage
+
+        where:
+        isTournament | isUser     || errorMessage
+        false        | true       || ErrorMessage.TOURNAMENT_IS_NULL
+        true         | false      || ErrorMessage.USER_IS_NULL
+    }
+
+    @Unroll
+    def "Invalid arguments: #userRole | #tournamentState | #studentEnrolledInCourse | #studentEnrolledInTournament || errorMessage"() {
+        given: "a user with role userRole"
+            createUser(true, userRole)
+        and: "a tournament with state tournamentState"
+            tournament.setState(tournamentState)
+        and: "a user enrolled in the course execution"
+            enrollUserInCourseExecution(isUserEnrolledInCourse)
+        and: "a user enrolled in the tournament"
+            enrollUserInTournament(isUserEnrolledInTournament)
         and: "a tournamentDto"
             def tournamentDto = new TournamentDto(tournament)
-            tournamentDto.setNumberOfEnrolls(0)
-        and: "a student not in the course execution"
-            user = new User('name2', USERNAME, 1, User.Role.STUDENT)
-            userRepository.save(user)
+
         when:
-            result = tournamentService.tournamentEnrollStudent(tournamentDto, user);
+            tournamentService.tournamentEnrollStudent(tournamentDto, user);
+
         then:
-            error = thrown(TutorException)
-            error.getErrorMessage() == ErrorMessage.TOURNAMENT_STUDENT_NOT_ENROLLED_IN_TOURNAMENT_COURSE
+            def error = thrown(TutorException)
+            error.getErrorMessage() == errorMessage
+
+        where:
+            userRole         | tournamentState          | isUserEnrolledInCourse  | isUserEnrolledInTournament  || errorMessage
+            User.Role.TEACHER| Tournament.State.ENROLL  | true                    | false                       || ErrorMessage.TOURNAMENT_USER_IS_NOT_STUDENT
+            User.Role.STUDENT| Tournament.State.CLOSED  | true                    | false                       || ErrorMessage.TOURNAMENT_NOT_OPEN
+            User.Role.STUDENT| Tournament.State.ONGOING | true                    | false                       || ErrorMessage.TOURNAMENT_NOT_OPEN
+            User.Role.STUDENT| Tournament.State.ENROLL  | false                   | false                       || ErrorMessage.TOURNAMENT_STUDENT_NOT_ENROLLED_IN_TOURNAMENT_COURSE
+            User.Role.STUDENT| Tournament.State.ENROLL  | true                    | true                        || ErrorMessage.DUPLICATE_USER
+    }
+
+    def createUser(isUser, userRole){
+        if (isUser) {
+            user = new User('name2', USERNAME, 1, userRole)
+            userRepository.save(user)
+        } else
+            user = null
+    }
+
+    def enrollUserInCourseExecution(isUserEnrolledInCourse){
+        if (isUserEnrolledInCourse) {
+            user.addCourse(courseExecution)
+            courseExecution.addUser(user)
+        }
+    }
+
+    def enrollUserInTournament(isUserEnrolledInTournament){
+        if (isUserEnrolledInTournament)
+            tournament.addEnrolledStudent(user)
     }
 
     @TestConfiguration
