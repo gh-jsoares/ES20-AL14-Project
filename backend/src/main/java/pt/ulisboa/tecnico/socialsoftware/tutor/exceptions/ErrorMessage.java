@@ -43,6 +43,7 @@ public enum ErrorMessage {
     QUIZ_NOT_YET_AVAILABLE("This quiz is not yet available"),
 
     USER_IS_NULL("The user was not specified"),
+    TOURNAMENT_IS_NULL("The tournament was not specified"),
     TOURNAMENT_USER_IS_NOT_STUDENT("The user with id %d is not a student"),
     TOURNAMENT_STUDENT_NOT_ENROLLED_IN_TOURNAMENT_COURSE("The user with id %d is not enrolled in the course execution of the tournament"),
     TOURNAMENT_NOT_OPEN("The tournament with id %d is not open"),

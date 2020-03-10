@@ -15,6 +15,7 @@ import javax.persistence.PersistenceContext;
 import java.sql.SQLException;
 import java.util.List;
 
+import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.TOURNAMENT_IS_NULL;
 import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.TOURNAMENT_NOT_FOUND;
 
 @Service
@@ -30,21 +31,25 @@ public class TournamentService {
             backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public TournamentDto  tournamentEnrollStudent(TournamentDto tournamentDto, User user) {
-        if (tournamentDto.getId() == null)
-            throw new TutorException(TOURNAMENT_NOT_FOUND);
+        Tournament tournament = getTournament(tournamentDto);
+        tournament.addEnrolledStudent(user);
+        return new TournamentDto(tournament);
+    }
+
+    private Tournament getTournament(TournamentDto tournamentDto) {
+        checkNotNullTournament(tournamentDto);
         Tournament tournament = tournamentRepository.findById(tournamentDto.getId()).orElseThrow(() -> new TutorException(TOURNAMENT_NOT_FOUND, tournamentDto.getId()));
         if (tournament == null) {
             throw new TutorException(TOURNAMENT_NOT_FOUND, tournamentDto.getId());
         }
-        tournament.addEnrolledStudent(user);
+        return tournament;
+    }
 
-
-        return new TournamentDto(tournament);
+    private void checkNotNullTournament(TournamentDto tournamentDto) {
+        if (tournamentDto.getId() == null)
+            throw new TutorException(TOURNAMENT_IS_NULL);
     }
 
     public TournamentDto createTournament(int courseExecutionId, TournamentDto tournDto, User user) {return null;}
 
-    public List<UserDto> getTournamentStudents(TournamentDto tournDto){
-        return null;
-    }
 }
