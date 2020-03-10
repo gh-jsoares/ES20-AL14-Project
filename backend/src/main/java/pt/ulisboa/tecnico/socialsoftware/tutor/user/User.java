@@ -355,6 +355,22 @@ public class User implements UserDetails {
         this.courseExecutions.add(course);
     }
 
+    public Set<Tournament> getCreatedTournaments() {
+        return createdTournaments;
+    }
+
+    public void addCreatedTournament(Tournament tournament) {
+        this.createdTournaments.add(tournament);
+    }
+
+    public Set<Tournament> getEnrolledTournament() {
+        return enrolledTournaments;
+    }
+
+    public void addEnrolledTournaments(Tournament tournament) {
+        this.enrolledTournaments.add(tournament);
+    }
+
     @Override
     public String toString() {
         return "User{" +

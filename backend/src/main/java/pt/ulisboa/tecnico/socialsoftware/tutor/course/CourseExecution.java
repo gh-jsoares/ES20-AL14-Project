@@ -142,4 +142,14 @@ public class CourseExecution {
     public void setType(Course.Type type) {
         this.type = type;
     }
+
+    public Set<Tournament> getTournaments() {
+        return tournaments;
+    }
+
+    public void addTournament(Tournament tournament) {
+        this.tournaments.add(tournament);
+    }
+
+
 }

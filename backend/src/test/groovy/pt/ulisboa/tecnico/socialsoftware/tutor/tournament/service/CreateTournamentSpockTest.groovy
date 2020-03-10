@@ -1,38 +1,66 @@
+package pt.ulisboa.tecnico.socialsoftware.tutor.tournament.service
 
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
+import org.springframework.boot.test.context.TestConfiguration
+import org.springframework.context.annotation.Bean
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.Course
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecution
+import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecutionRepository
+import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException
-import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Question
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Topic
-import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.QuestionDto
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.TopicDto
+import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.QuestionRepository
+import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.TopicRepository
+import pt.ulisboa.tecnico.socialsoftware.tutor.quiz.repository.QuizQuestionRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.tournament.Tournament
 import pt.ulisboa.tecnico.socialsoftware.tutor.tournament.TournamentDto
 import pt.ulisboa.tecnico.socialsoftware.tutor.tournament.TournamentService
+import pt.ulisboa.tecnico.socialsoftware.tutor.tournament.TournamentRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.User
-import pt.ulisboa.tecnico.socialsoftware.tutor.user.dto.UserDto
+import pt.ulisboa.tecnico.socialsoftware.tutor.user.UserRepository
 import spock.lang.Specification
 
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 
-
+@DataJpaTest
 class CreateTournamentSpockTest extends Specification{
     public static final String USER_NAME = "name"
     public static final String USER_USERNAME = "username"
     public static final String COURSE_NAME = "Software Architecture"
     public static final String ACRONYM = "AS1"
     public static final String ACADEMIC_TERM = "1 SEM"
-    //public static final String QUESTION_CONTENT = 'question content'
     public static final String TOURN_TITLE = 'tourn title'
-    //public static final String QUIZ_TITLE = 'quiz title'
     public static final String VERSION = 'B'
     public static final int QUEST_NUM = 1
 
+    @Autowired
+    TournamentRepository tournRepository
 
-    def tournService = new TournamentService()
+    @Autowired
+    QuestionRepository questionRepository
+
+    @Autowired
+    QuizQuestionRepository quizQuestionRepository
+
+    @Autowired
+    CourseRepository courseRepository
+
+    @Autowired
+    UserRepository userRepository
+
+    @Autowired
+    CourseExecutionRepository courseExecutionRepository
+
+    @Autowired
+    TopicRepository topicRepository
+
+    @Autowired
+    TournamentService tournService
 
     def course
     def courseExecution
@@ -42,73 +70,64 @@ class CreateTournamentSpockTest extends Specification{
     def dayOne
     def dayTwo
     def dayThree
-    def questionDto
     def formatter
     def tournDto
     def user
-    //def userDto
-    def topicDto
     def topic
-    def question
 
     def setup() {
         formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
 
-        // create course execution
+        // create course
         course = new Course(COURSE_NAME, Course.Type.TECNICO)
+        courseRepository.save(course)
+
+        // create course execution
         courseExecution = new CourseExecution(course, ACRONYM, ACADEMIC_TERM, Course.Type.TECNICO)
-        courseExecution.setId(1)
+        courseExecutionRepository.save(courseExecution)
 
         // create user
         user = new User(USER_NAME, USER_USERNAME, 1, User.Role.STUDENT)
         user.addCourse(courseExecution)
-        //userDto = new UserDto(user)
         courseExecution.addUser(user)
+        userRepository.save(user)
 
-        // create questions
-        question = new Question()
-        question.setKey(1)
-        question.setCourse(course)
-        course.addQuestion(question)
-        questionDto = new QuestionDto(question)
-
-        // create topics
+        // create topic
         topic = new Topic()
         topic.setName("topic")
         topic.setCourse(course)
-        topic.addQuestion(question)
         course.addTopic(topic)
-        topicDto = new TopicDto(topic)
+        topicRepository.save(topic)
 
         // create tournamentDto
         tournDto = new TournamentDto()
-        tournDto.setKey(1)
         tournDto.setTitle(TOURN_TITLE)
-        //tournDto.setCreator(userDto)
         tournDto.setNumberOfQuestions(QUEST_NUM)
         tournDto.setState(Tournament.State.ENROLL)
         tournDto.setScramble(true)
         dayOne = LocalDateTime.now()
         dayTwo = LocalDateTime.now().plusDays(1)
         dayThree = LocalDateTime.now().plusDays(2)
-        tournDto.setCreationDate(dayOne)
-        tournDto.setAvailableDate(dayTwo)
-        tournDto.setConclusionDate(dayThree)
+        tournDto.setAvailableDate(dayTwo.format(formatter))
+        tournDto.setConclusionDate(dayThree.format(formatter))
         tournDto.setSeries(1)
         tournDto.setVersion(VERSION)
+        tournDto.addTopic(new TopicDto(topic))
 
     }
 
     def "create a tournament"() {
         given: 'tournament with correct values'
-        tournDto.setTitle(TOURN_TITLE)
 
         when: "service call to create tournament"
-        def result = tournService.createTournament(courseExecution.getId(), tournDto, user)
+        tournService.createTournament(courseExecution.getId(), tournDto, user)
 
-        then: "the correct tournament object is created"
-        //result.getId() != null
-        result.getKey() != null
+        then: "tournament in repository"
+        tournRepository.count() == 1L
+
+        and: "tournament with correct values"
+        def result = tournRepository.findAll().get(0)
+        result.getId() != null
         result.isScramble()
         result.getTitle() == TOURN_TITLE
         result.getCreator() != null
@@ -119,6 +138,7 @@ class CreateTournamentSpockTest extends Specification{
         result.getSeries() == 1
         result.getVersion() == VERSION
         result.getNumberOfQuestions() == QUEST_NUM
+
     }
 
     def "create a tournament empty name"() {
@@ -132,6 +152,9 @@ class CreateTournamentSpockTest extends Specification{
         def exception = thrown(TutorException)
         exception.getErrorMessage() == ErrorMessage.TOURNAMENT_NOT_CONSISTENT
 
+        and: "tournament not in repository"
+        tournRepository.count() == 0L
+
     }
 
     def "create a tournament blank name"() {
@@ -144,12 +167,15 @@ class CreateTournamentSpockTest extends Specification{
         then: "tournament not created, exception thrown"
         def exception = thrown(TutorException)
         exception.getErrorMessage() == ErrorMessage.TOURNAMENT_NOT_CONSISTENT
+
+        and: "tournament not in repository"
+        tournRepository.count() == 0L
     }
 
-    def "create a tournament end time not after start time"() {
-        given: "tournament with end before start"
-        tournDto.setAvailableDate(dayThree)
-        tournDto.setConclusionDate(dayTwo)
+    def "create a tournament conclusionDate before availableDate"() {
+        given: "tournament with conclusion before available"
+        tournDto.setAvailableDate(dayThree.format(formatter))
+        tournDto.setConclusionDate(dayTwo.format(formatter))
 
         when: "service call to create tournament"
         tournService.createTournament(courseExecution.getId(), tournDto, user)
@@ -157,6 +183,9 @@ class CreateTournamentSpockTest extends Specification{
         then: "tournament not created, exception thrown"
         def exception = thrown(TutorException)
         exception.getErrorMessage() == ErrorMessage.TOURNAMENT_NOT_CONSISTENT
+
+        and: "tournament not in repository"
+        tournRepository.count() == 0L
     }
 
     def "create a tournament no topics"() {
@@ -169,6 +198,9 @@ class CreateTournamentSpockTest extends Specification{
         then: "tournament not created, exception thrown"
         def exception = thrown(TutorException)
         exception.getErrorMessage() == ErrorMessage.TOURNAMENT_NOT_CONSISTENT
+
+        and: "tournament not in repository"
+        tournRepository.count() == 0L
     }
 
     def "create a tournament non-positive number of questions"() {
@@ -182,20 +214,11 @@ class CreateTournamentSpockTest extends Specification{
         def exception = thrown(TutorException)
         exception.getErrorMessage() == ErrorMessage.TOURNAMENT_NOT_CONSISTENT
 
+        and: "tournament not in repository"
+        tournRepository.count() == 0L
+
         where: "invalid values"
         num << [0, -1]
-    }
-
-    def "create a tournament insufficient questions in selected topics"() {
-        given: "tournament with more questions than in chosen topic"
-        tournDto.setNumberOfQuestions(QUEST_NUM+1)
-
-        when: "service call to create tournament"
-        tournService.createTournament(courseExecution.getId(), tournDto, user)
-
-        then: "tournament not created, exception thrown"
-        def exception = thrown(TutorException)
-        exception.getErrorMessage() == ErrorMessage.TOURNAMENT_NOT_CONSISTENT
     }
 
     def "tournament creator not STUDENT"() {
@@ -207,14 +230,17 @@ class CreateTournamentSpockTest extends Specification{
 
         then: "tournament not created, exception thrown"
         def exception = thrown(TutorException)
-        exception.getErrorMessage() == ErrorMessage.TOURNAMENT_NOT_CONSISTENT
+        exception.getErrorMessage() == ErrorMessage.TOURNAMENT_USER_IS_NOT_STUDENT
+
+        and: "tournament not in repository"
+        tournRepository.count() == 0L
     }
 
     def "tournament conclusion before creation"() {
         given: "tournament with conclusion before creation"
-        tournDto.setConclusionDate(dayOne)
-        tournDto.setCreationDate(dayTwo)
-        tournDto.setAvailableDate(dayThree)
+        tournDto.setConclusionDate(dayOne.format(formatter))
+        tournDto.setCreationDate(dayTwo.format(formatter))
+        tournDto.setAvailableDate(dayThree.format(formatter))
 
         when: "service call to create tournament"
         tournService.createTournament(courseExecution.getId(), tournDto, user)
@@ -222,16 +248,36 @@ class CreateTournamentSpockTest extends Specification{
         then: "tournament not created, exception thrown"
         def exception = thrown(TutorException)
         exception.getErrorMessage() == ErrorMessage.TOURNAMENT_NOT_CONSISTENT
+
+        and: "tournament not in repository"
+        tournRepository.count() == 0L
+    }
+
+    def "tournament available before creation"() {
+        given: "tournament with availableDate before creation"
+        tournDto.setAvailableDate(dayOne.format(formatter))
+        tournDto.setCreationDate(dayTwo.format(formatter))
+        tournDto.setConclusionDate(dayThree.format(formatter))
+
+        when: "service call to create tournament"
+        tournService.createTournament(courseExecution.getId(), tournDto, user)
+
+        then: "tournament not created, exception thrown"
+        def exception = thrown(TutorException)
+        exception.getErrorMessage() == ErrorMessage.TOURNAMENT_NOT_CONSISTENT
+
+        and: "tournament not in repository"
+        tournRepository.count() == 0L
     }
 
 
-    /*@TestConfiguration
+    @TestConfiguration
     static class TournamentServiceImplTestContextConfiguration {
 
         @Bean
         TournamentService tournamentService() {
             return new TournamentService()
         }
-    }*/
+    }
 
 }

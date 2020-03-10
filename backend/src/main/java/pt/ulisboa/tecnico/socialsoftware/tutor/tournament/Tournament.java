@@ -71,10 +71,11 @@ public class Tournament {
     public Tournament(TournamentDto tournamentDto){
         setTitle(tournamentDto.getTitle());
         setNumberOfQuestions(tournamentDto.getNumberOfQuestions());
-        setState(tournamentDto.getState());
+        state = State.ENROLL;
         setScramble(tournamentDto.isScramble());
-        setAvailableDate(tournamentDto.getAvailableDate());
-        setConclusionDate(tournamentDto.getConclusionDate());
+        setCreationDate(tournamentDto.getCreationDateDate());
+        setAvailableDate(tournamentDto.getAvailableDateDate());
+        setConclusionDate(tournamentDto.getConclusionDateDate());
         setSeries(tournamentDto.getSeries());
         setVersion(tournamentDto.getVersion());
     }
@@ -100,7 +101,8 @@ public class Tournament {
     }
 
     public void setTitle(String title) {
-        this.title = title;
+        checkTitle(title);
+        this.title = title.trim();
     }
 
     public LocalDateTime getCreationDate() {
@@ -116,6 +118,7 @@ public class Tournament {
     }
 
     public void setAvailableDate(LocalDateTime availableDate) {
+        checkAvailableDate(availableDate);
         this.availableDate = availableDate;
     }
 
@@ -124,6 +127,7 @@ public class Tournament {
     }
 
     public void setConclusionDate(LocalDateTime conclusionDate) {
+        checkConclusionDate(conclusionDate);
         this.conclusionDate = conclusionDate;
     }
 
@@ -140,6 +144,7 @@ public class Tournament {
     }
 
     public void setCreator(User creator) {
+        creator.addCreatedTournament(this);
         this.creator = creator;
     }
 
@@ -166,6 +171,7 @@ public class Tournament {
     }
 
     public void addTopic(Topic topic) {
+        topic.addTournament(this);
         this.topics.add(topic);
     }
 
@@ -182,6 +188,7 @@ public class Tournament {
     }
 
     public void setNumberOfQuestions(Integer numberOfQuestions) {
+        checkNumberOfQuestions(numberOfQuestions);
         this.numberOfQuestions = numberOfQuestions;
     }
 
@@ -190,6 +197,7 @@ public class Tournament {
     }
 
     public void setCourseExecution(CourseExecution courseExecution) {
+        courseExecution.addTournament(this);
         this.courseExecution = courseExecution;
     }
 
@@ -207,5 +215,32 @@ public class Tournament {
 
     public void setVersion(String version) {
         this.version = version;
+    }
+
+
+    private void checkTitle(String title) {
+        if (title == null || title.trim().length() == 0) {
+            throw new TutorException(TOURNAMENT_NOT_CONSISTENT, "Title");
+        }
+    }
+
+    private void checkNumberOfQuestions(Integer numberOfQuestions) {
+        if (numberOfQuestions == null || numberOfQuestions <= 0) {
+            throw new TutorException(TOURNAMENT_NOT_CONSISTENT, "Number of questions");
+        }
+    }
+
+    private void checkAvailableDate(LocalDateTime availableDate) {
+        if (availableDate == null || conclusionDate != null && conclusionDate.isBefore(availableDate) ||
+                creationDate != null && availableDate.isBefore(creationDate)) {
+            throw new TutorException(TOURNAMENT_NOT_CONSISTENT, "Available date");
+        }
+    }
+
+    private void checkConclusionDate(LocalDateTime conclusionDate) {
+        if (conclusionDate == null || availableDate != null && conclusionDate.isBefore(availableDate) ||
+                creationDate != null && conclusionDate.isBefore(creationDate)) {
+            throw new TutorException(TOURNAMENT_NOT_CONSISTENT, "Conclusion date");
+        }
     }
 }

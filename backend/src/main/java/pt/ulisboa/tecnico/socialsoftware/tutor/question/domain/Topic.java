@@ -101,6 +101,14 @@ public class Topic {
         this.questions.add(question);
     }
 
+    public Set<Tournament> getTournaments() {
+        return tournaments;
+    }
+
+    public void addTournament(Tournament tournament) {
+        this.tournaments.add(tournament);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
