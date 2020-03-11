@@ -9,6 +9,7 @@ import java.util.*;
 @Entity
 @Table(name = "topics")
 public class Topic {
+
     @SuppressWarnings("unused")
     public enum Status {
         DISABLED, REMOVED, AVAILABLE
@@ -35,6 +36,9 @@ public class Topic {
     @ManyToOne
     @JoinColumn(name = "course_id")
     private Course course;
+
+    @ManyToMany
+    private Set<StudentQuestion> studentQuestions = new HashSet<>();
 
     public Topic() {
     }
@@ -97,6 +101,17 @@ public class Topic {
         this.questions.add(question);
     }
 
+    public Set<StudentQuestion> getStudentQuestions() {
+        return studentQuestions;
+    }
+
+    public void addStudentQuestion(StudentQuestion studentQuestion) {
+        this.studentQuestions.add(studentQuestion);
+    }
+    public void removeStudentQuestion(StudentQuestion studentQuestion) {
+        this.studentQuestions.remove(studentQuestion);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -126,6 +141,10 @@ public class Topic {
 
         getQuestions().forEach(question -> question.getTopics().remove(this));
         getQuestions().clear();
+
+
+        getStudentQuestions().forEach(studentQuestion  -> studentQuestion.getTopics().remove(this));
+        getStudentQuestions().clear();
 
         if (this.parentTopic != null) {
             parentTopic.getChildrenTopics().remove(this);

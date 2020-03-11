@@ -64,7 +64,11 @@ public enum ErrorMessage {
     STUDENT_QUESTION_STATUS_IS_EMPTY("The student question status is empty"),
     STUDENT_QUESTION_OPTION_CONTENT_IS_EMPTY("Options need to have content"),
     STUDENT_QUESTION_NOT_A_STUDENT("You need to be a student to create a student question"),
+    STUDENT_QUESTION_TOPIC_NOT_FOUND("The topic needs to exist"),
+    STUDENT_QUESTION_NOT_FOUND("The student question does not exist"),
+    STUDENT_QUESTION_TOPIC_ALREADY_ADDED("The student question already belongs to the topic: %s"),
     STUDENT_QUESTION_USER_NOT_FOUND("The user was not found"),
+    STUDENT_QUESTION_TOPIC_NOT_PRESENT("The topic '%s' was not found in the student question"),
 
     ACCESS_DENIED("You do not have permission to view this resource"),
     CANNOT_OPEN_FILE("Cannot open file");

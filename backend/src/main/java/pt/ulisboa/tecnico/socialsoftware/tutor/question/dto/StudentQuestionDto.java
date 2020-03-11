@@ -40,10 +40,6 @@ public class StudentQuestionDto implements Serializable {
         return id;
     }
 
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
     public Integer getKey() {
         return key;
     }
@@ -70,10 +66,6 @@ public class StudentQuestionDto implements Serializable {
 
     public String getCreationDate() {
         return creationDate;
-    }
-
-    public void setCreationDate(String creationDate) {
-        this.creationDate = creationDate;
     }
 
     public String getStatus() {

@@ -53,6 +53,9 @@ public class StudentQuestion {
     @JoinColumn(name = "student_id")
     private User student;
 
+    @ManyToMany(mappedBy = "studentQuestions")
+    private Set<Topic> topics = new HashSet<>();
+
     public StudentQuestion() {
 
     }
@@ -76,10 +79,6 @@ public class StudentQuestion {
 
     public Integer getId() {
         return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
     }
 
     public Integer getKey() {
@@ -126,16 +125,8 @@ public class StudentQuestion {
         return creationDate;
     }
 
-    public void setCreationDate(LocalDateTime creationDate) {
-        this.creationDate = creationDate;
-    }
-
     public Set<Option> getOptions() {
         return options;
-    }
-
-    public void setOptions(Set<Option> options) {
-        this.options = options;
     }
 
     public User getStudent() {
@@ -145,6 +136,19 @@ public class StudentQuestion {
     public void setStudent(User student) {
         this.student = student;
     }
+
+    public Set<Topic> getTopics() {
+        return this.topics;
+    }
+
+    public void addTopic(Topic topic) {
+        this.topics.add(topic);
+    }
+
+    public void removeTopic(Topic topic) {
+        this.topics.remove(topic);
+    }
+
 
     private void checkConsistentStudentQuestion(User user, StudentQuestionDto studentQuestionDto) {
         if (user.getRole() != User.Role.STUDENT)
@@ -195,5 +199,10 @@ public class StudentQuestion {
             this.options.add(option);
             option.setStudentQuestion(this);
         }
+    }
+
+    public void remove() {
+        getTopics().forEach(topic -> topic.getStudentQuestions().remove(this));
+        getTopics().clear();
     }
 }
