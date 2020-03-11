@@ -53,6 +53,9 @@ public class StudentQuestion {
     @JoinColumn(name = "student_id")
     private User student;
 
+    @ManyToMany(mappedBy = "studentQuestions")
+    private Set<Topic> topics = new HashSet<>();
+
     public StudentQuestion() {
 
     }
@@ -146,6 +149,14 @@ public class StudentQuestion {
         this.student = student;
     }
 
+    public Set<Topic> getTopics() {
+        return topics;
+    }
+
+    public void addTopic(Topic topic) {
+        topics.add(topic);
+    }
+
     private void checkConsistentStudentQuestion(User user, StudentQuestionDto studentQuestionDto) {
         if (user.getRole() != User.Role.STUDENT)
             throw new TutorException(STUDENT_QUESTION_NOT_A_STUDENT);
@@ -195,5 +206,10 @@ public class StudentQuestion {
             this.options.add(option);
             option.setStudentQuestion(this);
         }
+    }
+
+    public void remove() {
+        getTopics().forEach(topic -> topic.getStudentQuestions().remove(this));
+        getTopics().clear();
     }
 }

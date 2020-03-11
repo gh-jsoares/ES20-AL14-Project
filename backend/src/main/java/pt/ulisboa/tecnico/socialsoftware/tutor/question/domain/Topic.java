@@ -36,6 +36,9 @@ public class Topic {
     @JoinColumn(name = "course_id")
     private Course course;
 
+    @ManyToMany
+    private Set<StudentQuestion> studentQuestions = new HashSet<>();
+
     public Topic() {
     }
 
@@ -97,6 +100,14 @@ public class Topic {
         this.questions.add(question);
     }
 
+    public Set<StudentQuestion> getStudentQuestions() {
+        return studentQuestions;
+    }
+
+    public void addStudentQuestion(StudentQuestion studentQuestion) {
+        this.studentQuestions.add(studentQuestion);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -126,6 +137,10 @@ public class Topic {
 
         getQuestions().forEach(question -> question.getTopics().remove(this));
         getQuestions().clear();
+
+
+        getStudentQuestions().forEach(studentQuestion  -> studentQuestion.getTopics().remove(this));
+        getStudentQuestions().clear();
 
         if (this.parentTopic != null) {
             parentTopic.getChildrenTopics().remove(this);

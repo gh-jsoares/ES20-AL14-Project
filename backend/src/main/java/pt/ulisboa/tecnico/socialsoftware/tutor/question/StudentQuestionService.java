@@ -10,6 +10,7 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.StudentQuestion;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.StudentQuestionDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.StudentQuestionRepository;
+import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.TopicRepository;
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.User;
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.UserRepository;
 
@@ -27,6 +28,9 @@ public class StudentQuestionService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private TopicRepository topicRepository;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -58,5 +62,9 @@ public class StudentQuestionService {
     private void checkDuplicateQuestion(StudentQuestionDto studentQuestionDto) {
         if (studentQuestionRepository.findStudentQuestionByTitle(studentQuestionDto.getTitle()) != null)
             throw new TutorException(DUPLICATE_STUDENT_QUESTION, studentQuestionDto.getTitle());
+    }
+
+    public StudentQuestionDto addTopicToStudentQuestion(StudentQuestionDto studentQuestionDto, int topicId) {
+        return studentQuestionDto;
     }
 }

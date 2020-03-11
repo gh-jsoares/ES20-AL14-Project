@@ -1,6 +1,7 @@
 package pt.ulisboa.tecnico.socialsoftware.tutor.question.dto;
 
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.StudentQuestion;
+import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Topic;
 
 import java.io.Serializable;
 import java.time.format.DateTimeFormatter;
@@ -18,6 +19,7 @@ public class StudentQuestionDto implements Serializable {
     private ImageDto image;
     private Integer sequence;
     private String username;
+    private Set<TopicDto> topics = new HashSet<>();
 
     public StudentQuestionDto() {}
 
@@ -28,6 +30,7 @@ public class StudentQuestionDto implements Serializable {
         this.content = studentQuestion.getContent();
         this.status = studentQuestion.getStatus().name();
         this.options = studentQuestion.getOptions().stream().map(OptionDto::new).collect(Collectors.toSet());
+        this.topics = studentQuestion.getTopics().stream().sorted(Comparator.comparing(Topic::getName)).map(TopicDto::new).collect(Collectors.toSet());
         this.username = studentQuestion.getStudent().getUsername();
 
         if (studentQuestion.getImage() != null)
@@ -90,6 +93,14 @@ public class StudentQuestionDto implements Serializable {
 
     public void setOptions(Set<OptionDto> options) {
         this.options = options;
+    }
+
+    public Set<TopicDto> getTopics() {
+        return topics;
+    }
+
+    public void addTopic(TopicDto topic) {
+        this.topics.add(topic);
     }
 
     public ImageDto getImage() {
