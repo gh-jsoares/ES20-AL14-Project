@@ -44,7 +44,7 @@ public class Tournament {
     private Integer numberOfQuestions = 0;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "creator_id")
     private User creator;
 
     @ManyToMany(fetch = FetchType.LAZY)
@@ -71,7 +71,7 @@ public class Tournament {
     public Tournament(TournamentDto tournamentDto){
         setTitle(tournamentDto.getTitle());
         setNumberOfQuestions(tournamentDto.getNumberOfQuestions());
-        state = State.ENROLL;
+        setState(tournamentDto.getState());
         setScramble(tournamentDto.isScramble());
         setCreationDate(tournamentDto.getCreationDateDate());
         setAvailableDate(tournamentDto.getAvailableDateDate());
