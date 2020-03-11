@@ -10,6 +10,7 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.StudentQuestion;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Topic;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.StudentQuestionDto;
+import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.TopicDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.StudentQuestionRepository;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.TopicRepository;
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.User;
@@ -55,6 +56,23 @@ public class StudentQuestionService {
         return new StudentQuestionDto(studentQuestion);
     }
 
+    @Retryable(
+            value = { SQLException.class },
+            backoff = @Backoff(delay = 5000))
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public StudentQuestionDto addTopicToStudentQuestion(StudentQuestionDto studentQuestionDto, TopicDto topicDto) {
+        Topic topic = getTopicIfExists(topicDto);
+        StudentQuestion studentQuestion = getStudentQuestionIfExists(studentQuestionDto);
+
+        checkDuplicateTopicInStudentQuestion(studentQuestion, topic);
+
+        studentQuestion.addTopic(topic);
+        topic.addStudentQuestion(studentQuestion);
+        this.entityManager.persist(studentQuestion);
+
+        return new StudentQuestionDto(studentQuestion);
+    }
+
     private void checkUserExists(User user) {
         if (user == null)
             throw new TutorException(STUDENT_QUESTION_USER_NOT_FOUND);
@@ -73,28 +91,15 @@ public class StudentQuestionService {
             throw new TutorException(DUPLICATE_STUDENT_QUESTION, studentQuestionDto.getTitle());
     }
 
-    public StudentQuestionDto addTopicToStudentQuestion(StudentQuestionDto studentQuestionDto, int topicId) {
-        Topic topic = getTopicIfExists(topicId);
-        StudentQuestion studentQuestion = getStudentQuestionIfExists(studentQuestionDto);
-
-        checkDuplicateTopicInStudentQuestion(studentQuestion, topic);
-
-        studentQuestion.addTopic(topic);
-        topic.addStudentQuestion(studentQuestion);
-        this.entityManager.persist(studentQuestion);
-
-        return new StudentQuestionDto(studentQuestion);
-    }
-
     private void checkDuplicateTopicInStudentQuestion(StudentQuestion studentQuestion, Topic topic) {
         if(studentQuestion.getTopics().stream().anyMatch(t -> t.getId().equals(topic.getId()))
                 || topic.getStudentQuestions().stream().anyMatch(sq -> sq.getKey().equals(studentQuestion.getKey())))
             throw new TutorException(STUDENT_QUESTION_TOPIC_ALREADY_ADDED);
     }
 
-    private Topic getTopicIfExists(int topicId) {
-        if (topicId != -1) {
-            Optional<Topic> topic = topicRepository.findById(topicId);
+    private Topic getTopicIfExists(TopicDto topicDto) {
+        if (topicDto != null) {
+            Optional<Topic> topic = topicRepository.findById(topicDto.getId());
             if(topic.isPresent())
                 return topic.get();
         }

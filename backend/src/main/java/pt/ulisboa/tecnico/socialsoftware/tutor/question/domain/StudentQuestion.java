@@ -81,10 +81,6 @@ public class StudentQuestion {
         return id;
     }
 
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
     public Integer getKey() {
         return key;
     }
@@ -127,10 +123,6 @@ public class StudentQuestion {
 
     public LocalDateTime getCreationDate() {
         return creationDate;
-    }
-
-    public void setCreationDate(LocalDateTime creationDate) {
-        this.creationDate = creationDate;
     }
 
     public Set<Option> getOptions() {

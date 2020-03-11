@@ -65,9 +65,10 @@ class AddTopicToStudentQuestionSpockTest extends Specification {
 
         and: "an existing topic"
         def topic = createTopic(TOPIC_NAME, course)
+        def topicDto = new TopicDto(topic)
 
         when:
-        studentQuestionService.addTopicToStudentQuestion(studentQuestionDto, topic.getId())
+        studentQuestionService.addTopicToStudentQuestion(studentQuestionDto, topicDto)
 
         then: "the topic is added"
         studentQuestionRepository.count() == 1L
@@ -87,10 +88,10 @@ class AddTopicToStudentQuestionSpockTest extends Specification {
         def studentQuestionDto = new StudentQuestionDto(studentQuestion)
 
         and: "a null topic"
-        def topic = -1
+        def topicDto = null
 
         when:
-        studentQuestionService.addTopicToStudentQuestion(studentQuestionDto, topic)
+        studentQuestionService.addTopicToStudentQuestion(studentQuestionDto, topicDto)
 
         then: "an error occurs"
         def error = thrown(TutorException)
@@ -103,9 +104,10 @@ class AddTopicToStudentQuestionSpockTest extends Specification {
 
         and: "an existing topic"
         def topic = createTopic(TOPIC_NAME, course)
+        def topicDto = new TopicDto(topic)
 
         when:
-        studentQuestionService.addTopicToStudentQuestion(studentQuestionDto, topic.getId())
+        studentQuestionService.addTopicToStudentQuestion(studentQuestionDto, topicDto)
 
         then: "an error occurs"
         def error = thrown(TutorException)
@@ -119,12 +121,13 @@ class AddTopicToStudentQuestionSpockTest extends Specification {
 
         and: "an existing topic"
         def topic = createTopic(TOPIC_NAME, course)
+        def topicDto = new TopicDto(topic)
 
         and: "the student question already contains the topic"
         studentQuestion.addTopic(topic)
 
         when:
-        studentQuestionService.addTopicToStudentQuestion(studentQuestionDto, topic.getId())
+        studentQuestionService.addTopicToStudentQuestion(studentQuestionDto, topicDto)
 
         then: "an error occurs"
         def error = thrown(TutorException)
