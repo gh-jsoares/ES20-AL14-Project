@@ -25,8 +25,6 @@ public class TopicDto implements Serializable {
             this.parentTopic = topic.getParentTopic().getName();
         }
         this.numberOfQuestions = topic.getQuestions().size();
-
-        this.studentQuestions = topic.getStudentQuestions().stream().map(StudentQuestionDto::new).collect(Collectors.toSet());
     }
 
     public TopicDto(TopicDto topicDto) {

@@ -94,7 +94,7 @@ class AddTopicToStudentQuestionSpockTest extends Specification {
 
         then: "an error occurs"
         def error = thrown(TutorException)
-        error.errorMessage == STUDENT_QUESTION_TOPIC_IS_NULL
+        error.errorMessage == STUDENT_QUESTION_TOPIC_NOT_FOUND
     }
 
     def "topic exists but studentquestion does not"() {
@@ -121,7 +121,7 @@ class AddTopicToStudentQuestionSpockTest extends Specification {
         def topic = createTopic(TOPIC_NAME, course)
 
         and: "the student question already contains the topic"
-        studentQuestionDto.addTopic(new TopicDto(topic))
+        studentQuestion.addTopic(topic)
 
         when:
         studentQuestionService.addTopicToStudentQuestion(studentQuestionDto, topic.getId())

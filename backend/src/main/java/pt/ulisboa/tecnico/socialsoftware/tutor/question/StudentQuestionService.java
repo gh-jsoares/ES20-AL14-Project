@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.StudentQuestion;
+import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Topic;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.StudentQuestionDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.StudentQuestionRepository;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.TopicRepository;
@@ -17,6 +18,7 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.user.UserRepository;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.sql.SQLException;
+import java.util.Optional;
 
 import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.*;
 
@@ -72,6 +74,39 @@ public class StudentQuestionService {
     }
 
     public StudentQuestionDto addTopicToStudentQuestion(StudentQuestionDto studentQuestionDto, int topicId) {
-        return studentQuestionDto;
+        Topic topic = getTopicIfExists(topicId);
+        StudentQuestion studentQuestion = getStudentQuestionIfExists(studentQuestionDto);
+
+        checkDuplicateTopicInStudentQuestion(studentQuestion, topic);
+
+        studentQuestion.addTopic(topic);
+        topic.addStudentQuestion(studentQuestion);
+        this.entityManager.persist(studentQuestion);
+
+        return new StudentQuestionDto(studentQuestion);
+    }
+
+    private void checkDuplicateTopicInStudentQuestion(StudentQuestion studentQuestion, Topic topic) {
+        if(studentQuestion.getTopics().stream().anyMatch(t -> t.getId().equals(topic.getId()))
+                || topic.getStudentQuestions().stream().anyMatch(sq -> sq.getKey().equals(studentQuestion.getKey())))
+            throw new TutorException(STUDENT_QUESTION_TOPIC_ALREADY_ADDED);
+    }
+
+    private Topic getTopicIfExists(int topicId) {
+        if (topicId != -1) {
+            Optional<Topic> topic = topicRepository.findById(topicId);
+            if(topic.isPresent())
+                return topic.get();
+        }
+        throw new TutorException(STUDENT_QUESTION_TOPIC_NOT_FOUND);
+    }
+
+    private StudentQuestion getStudentQuestionIfExists(StudentQuestionDto studentQuestionDto) {
+        if (studentQuestionDto != null) {
+            Optional<StudentQuestion> studentQuestion = studentQuestionRepository.findByKey(studentQuestionDto.getKey());
+            if(studentQuestion.isPresent())
+                return studentQuestion.get();
+        }
+        throw new TutorException(STUDENT_QUESTION_NOT_FOUND);
     }
 }
