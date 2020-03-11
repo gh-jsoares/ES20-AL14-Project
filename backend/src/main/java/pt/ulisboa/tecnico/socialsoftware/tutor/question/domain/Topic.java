@@ -9,6 +9,7 @@ import java.util.*;
 @Entity
 @Table(name = "topics")
 public class Topic {
+
     @SuppressWarnings("unused")
     public enum Status {
         DISABLED, REMOVED, AVAILABLE
@@ -106,6 +107,9 @@ public class Topic {
 
     public void addStudentQuestion(StudentQuestion studentQuestion) {
         this.studentQuestions.add(studentQuestion);
+    }
+    public void removeStudentQuestion(StudentQuestion studentQuestion) {
+        this.studentQuestions.remove(studentQuestion);
     }
 
     @Override

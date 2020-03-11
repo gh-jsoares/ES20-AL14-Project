@@ -78,7 +78,16 @@ public class StudentQuestionService {
             backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public StudentQuestionDto removeTopicFromStudentQuestion(StudentQuestionDto studentQuestionDto, TopicDto topicDto) {
-        return null;
+        Topic topic = getTopicIfExists(topicDto);
+        StudentQuestion studentQuestion = getStudentQuestionIfExists(studentQuestionDto);
+
+        checkTopicPresentInStudentQuestion(studentQuestion, topic);
+
+        studentQuestion.removeTopic(topic);
+        topic.removeStudentQuestion(studentQuestion);
+        this.entityManager.persist(studentQuestion);
+
+        return new StudentQuestionDto(studentQuestion);
     }
 
     private void checkUserExists(User user) {
@@ -104,6 +113,13 @@ public class StudentQuestionService {
                 || topic.getStudentQuestions().stream().anyMatch(sq -> sq.getKey().equals(studentQuestion.getKey())))
             throw new TutorException(STUDENT_QUESTION_TOPIC_ALREADY_ADDED);
     }
+
+    private void checkTopicPresentInStudentQuestion(StudentQuestion studentQuestion, Topic topic) {
+        if(studentQuestion.getTopics().stream().noneMatch(t -> t.getId().equals(topic.getId()))
+                || topic.getStudentQuestions().stream().noneMatch(sq -> sq.getKey().equals(studentQuestion.getKey())))
+            throw new TutorException(STUDENT_QUESTION_TOPIC_NOT_PRESENT);
+    }
+
 
     private Topic getTopicIfExists(TopicDto topicDto) {
         if (topicDto != null) {

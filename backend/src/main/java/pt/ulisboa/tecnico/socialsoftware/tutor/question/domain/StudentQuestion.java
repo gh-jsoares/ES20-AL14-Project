@@ -142,12 +142,17 @@ public class StudentQuestion {
     }
 
     public Set<Topic> getTopics() {
-        return topics;
+        return this.topics;
     }
 
     public void addTopic(Topic topic) {
-        topics.add(topic);
+        this.topics.add(topic);
     }
+
+    public void removeTopic(Topic topic) {
+        this.topics.remove(topic);
+    }
+
 
     private void checkConsistentStudentQuestion(User user, StudentQuestionDto studentQuestionDto) {
         if (user.getRole() != User.Role.STUDENT)
