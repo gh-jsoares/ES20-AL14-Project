@@ -22,6 +22,7 @@ import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.ST
 import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_TITLE_IS_EMPTY
 import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_CONTENT_IS_EMPTY
 import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_STATUS_IS_EMPTY
+import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_USER_NOT_FOUND
 
 @DataJpaTest
 class CreateStudentQuestionSpockTest extends Specification {
@@ -110,6 +111,21 @@ class CreateStudentQuestionSpockTest extends Specification {
         result.getImage().getId() != null
         result.getImage().getUrl() == URL
         result.getImage().getWidth() == 20
+    }
+
+    def "user doesnt exist"() {
+        given: "a studentQuestionDto"
+        def studentQuestionDto = createStudentQuestionDto(QUESTION_TITLE, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name())
+
+        and: "a null user"
+        def user = null
+
+        when:
+        studentQuestionService.createStudentQuestion(user, studentQuestionDto)
+
+        then: "an error occurs"
+        def error = thrown(TutorException)
+        error.errorMessage == STUDENT_QUESTION_USER_NOT_FOUND
     }
 
     def "option content is empty"() {
