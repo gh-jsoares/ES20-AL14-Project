@@ -73,6 +73,14 @@ public class StudentQuestionService {
         return new StudentQuestionDto(studentQuestion);
     }
 
+    @Retryable(
+            value = { SQLException.class },
+            backoff = @Backoff(delay = 5000))
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public StudentQuestionDto removeTopicFromStudentQuestion(StudentQuestionDto studentQuestionDto, TopicDto topicDto) {
+        return null;
+    }
+
     private void checkUserExists(User user) {
         if (user == null)
             throw new TutorException(STUDENT_QUESTION_USER_NOT_FOUND);
