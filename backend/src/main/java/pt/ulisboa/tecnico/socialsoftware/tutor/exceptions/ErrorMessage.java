@@ -67,6 +67,7 @@ public enum ErrorMessage {
     STUDENT_QUESTION_TOPIC_IS_NULL("The topic needs to exist"),
     STUDENT_QUESTION_NOT_FOUND("The student question does not exist"),
     STUDENT_QUESTION_TOPIC_ALREADY_ADDED("The student question already belongs to the topic: %s"),
+    STUDENT_QUESTION_USER_NOT_FOUND("The user was not found"),
 
     ACCESS_DENIED("You do not have permission to view this resource"),
     CANNOT_OPEN_FILE("Cannot open file");

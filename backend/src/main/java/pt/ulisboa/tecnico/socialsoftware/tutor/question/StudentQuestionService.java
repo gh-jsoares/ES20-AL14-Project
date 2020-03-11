@@ -42,6 +42,8 @@ public class StudentQuestionService {
     public StudentQuestionDto createStudentQuestion(String username, StudentQuestionDto studentQuestionDto) {
         User user = userRepository.findByUsername(username);
 
+        checkUserExists(user);
+
         checkDuplicateQuestion(studentQuestionDto);
         generateNextStudentQuestionKey(studentQuestionDto);
 
@@ -49,6 +51,11 @@ public class StudentQuestionService {
         this.entityManager.persist(studentQuestion);
 
         return new StudentQuestionDto(studentQuestion);
+    }
+
+    private void checkUserExists(User user) {
+        if (user == null)
+            throw new TutorException(STUDENT_QUESTION_USER_NOT_FOUND);
     }
 
     private void generateNextStudentQuestionKey(StudentQuestionDto studentQuestionDto) {
