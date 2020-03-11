@@ -63,6 +63,7 @@ public enum ErrorMessage {
     STUDENT_QUESTION_CONTENT_IS_EMPTY("The student question content is empty"),
     STUDENT_QUESTION_STATUS_IS_EMPTY("The student question status is empty"),
     STUDENT_QUESTION_OPTION_CONTENT_IS_EMPTY("Options need to have content"),
+    STUDENT_QUESTION_NOT_A_STUDENT("You need to be a student to create a student question"),
 
     ACCESS_DENIED("You do not have permission to view this resource"),
     CANNOT_OPEN_FILE("Cannot open file");

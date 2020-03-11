@@ -7,7 +7,6 @@ import org.springframework.context.annotation.Bean
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.StudentQuestionService
-import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Option
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.StudentQuestionRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.StudentQuestion
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.OptionDto
@@ -16,6 +15,8 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.user.User
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.UserRepository
 import spock.lang.Specification
 
+import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_NOT_A_STUDENT
+import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_OPTION_CONTENT_IS_EMPTY
 import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_TITLE_IS_EMPTY
 import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_CONTENT_IS_EMPTY
 import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_STATUS_IS_EMPTY
@@ -47,24 +48,13 @@ class CreateStudentQuestionSpockTest extends Specification {
 
     def "create student question with title and 4 options"() {
         given: "a studentQuestionDto"
-        def studentQuestionDto = new StudentQuestionDto()
-        studentQuestionDto.setKey(1)
-        studentQuestionDto.setTitle(QUESTION_TITLE)
-        studentQuestionDto.setContent(QUESTION_CONTENT)
-        studentQuestionDto.setStatus(StudentQuestion.Status.AWAITING_APPROVAL.name())
+        def studentQuestionDto = createStudentQuestionDto(QUESTION_TITLE, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name())
+
         and: "a username"
         USER_USERNAME
 
         and: "4 optionId"
-        def options = new HashSet<OptionDto>()
-        for (int i = 0; i < 4; i++) {
-            def optionDto = new OptionDto()
-            optionDto.setContent(OPTION_CONTENT)
-            optionDto.setCorrect(false)
-            options.add(optionDto)
-        }
-        options.first().setCorrect(true)
-        studentQuestionDto.setOptions(options)
+        createOptions(studentQuestionDto, OPTION_CONTENT, 4, 1)
 
         when:
         studentQuestionService.createStudentQuestion(USER_USERNAME, studentQuestionDto)
@@ -85,13 +75,30 @@ class CreateStudentQuestionSpockTest extends Specification {
         result.getOptions().stream().filter({ o -> o.getCorrect() }).count() == 1L
     }
 
+    def "option content is empty"() {
+        given: "a studentQuestionDto"
+        def studentQuestionDto = createStudentQuestionDto(QUESTION_TITLE, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name())
+
+        and: "a username"
+        USER_USERNAME
+
+        and: "4 optionId without content"
+        createOptions(studentQuestionDto, null, 4, 1)
+
+        when:
+        studentQuestionService.createStudentQuestion(USER_USERNAME, studentQuestionDto)
+
+        then: "an error occurs"
+        def error = thrown(TutorException)
+        error.errorMessage == STUDENT_QUESTION_OPTION_CONTENT_IS_EMPTY
+    }
+
     def "invalid arguments: title=#title | content=#content | status=#status || errorMessage=#errorMessage"() {
         given: "a studentquestiondto"
-        def studentQuestionDto = new StudentQuestionDto()
-        studentQuestionDto.setKey(1)
-        studentQuestionDto.setTitle(title)
-        studentQuestionDto.setContent(content)
-        studentQuestionDto.setStatus(status)
+        def studentQuestionDto = createStudentQuestionDto(title, content, status)
+
+        and: "4 optionId"
+        createOptions(studentQuestionDto, OPTION_CONTENT, 4, 1)
 
         and: "a username"
         USER_USERNAME
@@ -113,23 +120,31 @@ class CreateStudentQuestionSpockTest extends Specification {
         QUESTION_TITLE | QUESTION_CONTENT | "      "                                        || STUDENT_QUESTION_STATUS_IS_EMPTY
     }
 
+    def "student question was not created by student"() {
+        given: "a studentquestiondto"
+        def studentQuestionDto = createStudentQuestionDto(QUESTION_TITLE, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name())
+
+        and: "4 optionId"
+        createOptions(studentQuestionDto, OPTION_CONTENT, 4, 1)
+
+        and: "a username of a non student account"
+        user.setRole(User.Role.TEACHER)
+        USER_USERNAME
+
+        when: "create a student question with invalid data"
+        studentQuestionService.createStudentQuestion(USER_USERNAME, studentQuestionDto)
+
+        then: "an error occurs"
+        def error = thrown(TutorException)
+        error.errorMessage == STUDENT_QUESTION_NOT_A_STUDENT
+    }
+
     def "student question has no correct options"() {
         given: "a studentQuestionDto"
-        def studentQuestionDto = new StudentQuestionDto()
-        studentQuestionDto.setKey(1)
-        studentQuestionDto.setTitle(QUESTION_TITLE)
-        studentQuestionDto.setContent(QUESTION_CONTENT)
-        studentQuestionDto.setStatus(StudentQuestion.Status.AWAITING_APPROVAL.name())
+        def studentQuestionDto = createStudentQuestionDto(QUESTION_TITLE, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name())
 
         and: "4 not correct optionId"
-        def options = new HashSet<OptionDto>()
-        for (int i = 0; i < 4; i++) {
-            def optionDto = new OptionDto()
-            optionDto.setContent(OPTION_CONTENT)
-            optionDto.setCorrect(false)
-            options.add(optionDto)
-        }
-        studentQuestionDto.setOptions(options)
+        createOptions(studentQuestionDto, OPTION_CONTENT, 4, 0)
         
         and: "a username"
         USER_USERNAME
@@ -144,22 +159,10 @@ class CreateStudentQuestionSpockTest extends Specification {
 
     def "student question has less than 4 options"() {
         given: "a studentQuestionDto"
-        def studentQuestionDto = new StudentQuestionDto()
-        studentQuestionDto.setKey(1)
-        studentQuestionDto.setTitle(QUESTION_TITLE)
-        studentQuestionDto.setContent(QUESTION_CONTENT)
-        studentQuestionDto.setStatus(StudentQuestion.Status.AWAITING_APPROVAL.name())
+        def studentQuestionDto = createStudentQuestionDto(QUESTION_TITLE, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name())
 
         and: "less than 4 optionId"
-        def options = new HashSet<OptionDto>()
-        for (int i = 0; i < 3; i++) {
-            def optionDto = new OptionDto()
-            optionDto.setContent(OPTION_CONTENT)
-            optionDto.setCorrect(false)
-            options.add(optionDto)
-        }
-        options.first().setCorrect(true)
-        studentQuestionDto.setOptions(options)
+        createOptions(studentQuestionDto, OPTION_CONTENT, 3, 1)
 
         and: "a username"
         USER_USERNAME
@@ -174,21 +177,10 @@ class CreateStudentQuestionSpockTest extends Specification {
 
     def "student question has more than one correct option"() {
         given: "a studentquestiondto"
-        def studentQuestionDto = new StudentQuestionDto()
-        studentQuestionDto.setKey(1)
-        studentQuestionDto.setTitle(QUESTION_TITLE)
-        studentQuestionDto.setContent(QUESTION_CONTENT)
-        studentQuestionDto.setStatus(StudentQuestion.Status.AWAITING_APPROVAL.name())
+        def studentQuestionDto = createStudentQuestionDto(QUESTION_TITLE, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name())
 
         and: "four correct optionId"
-        def options = new HashSet<OptionDto>()
-        for (int i = 0; i < 4; i++) {
-            def optionDto = new OptionDto()
-            optionDto.setContent(OPTION_CONTENT)
-            optionDto.setCorrect(true)
-            options.add(optionDto)
-        }
-        studentQuestionDto.setOptions(options)
+        createOptions(studentQuestionDto, OPTION_CONTENT, 4, 2)
 
         and: "a username"
         USER_USERNAME
@@ -202,19 +194,11 @@ class CreateStudentQuestionSpockTest extends Specification {
     }
 
     def "student already created a question with that title"() {
-        given: "a studentquestion exists"
-        def studentQuestion = new StudentQuestion()
-        studentQuestion.setKey(1)
-        studentQuestion.setTitle(QUESTION_TITLE)
-        studentQuestion.setContent(QUESTION_CONTENT)
-        studentQuestion.setStudent(userRepository.findByUsername(USER_USERNAME))
-        studentQuestionRepository.save(studentQuestion)
+        given: "a studentquestion exists in database"
+        createStudentQuestion(QUESTION_TITLE, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name())
 
         and: "a studentquestiondto with the same title"
-        def studentQuestionDto = new StudentQuestionDto()
-        studentQuestionDto.setTitle(QUESTION_TITLE)
-        studentQuestionDto.setContent(QUESTION_CONTENT)
-        studentQuestionDto.setStatus(StudentQuestion.Status.AWAITING_APPROVAL.name())
+        def studentQuestionDto = createStudentQuestionDto(QUESTION_TITLE, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name())
 
         and: "a username"
         USER_USERNAME
@@ -227,9 +211,41 @@ class CreateStudentQuestionSpockTest extends Specification {
         exception.errorMessage == ErrorMessage.DUPLICATE_STUDENT_QUESTION
     }
 
+    private static void createOptions(StudentQuestionDto studentQuestionDto, String content, int number_of_options, int number_of_correct) {
+        def options = new HashSet<OptionDto>()
+        for (int i = 0; i < number_of_options; i++) {
+            def optionDto = new OptionDto()
+            optionDto.setContent(content)
+
+            if(number_of_correct-- > 0)
+                optionDto.setCorrect(true)
+
+            options.add(optionDto)
+        }
+        studentQuestionDto.setOptions(options)
+    }
+
+    private void createStudentQuestion(String title, String content, String status) {
+        def studentQuestion = new StudentQuestion()
+        studentQuestion.setKey(1)
+        studentQuestion.setTitle(title)
+        studentQuestion.setContent(content)
+        studentQuestion.setStatus(StudentQuestion.Status.valueOf(status))
+        studentQuestion.setStudent(userRepository.findByUsername(USER_USERNAME))
+        studentQuestionRepository.save(studentQuestion)
+    }
+
+    private static StudentQuestionDto createStudentQuestionDto(String title, String content, String status) {
+        def studentQuestionDto = new StudentQuestionDto()
+        studentQuestionDto.setKey(1)
+        studentQuestionDto.setTitle(title)
+        studentQuestionDto.setContent(content)
+        studentQuestionDto.setStatus(status)
+        studentQuestionDto
+    }
+
     @TestConfiguration
     static class QuestionServiceImplTestContextConfiguration {
-
         @Bean
         StudentQuestionService studentQuestionService() {
             return new StudentQuestionService()

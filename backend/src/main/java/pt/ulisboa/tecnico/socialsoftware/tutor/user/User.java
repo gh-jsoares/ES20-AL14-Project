@@ -162,10 +162,6 @@ public class User implements UserDetails {
         return studentQuestions;
     }
 
-    public void setStudentQuestions(Set<StudentQuestion> studentQuestions) {
-        this.studentQuestions = studentQuestions;
-    }
-
     public Integer getNumberOfTeacherQuizzes() {
         if (this.numberOfTeacherQuizzes == null)
             this.numberOfTeacherQuizzes = (int) getQuizAnswers().stream()

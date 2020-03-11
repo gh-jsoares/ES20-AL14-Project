@@ -58,32 +58,21 @@ public class StudentQuestion {
     }
 
     public StudentQuestion(User user, StudentQuestionDto studentQuestionDto) {
-        // validate input
-        checkConsistentStudentQuestion(studentQuestionDto);
+        checkConsistentStudentQuestion(user, studentQuestionDto);
 
-        this.title = studentQuestionDto.getTitle();
+        this.id = studentQuestionDto.getId();
         this.key = studentQuestionDto.getKey();
         this.content = studentQuestionDto.getContent();
+        this.title = studentQuestionDto.getTitle();
         this.status = StudentQuestion.Status.valueOf(studentQuestionDto.getStatus());
 
         this.student = user;
         user.addStudentQuestion(this);
 
-        if (studentQuestionDto.getImage() != null) {
-            Image img = new Image(studentQuestionDto.getImage());
-            setImage(img);
-            img.setStudentQuestion(this);
-        }
-
-        int index = 0;
-        for (OptionDto optionDto : studentQuestionDto.getOptions()) {
-            optionDto.setSequence(index++);
-            Option option = new Option(optionDto);
-            this.options.add(option);
-            option.setStudentQuestion(this);
-        }
+        populateCreationDate(studentQuestionDto);
+        populateImage(studentQuestionDto);
+        populateOptions(studentQuestionDto);
     }
-
 
     public Integer getId() {
         return id;
@@ -157,7 +146,10 @@ public class StudentQuestion {
         this.student = student;
     }
 
-    private void checkConsistentStudentQuestion(StudentQuestionDto studentQuestionDto) {
+    private void checkConsistentStudentQuestion(User user, StudentQuestionDto studentQuestionDto) {
+        if (user.getRole() != User.Role.STUDENT)
+            throw new TutorException(STUDENT_QUESTION_NOT_A_STUDENT);
+
         if (studentQuestionDto.getTitle() == null || studentQuestionDto.getTitle().trim().length() == 0)
             throw new TutorException(STUDENT_QUESTION_TITLE_IS_EMPTY);
 
@@ -167,7 +159,7 @@ public class StudentQuestion {
         if (studentQuestionDto.getStatus() == null || studentQuestionDto.getStatus().trim().length() == 0)
             throw new TutorException(STUDENT_QUESTION_STATUS_IS_EMPTY);
 
-        if (studentQuestionDto.getOptions().stream().anyMatch(optionDto -> optionDto.getContent().trim().length() == 0))
+        if (studentQuestionDto.getOptions().stream().anyMatch(optionDto -> optionDto.getContent() == null || optionDto.getContent().trim().length() == 0))
             throw new TutorException(STUDENT_QUESTION_OPTION_CONTENT_IS_EMPTY);
 
         if (studentQuestionDto.getOptions().size() != 4)
@@ -178,6 +170,30 @@ public class StudentQuestion {
 
         if (studentQuestionDto.getOptions().stream().filter(OptionDto::getCorrect).count() != 1)
             throw new TutorException(TOO_MANY_CORRECT_OPTIONS_STUDENT_QUESTION);
+    }
 
+    private void populateCreationDate(StudentQuestionDto studentQuestionDto) {
+        if (studentQuestionDto.getCreationDate() != null)
+            this.creationDate = LocalDateTime.parse(studentQuestionDto.getCreationDate());
+        else
+            this.creationDate = LocalDateTime.now();
+    }
+
+    private void populateImage(StudentQuestionDto studentQuestionDto) {
+        if (studentQuestionDto.getImage() != null) {
+            Image img = new Image(studentQuestionDto.getImage());
+            setImage(img);
+            img.setStudentQuestion(this);
+        }
+    }
+
+    private void populateOptions(StudentQuestionDto studentQuestionDto) {
+        int index = 0;
+        for (OptionDto optionDto : studentQuestionDto.getOptions()) {
+            optionDto.setSequence(index++);
+            Option option = new Option(optionDto);
+            this.options.add(option);
+            option.setStudentQuestion(this);
+        }
     }
 }
