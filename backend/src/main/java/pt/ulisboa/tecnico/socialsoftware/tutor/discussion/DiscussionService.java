@@ -1,6 +1,7 @@
 package pt.ulisboa.tecnico.socialsoftware.tutor.discussion;
 
 import pt.ulisboa.tecnico.socialsoftware.tutor.answer.domain.QuizAnswer;
+import pt.ulisboa.tecnico.socialsoftware.tutor.course.Course;
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecution;
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.repository.DiscussionRepository;
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.dto.DiscussionDto;
@@ -99,6 +100,31 @@ public class DiscussionService {
             .orElseThrow(() -> new TutorException(DISCUSSION_NOT_FOUND, discussionId));
     }
 
-    public void teacherAnswersStudent(User teacher, String teacherAnswer) {
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public void teacherAnswersStudent(Integer discussionId, DiscussionDto discussionDto) {
+        Discussion discussion = discussionRepository.findById(discussionId).orElseThrow(() -> new TutorException(DISCUSSION_NOT_FOUND, discussionId));
+        User teacher = userRepository.findByUsername(discussionDto.getUserName());
+
+        //check if the question has been already answered
+        if (discussion.getTeacher() != null)
+            throw new TutorException(DISCUSSION_ALREADY_ANSWERED);
+
+        //check if the teacher is in the same course execution
+        List<CourseExecution> teacherEnrolledInQuestionCourse = discussion.getQuestion().getQuizQuestions().stream()
+                .map(QuizQuestion::getQuiz)
+                .map(Quiz::getCourseExecution)
+                .filter(courseExecution -> teacher.getCourseExecutions().contains(courseExecution))
+                .collect(Collectors.toList());
+
+        if (teacherEnrolledInQuestionCourse.isEmpty())
+            throw new TutorException(TEACHER_NOT_IN_COURSE_EXECUTION);
+
+        String teacherAnswer = discussionDto.getMessage();
+        //check if the answer from the teacher is not null
+        if (teacherAnswer == null || teacherAnswer.isBlank() || teacherAnswer.isEmpty()) {
+            throw new TutorException(EMPTY_ANSWER);
+        }
+
+        discussion.updateTeacherAnswer(teacher, discussionDto);
     }
 }
