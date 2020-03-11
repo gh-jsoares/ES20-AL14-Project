@@ -1,5 +1,6 @@
 package pt.ulisboa.tecnico.socialsoftware.tutor.question.service
 
+import org.junit.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.boot.test.context.TestConfiguration
@@ -7,6 +8,7 @@ import org.springframework.context.annotation.Bean
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.StudentQuestionService
+import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.ImageDto
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.StudentQuestionRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.StudentQuestion
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.OptionDto
@@ -29,6 +31,7 @@ class CreateStudentQuestionSpockTest extends Specification {
     public static final String QUESTION_TITLE = 'question title'
     public static final String QUESTION_CONTENT = 'question content'
     public static final String OPTION_CONTENT = "optionId content"
+    public static final String URL = 'url'
 
     @Autowired
     StudentQuestionService studentQuestionService
@@ -67,12 +70,46 @@ class CreateStudentQuestionSpockTest extends Specification {
         result.getStatus() == StudentQuestion.Status.AWAITING_APPROVAL
         result.getTitle() == QUESTION_TITLE
         result.getContent() == QUESTION_CONTENT
-        result.getImage() == null
         result.getOptions().size() == 4
         result.getStudent().getUsername() == USER_USERNAME
         user.getStudentQuestions().contains(result)
         result.getOptions().stream().allMatch({ o -> o.getContent() == OPTION_CONTENT })
         result.getOptions().stream().filter({ o -> o.getCorrect() }).count() == 1L
+        result.getImage() == null
+    }
+
+    def "create studentquestion with a valid image"() {
+        given: "a studentQuestionDto"
+        def studentQuestionDto = createStudentQuestionDto(QUESTION_TITLE, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name())
+
+        and: "a username"
+        USER_USERNAME
+
+        and: "4 optionId"
+        createOptions(studentQuestionDto, OPTION_CONTENT, 4, 1)
+
+        and: "an image"
+        createImage(studentQuestionDto, URL)
+
+        when:
+        studentQuestionService.createStudentQuestion(USER_USERNAME, studentQuestionDto)
+
+        then: "the correct question is inside the repository"
+        studentQuestionRepository.count() == 1L
+        def result = studentQuestionRepository.findAll().get(0)
+        result.getId() != null
+        result.getKey() == 1
+        result.getStatus() == StudentQuestion.Status.AWAITING_APPROVAL
+        result.getTitle() == QUESTION_TITLE
+        result.getContent() == QUESTION_CONTENT
+        result.getOptions().size() == 4
+        result.getStudent().getUsername() == USER_USERNAME
+        user.getStudentQuestions().contains(result)
+        result.getOptions().stream().allMatch({ o -> o.getContent() == OPTION_CONTENT })
+        result.getOptions().stream().filter({ o -> o.getCorrect() }).count() == 1L
+        result.getImage().getId() != null
+        result.getImage().getUrl() == URL
+        result.getImage().getWidth() == 20
     }
 
     def "option content is empty"() {
@@ -211,7 +248,7 @@ class CreateStudentQuestionSpockTest extends Specification {
         exception.errorMessage == ErrorMessage.DUPLICATE_STUDENT_QUESTION
     }
 
-    private static void createOptions(StudentQuestionDto studentQuestionDto, String content, int number_of_options, int number_of_correct) {
+    private static createOptions(StudentQuestionDto studentQuestionDto, String content, int number_of_options, int number_of_correct) {
         def options = new HashSet<OptionDto>()
         for (int i = 0; i < number_of_options; i++) {
             def optionDto = new OptionDto()
@@ -225,7 +262,14 @@ class CreateStudentQuestionSpockTest extends Specification {
         studentQuestionDto.setOptions(options)
     }
 
-    private void createStudentQuestion(String title, String content, String status) {
+    private static createImage(StudentQuestionDto studentQuestionDto, String url) {
+        def image = new ImageDto()
+        image.setUrl(url)
+        image.setWidth(20)
+        studentQuestionDto.setImage(image)
+    }
+
+    private createStudentQuestion(String title, String content, String status) {
         def studentQuestion = new StudentQuestion()
         studentQuestion.setKey(1)
         studentQuestion.setTitle(title)
