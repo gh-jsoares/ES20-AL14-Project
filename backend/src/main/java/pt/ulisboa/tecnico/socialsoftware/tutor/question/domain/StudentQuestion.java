@@ -129,10 +129,6 @@ public class StudentQuestion {
         return options;
     }
 
-    public void setOptions(Set<Option> options) {
-        this.options = options;
-    }
-
     public User getStudent() {
         return student;
     }
