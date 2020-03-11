@@ -16,7 +16,6 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.DiscussionService
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.domain.Discussion
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.dto.DiscussionDto
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.repository.DiscussionRepository
-import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Question
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.QuestionRepository
@@ -25,6 +24,9 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.quiz.domain.QuizQuestion
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.User
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.UserRepository
 import spock.lang.Specification
+
+import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage
+import spock.lang.Unroll
 
 @DataJpaTest
 class TeacherAnswersStudentServiceSpockTest extends Specification {
@@ -57,6 +59,7 @@ class TeacherAnswersStudentServiceSpockTest extends Specification {
     public static final String COURSE_ACRONYM = "acronym_test"
     public static final String COURSE_ACADEMIC_TERM = "academic_term_test"
     public static final String TEACHER_ANSWER = "teacher_answer_test"
+    public static final String NON_EXISTING_TEACHER = "non_existing_teacher_test"
 
     Question question
     User student
@@ -173,11 +176,11 @@ class TeacherAnswersStudentServiceSpockTest extends Specification {
         exception.errorMessage == ErrorMessage.DISCUSSION_ALREADY_ANSWERED
     }
 
-    def "teacher answers student with empty message"() {
+    def "teacher tries to answer a non-existent discussion"() {
         given: "a discussionDto with an answer from a teacher from the same course execution"
         def discussionDto = new DiscussionDto()
-        discussionDto.setId(discussion.getId())
-        discussionDto.setMessage(msg)
+        discussionDto.setId(-1)
+        discussionDto.setMessage(TEACHER_ANSWER)
 
         def teacher = new User('teacher', TEACHER_NAME, 2, User.Role.TEACHER)
         teacher.getCourseExecutions().add(courseExecution)
@@ -189,10 +192,34 @@ class TeacherAnswersStudentServiceSpockTest extends Specification {
 
         then: "an exception is thrown"
         def exception = thrown(TutorException)
-        exception.errorMessage == ErrorMessage.EMPTY_ANSWER
+        exception.errorMessage == ErrorMessage.DISCUSSION_NOT_FOUND
+    }
+
+    @Unroll
+    def "invalid values answer=#answer, username=#username"() {
+        given: "a discussionDto"
+        def discussionDto = new DiscussionDto()
+        discussionDto.setId(discussion.getId())
+        discussionDto.setMessage(answer)
+
+        def teacher = new User('teacher', TEACHER_NAME, 2, User.Role.TEACHER)
+        teacher.getCourseExecutions().add(courseExecution)
+        discussionDto.setUserName(username)
+        userRepository.save(teacher)
+
+        when: "adding the answer from the teacher"
+        discussionService.teacherAnswersStudent(discussionDto.getId(), discussionDto)
+
+        then: "an exception is thrown"
+        def exception = thrown(TutorException)
+        exception.errorMessage == errorMessage
 
         where:
-        msg << [null, "\n\n\n", "\t"]
+        answer         | username              || errorMessage
+        null           | TEACHER_NAME          || ErrorMessage.EMPTY_ANSWER
+        ""             | TEACHER_NAME          || ErrorMessage.EMPTY_ANSWER
+        "   "          | TEACHER_NAME          || ErrorMessage.EMPTY_ANSWER
+        TEACHER_ANSWER | NON_EXISTING_TEACHER  || ErrorMessage.USER_NOT_FOUND
     }
 
     @TestConfiguration

@@ -10,29 +10,37 @@ public class DiscussionDto implements Serializable {
 
     private String messageFromStudent = null;
 
-    private String teacherAnswer = null;
+    private String message = null;
+
+    private String userName = null;
 
     public DiscussionDto() {}
 
     public DiscussionDto(Discussion discussion) {
         this.id = discussion.getId();
         this.messageFromStudent = discussion.getMessageFromStudent();
-        this.teacherAnswer = discussion.getTeacherAnswer();
+        this.message = discussion.getTeacherAnswer();
     }
 
     public Integer getId() {
         return id;
     }
 
-    public void setId() {
-        this.id = id;
-    }
+    public void setId(Integer id) {this.id = id; }
 
     public String getMessageFromStudent() { return messageFromStudent; }
 
     public void setMessageFromStudent(String messageFromStudent) { this.messageFromStudent = messageFromStudent; }
 
-    public String getTeacherAnswer() { return teacherAnswer; }
+    public String getMessage() { return message; }
 
-    public void setTeacherAnswer(String teacherAnswer) { this.teacherAnswer = teacherAnswer; }
+    public void setMessage(String message) { this.message = message; }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
 }

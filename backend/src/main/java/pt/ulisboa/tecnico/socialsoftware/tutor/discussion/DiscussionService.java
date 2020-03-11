@@ -1,7 +1,6 @@
 package pt.ulisboa.tecnico.socialsoftware.tutor.discussion;
 
 import pt.ulisboa.tecnico.socialsoftware.tutor.answer.domain.QuizAnswer;
-import pt.ulisboa.tecnico.socialsoftware.tutor.course.Course;
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecution;
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.repository.DiscussionRepository;
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.dto.DiscussionDto;
@@ -60,11 +59,10 @@ public class DiscussionService {
         User student = userRepository.findById(studentId).orElseThrow(() -> new TutorException(USER_NOT_FOUND, studentId));
         Question question = questionRepository.findById(questionId).orElseThrow(() -> new TutorException(QUESTION_NOT_FOUND, questionId));
 
-        if (discussionRepository.findDiscussions(studentId, questionId).size() != 0) {
+        if (!discussionRepository.findDiscussions(studentId, questionId).isEmpty()) {
             throw new TutorException(DUPLICATE_DISCUSSION);
         }
 
-        //verifies if student is enrolled in same course execution as question
         List<CourseExecution> studentEnrolledInQuestionCourse = question.getQuizQuestions().stream()
                 .map(QuizQuestion::getQuiz)
                 .map(Quiz::getCourseExecution)
@@ -74,7 +72,6 @@ public class DiscussionService {
         if (studentEnrolledInQuestionCourse.isEmpty())
             throw new TutorException(USER_NOT_ENROLLED_IN_COURSE, student.getName());
 
-        //TODO:perguntar ao professor se e' preferivel passar pelo quiz ou pelo questionAnswer
         List<Question> answeredQuestions = student.getQuizAnswers().stream()
                 .map(QuizAnswer::getQuiz)
                 .map(Quiz::getQuizQuestions)
@@ -103,13 +100,31 @@ public class DiscussionService {
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public void teacherAnswersStudent(Integer discussionId, DiscussionDto discussionDto) {
         Discussion discussion = discussionRepository.findById(discussionId).orElseThrow(() -> new TutorException(DISCUSSION_NOT_FOUND, discussionId));
+
+        User teacher = checkIfTeacherExists(discussionDto);
+        checkIfDiscussionHasBeenAnswered(discussion);
+        checkIfTeacherIsEnrolledInQuestionCourseExecution(discussion, teacher);
+        checkIfAnswerIsEmpty(discussionDto);
+
+        discussion.updateTeacherAnswer(teacher, discussionDto);
+    }
+
+    private User checkIfTeacherExists(DiscussionDto discussionDto) {
         User teacher = userRepository.findByUsername(discussionDto.getUserName());
+        if (teacher == null) {
+            throw new TutorException(USER_NOT_FOUND);
+        }
+        return teacher;
+    }
 
-        //check if the question has been already answered
-        if (discussion.getTeacher() != null)
-            throw new TutorException(DISCUSSION_ALREADY_ANSWERED);
+    private void checkIfAnswerIsEmpty(DiscussionDto discussionDto) {
+        String teacherAnswer = discussionDto.getMessage();
+        if (teacherAnswer == null || teacherAnswer.isBlank()) {
+            throw new TutorException(EMPTY_ANSWER);
+        }
+    }
 
-        //check if the teacher is in the same course execution
+    private void checkIfTeacherIsEnrolledInQuestionCourseExecution(Discussion discussion, User teacher) {
         List<CourseExecution> teacherEnrolledInQuestionCourse = discussion.getQuestion().getQuizQuestions().stream()
                 .map(QuizQuestion::getQuiz)
                 .map(Quiz::getCourseExecution)
@@ -118,13 +133,10 @@ public class DiscussionService {
 
         if (teacherEnrolledInQuestionCourse.isEmpty())
             throw new TutorException(TEACHER_NOT_IN_COURSE_EXECUTION);
+    }
 
-        String teacherAnswer = discussionDto.getMessage();
-        //check if the answer from the teacher is not null
-        if (teacherAnswer == null || teacherAnswer.isBlank() || teacherAnswer.isEmpty()) {
-            throw new TutorException(EMPTY_ANSWER);
-        }
-
-        discussion.updateTeacherAnswer(teacher, discussionDto);
+    private void checkIfDiscussionHasBeenAnswered(Discussion discussion) {
+        if (discussion.getTeacher() != null)
+            throw new TutorException(DISCUSSION_ALREADY_ANSWERED);
     }
 }

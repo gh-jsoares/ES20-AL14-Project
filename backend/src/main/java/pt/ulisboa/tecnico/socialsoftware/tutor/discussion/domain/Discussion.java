@@ -6,7 +6,6 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.dto.DiscussionDto;
 
 import javax.persistence.*;
 
-//TODO:check annotations (if missing, incorrect, ect)
 @Entity
 @Table(name = "discussions")
 public class Discussion {
@@ -24,6 +23,10 @@ public class Discussion {
     private User student;
 
     @ManyToOne
+    @JoinColumn(name = "teacher_id")
+    private User teacher;
+
+    @ManyToOne
     @JoinColumn(name = "question_id")
     private Question question;
 
@@ -34,7 +37,7 @@ public class Discussion {
         this.student = student;
         this.question = question;
         this.messageFromStudent = dto.getMessageFromStudent();
-        this.teacherAnswer = dto.getTeacherAnswer();
+        this.teacherAnswer = dto.getMessage();
     }
 
     public Integer getId() {
@@ -66,4 +69,13 @@ public class Discussion {
     public String getTeacherAnswer() { return teacherAnswer; }
 
     public void setTeacherAnswer(String teacherAnswer) { this.teacherAnswer = teacherAnswer; }
+
+    public User getTeacher() {return teacher; }
+
+    public void setTeacher(User teacher) { this.teacher = teacher; }
+
+    public void updateTeacherAnswer(User teacher, DiscussionDto discussionDto) {
+        setTeacherAnswer(discussionDto.getMessage());
+        setTeacher(teacher);
+    }
 }
