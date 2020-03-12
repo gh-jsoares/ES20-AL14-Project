@@ -107,11 +107,16 @@ class TeacherAnswersStudentServiceSpockTest extends Specification {
 
     }
 
-    def "teacher from the same course execution answers student and there is no answer from teacher yet"() {
-        given: "a discussionDto with an answer from a teacher from the same course execution"
+    def discussionDtoCreation() {
         def discussionDto = new DiscussionDto()
         discussionDto.setId(discussion.getId())
         discussionDto.setMessage(TEACHER_ANSWER)
+        return discussionDto
+    }
+
+    def "teacher from the same course execution answers student and there is no answer from teacher yet"() {
+        given: "a discussionDto with an answer from a teacher from the same course execution"
+        def discussionDto = discussionDtoCreation()
 
         def teacher = new User('teacher', TEACHER_NAME, 2, User.Role.TEACHER)
         teacher.getCourseExecutions().add(courseExecution)
@@ -134,9 +139,7 @@ class TeacherAnswersStudentServiceSpockTest extends Specification {
 
     def "the teacher is not in the course execution that has the question the student has a clarification request about"() {
         given: "a discussionDto with an answer from a teacher that is not in the same course execution"
-        def discussionDto = new DiscussionDto()
-        discussionDto.setId(discussion.getId())
-        discussionDto.setMessage(TEACHER_ANSWER)
+        def discussionDto = discussionDtoCreation()
 
         def teacher = new User('teacher', TEACHER_NAME, 2, User.Role.TEACHER)
         discussionDto.setUserName(teacher.getUsername())
@@ -152,9 +155,7 @@ class TeacherAnswersStudentServiceSpockTest extends Specification {
 
     def "teacher answers student and there is already an answer from a teacher"() {
         given: "a discussionDto with an answer from a teacher"
-        def discussionDto = new DiscussionDto()
-        discussionDto.setId(discussion.getId())
-        discussionDto.setMessage(TEACHER_ANSWER)
+        def discussionDto = discussionDtoCreation()
 
         def teacher = new User('teacher', TEACHER_NAME, 2, User.Role.TEACHER)
         teacher.getCourseExecutions().add(courseExecution)
@@ -175,9 +176,7 @@ class TeacherAnswersStudentServiceSpockTest extends Specification {
 
     def "non-teacher user tries to answer to a discussion"() {
         given: "a discussionDto with an answer from a teacher"
-        def discussionDto = new DiscussionDto()
-        discussionDto.setId(discussion.getId())
-        discussionDto.setMessage(TEACHER_ANSWER)
+        def discussionDto = discussionDtoCreation()
 
         def student = new User('admin', TEACHER_NAME, 2, User.Role.STUDENT)
         discussionDto.setUserName(student.getUsername())
