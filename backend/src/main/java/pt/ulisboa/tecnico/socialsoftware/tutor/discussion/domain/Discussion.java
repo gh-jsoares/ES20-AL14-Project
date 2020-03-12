@@ -1,10 +1,18 @@
 package pt.ulisboa.tecnico.socialsoftware.tutor.discussion.domain;
 
+import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecution;
+import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Question;
+import pt.ulisboa.tecnico.socialsoftware.tutor.quiz.domain.Quiz;
+import pt.ulisboa.tecnico.socialsoftware.tutor.quiz.domain.QuizQuestion;
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.User;
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.dto.DiscussionDto;
 
 import javax.persistence.*;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.*;
 
 @Entity
 @Table(name = "discussions")
@@ -75,7 +83,34 @@ public class Discussion {
     public void setTeacher(User teacher) { this.teacher = teacher; }
 
     public void updateTeacherAnswer(User teacher, DiscussionDto discussionDto) {
+        checkIfDiscussionHasBeenAnswered();
+        checkIfTeacherIsEnrolledInQuestionCourseExecution(teacher);
+        checkIfAnswerIsEmpty(discussionDto);
+
         setTeacherAnswer(discussionDto.getMessage());
         setTeacher(teacher);
+    }
+
+    private void checkIfAnswerIsEmpty(DiscussionDto discussionDto) {
+        String teacherAns = discussionDto.getMessage();
+        if (teacherAns == null || teacherAns.isBlank()) {
+            throw new TutorException(EMPTY_ANSWER);
+        }
+    }
+
+    private void checkIfTeacherIsEnrolledInQuestionCourseExecution(User teacher) {
+        List<CourseExecution> teacherEnrolledInQuestionCourse = this.getQuestion().getQuizQuestions().stream()
+                .map(QuizQuestion::getQuiz)
+                .map(Quiz::getCourseExecution)
+                .filter(courseExecution -> teacher.getCourseExecutions().contains(courseExecution))
+                .collect(Collectors.toList());
+
+        if (teacherEnrolledInQuestionCourse.isEmpty())
+            throw new TutorException(TEACHER_NOT_IN_COURSE_EXECUTION);
+    }
+
+    private void checkIfDiscussionHasBeenAnswered() {
+        if (this.getTeacher() != null)
+            throw new TutorException(DISCUSSION_ALREADY_ANSWERED);
     }
 }

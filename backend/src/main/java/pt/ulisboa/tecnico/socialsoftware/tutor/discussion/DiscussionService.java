@@ -100,11 +100,7 @@ public class DiscussionService {
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public void teacherAnswersStudent(Integer discussionId, DiscussionDto discussionDto) {
         Discussion discussion = discussionRepository.findById(discussionId).orElseThrow(() -> new TutorException(DISCUSSION_NOT_FOUND, discussionId));
-
         User teacher = checkIfTeacherExists(discussionDto);
-        checkIfDiscussionHasBeenAnswered(discussion);
-        checkIfTeacherIsEnrolledInQuestionCourseExecution(discussion, teacher);
-        checkIfAnswerIsEmpty(discussionDto);
 
         discussion.updateTeacherAnswer(teacher, discussionDto);
     }
@@ -114,29 +110,9 @@ public class DiscussionService {
         if (teacher == null) {
             throw new TutorException(USER_NOT_FOUND);
         }
-        return teacher;
-    }
-
-    private void checkIfAnswerIsEmpty(DiscussionDto discussionDto) {
-        String teacherAnswer = discussionDto.getMessage();
-        if (teacherAnswer == null || teacherAnswer.isBlank()) {
-            throw new TutorException(EMPTY_ANSWER);
+        else if (teacher.getRole() != User.Role.TEACHER) {
+            throw new TutorException(USER_IS_NOT_TEACHER, discussionDto.getUserName());
         }
-    }
-
-    private void checkIfTeacherIsEnrolledInQuestionCourseExecution(Discussion discussion, User teacher) {
-        List<CourseExecution> teacherEnrolledInQuestionCourse = discussion.getQuestion().getQuizQuestions().stream()
-                .map(QuizQuestion::getQuiz)
-                .map(Quiz::getCourseExecution)
-                .filter(courseExecution -> teacher.getCourseExecutions().contains(courseExecution))
-                .collect(Collectors.toList());
-
-        if (teacherEnrolledInQuestionCourse.isEmpty())
-            throw new TutorException(TEACHER_NOT_IN_COURSE_EXECUTION);
-    }
-
-    private void checkIfDiscussionHasBeenAnswered(Discussion discussion) {
-        if (discussion.getTeacher() != null)
-            throw new TutorException(DISCUSSION_ALREADY_ANSWERED);
+        return teacher;
     }
 }

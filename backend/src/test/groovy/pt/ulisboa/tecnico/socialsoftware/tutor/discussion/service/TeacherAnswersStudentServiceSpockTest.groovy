@@ -125,13 +125,10 @@ class TeacherAnswersStudentServiceSpockTest extends Specification {
         then: "the data are correct"
         discussionRepository.count() == 1L
         def result = discussionRepository.findAll().get(0)
-        result.getTeacherAnswer() != null
         result.getTeacherAnswer() == TEACHER_ANSWER
-        result.getTeacher() != null
         result.getTeacher() == teacher
-        result.getMessageFromStudent() != null
+        result.getTeacher().getRole() == User.Role.TEACHER
         result.getMessageFromStudent() == MESSAGE
-        result.getStudent() != null
         result.getStudent() == student
     }
 
@@ -176,7 +173,25 @@ class TeacherAnswersStudentServiceSpockTest extends Specification {
         exception.errorMessage == ErrorMessage.DISCUSSION_ALREADY_ANSWERED
     }
 
-    def "teacher tries to answer a non-existent discussion"() {
+    def "non-teacher user tries to answer to a discussion"() {
+        given: "a discussionDto with an answer from a teacher"
+        def discussionDto = new DiscussionDto()
+        discussionDto.setId(discussion.getId())
+        discussionDto.setMessage(TEACHER_ANSWER)
+
+        def student = new User('admin', TEACHER_NAME, 2, User.Role.STUDENT)
+        discussionDto.setUserName(student.getUsername())
+        userRepository.save(student)
+
+        when: "adding the answer from the teacher"
+        discussionService.teacherAnswersStudent(discussionDto.getId(), discussionDto)
+
+        then: "an exception is thrown"
+        def exception = thrown(TutorException)
+        exception.errorMessage == ErrorMessage.USER_IS_NOT_TEACHER
+    }
+
+    def "teacher tries to answer a non-existing discussion"() {
         given: "a discussionDto with an answer from a teacher from the same course execution"
         def discussionDto = new DiscussionDto()
         discussionDto.setId(-1)
