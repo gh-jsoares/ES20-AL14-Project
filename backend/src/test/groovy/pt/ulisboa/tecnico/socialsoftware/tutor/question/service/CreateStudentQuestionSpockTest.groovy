@@ -16,6 +16,7 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.StudentQuestionDto
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.User
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.UserRepository
 import spock.lang.Specification
+import spock.lang.Unroll
 
 import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_NOT_A_STUDENT
 import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_OPTION_CONTENT_IS_EMPTY
@@ -146,6 +147,7 @@ class CreateStudentQuestionSpockTest extends Specification {
         error.errorMessage == STUDENT_QUESTION_OPTION_CONTENT_IS_EMPTY
     }
 
+    @Unroll
     def "invalid arguments: title=#title | content=#content | status=#status || errorMessage=#errorMessage"() {
         given: "a studentquestiondto"
         def studentQuestionDto = createStudentQuestionDto(title, content, status)
