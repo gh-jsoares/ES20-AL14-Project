@@ -130,8 +130,7 @@ public class TournamentService {
             backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public List<TournamentDto> getOpenTournaments(int executionId) {
-        CourseExecution courseExecution = courseExecutionRepository.findById(executionId)
-                .orElseThrow(() -> new TutorException(ErrorMessage.COURSE_EXECUTION_NOT_FOUND, executionId));
+        CourseExecution courseExecution = getCourseExecution(executionId);
 
         return courseExecution.getTournaments().stream()
                 .filter(tourn -> !tourn.getState().equals(Tournament.State.CLOSED))

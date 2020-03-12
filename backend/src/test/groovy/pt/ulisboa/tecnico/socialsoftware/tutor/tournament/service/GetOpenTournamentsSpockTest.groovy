@@ -19,6 +19,7 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.tournament.TournamentService
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.User
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.UserRepository
 import spock.lang.Specification
+import spock.lang.Unroll
 
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -91,7 +92,9 @@ class GetOpenTournamentsSpockTest extends Specification{
 
     }
 
-    def createTournament(state) {
+    def createTournament(state, stack) {
+        if (state == null)
+            return
         def tourn = new Tournament()
         tourn.setTitle(TOURN_TITLE)
         tourn.setNumberOfQuestions(QUEST_NUM)
@@ -106,76 +109,46 @@ class GetOpenTournamentsSpockTest extends Specification{
         tourn.setCourseExecution(courseExecution)
         tourn.setCreator(user)
         tournRepository.save(tourn)
-        return tourn
+
+        if (state != Tournament.State.CLOSED) {
+            stack.push(tourn)
+        }
     }
 
-    def "only exists open tournaments"() {
-        given: "only open tournaments"
+    @Unroll
+    def "layout of existing tournaments: #tourn1 | #tourn2 => #size"() {
+        given: "existing tournaments"
         def stack = []
-        stack.push(createTournament(Tournament.State.ENROLL))
-        stack.push(createTournament(Tournament.State.ENROLL))
-        stack.push(createTournament(Tournament.State.ONGOING))
-        stack.push(createTournament(Tournament.State.ENROLL))
+        createTournament(tourn1, stack)
+        createTournament(tourn2, stack)
 
         when: "service call to get open tournaments"
         def result = tournService.getOpenTournaments(courseExecution.getId())
 
-        then: "list with open tournaments is returned"
-        result.size() == 4
-        and: "tournaments in right order (newer creation first)"
+        then: "check number of returned tournaments"
+        result.size() == size
+        and: "match ids and order of tournaments"
         for (TournamentDto tournDto : result) {
             assert tournDto.getId() == stack.pop().getId()
         }
-    }
 
-    def "exists both open and closed tournaments"() {
-        given: "some open tournaments mixed with closed"
-        def stack = []
-        createTournament(Tournament.State.CLOSED)
-        stack.push(createTournament(Tournament.State.ENROLL))
-        stack.push(createTournament(Tournament.State.ENROLL))
-        createTournament(Tournament.State.CLOSED)
-        stack.push(createTournament(Tournament.State.ONGOING))
-        stack.push(createTournament(Tournament.State.ENROLL))
+        where:
 
-        when: "service call to get open tournaments"
-        def result = tournService.getOpenTournaments(courseExecution.getId())
-
-        then: "list with only open tournaments is returned"
-        result.size() == 4
-        and: "tournaments in right order (newer creation first)"
-        for (TournamentDto tournDto : result) {
-            assert tournDto.getId() == stack.pop().getId()
-        }
-    }
-
-    def "there's no tournaments"() {
-        given: "no tournaments"
-        // nothing to be done
-
-        when: "service call to get open tournaments"
-        def lst = tournService.getOpenTournaments(courseExecution.getId())
-
-        then: "empty list is returned"
-        lst.size() == 0
-
-    }
-
-    def "exists tournaments but none are open"() {
-        given: "open tournaments"
-        createTournament(Tournament.State.CLOSED)
-        createTournament(Tournament.State.CLOSED)
-
-        when: "service call to get open tournaments"
-        def lst = tournService.getOpenTournaments(courseExecution.getId())
-
-        then: "empty list is returned"
-        lst.size() == 0
+        tourn1                  | tourn2                    || size
+        null                    | null                      || 0
+        Tournament.State.CLOSED | null                      || 0
+        Tournament.State.CLOSED | Tournament.State.CLOSED   || 0
+        Tournament.State.ENROLL | null                      || 1
+        Tournament.State.ENROLL | Tournament.State.CLOSED   || 1
+        Tournament.State.CLOSED | Tournament.State.ENROLL   || 1
+        Tournament.State.ENROLL | Tournament.State.ENROLL   || 2
+        Tournament.State.ENROLL | Tournament.State.ONGOING  || 2
+        Tournament.State.ONGOING| Tournament.State.ONGOING  || 2
     }
 
     def "course execution doesn't exist"() {
         given: "open tournaments but courseExecution doesn't exist"
-        createTournament(Tournament.State.ENROLL)
+        createTournament(Tournament.State.ENROLL, [])
         def execId = -1
 
         when: "service call to get open tournaments"
