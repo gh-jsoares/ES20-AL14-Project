@@ -85,7 +85,7 @@ class TournamentEnrollSpockTest extends Specification{
         user.addCourse(courseExecution)
         courseExecution.addUser(user)
         when:
-        def result = tournamentService.tournamentEnrollStudent(tournamentDto, user);
+        def result = tournamentService.tournamentEnrollStudent(tournamentDto, user.getId());
         then: "student enrolled in the tournament"
         result.getNumberOfEnrolls() == 1
         def tournamentResult = tournamentRepository.findById(tournamentDto.getId()).get()
@@ -106,7 +106,7 @@ class TournamentEnrollSpockTest extends Specification{
             def tournamentDto = isTournament ? (new TournamentDto(tournament)) : new TournamentDto()
 
         when:
-            tournamentService.tournamentEnrollStudent(tournamentDto, user);
+            tournamentService.tournamentEnrollStudent(tournamentDto, isUser ? user.getId() : -1);
 
         then:
             def error = thrown(TutorException)
@@ -115,7 +115,7 @@ class TournamentEnrollSpockTest extends Specification{
         where:
         isTournament | isUser     || errorMessage
         false        | true       || ErrorMessage.TOURNAMENT_IS_NULL
-        true         | false      || ErrorMessage.USER_IS_NULL
+        true         | false      || ErrorMessage.USER_NOT_FOUND
     }
 
     @Unroll
@@ -132,7 +132,7 @@ class TournamentEnrollSpockTest extends Specification{
             def tournamentDto = new TournamentDto(tournament)
 
         when:
-            tournamentService.tournamentEnrollStudent(tournamentDto, user);
+            tournamentService.tournamentEnrollStudent(tournamentDto, user.getId());
 
         then:
             def error = thrown(TutorException)

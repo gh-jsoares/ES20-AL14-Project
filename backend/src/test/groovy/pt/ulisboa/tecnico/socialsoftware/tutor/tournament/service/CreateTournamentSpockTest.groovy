@@ -120,7 +120,7 @@ class CreateTournamentSpockTest extends Specification{
         given: 'tournament with correct values'
 
         when: "service call to create tournament"
-        tournService.createTournament(courseExecution.getId(), tournDto, user)
+        tournService.createTournament(courseExecution.getId(), tournDto, user.getId())
 
         then: "tournament in repository"
         tournRepository.count() == 1L
@@ -146,7 +146,7 @@ class CreateTournamentSpockTest extends Specification{
         tournDto.setTitle(null)
 
         when: "service call to create tournament"
-        tournService.createTournament(courseExecution.getId(), tournDto, user)
+        tournService.createTournament(courseExecution.getId(), tournDto, user.getId())
 
         then: "tournament not created, exception thrown"
         def exception = thrown(TutorException)
@@ -162,7 +162,7 @@ class CreateTournamentSpockTest extends Specification{
         tournDto.setTitle("")
 
         when: "service call to create tournament"
-        tournService.createTournament(courseExecution.getId(), tournDto, user)
+        tournService.createTournament(courseExecution.getId(), tournDto, user.getId())
 
         then: "tournament not created, exception thrown"
         def exception = thrown(TutorException)
@@ -178,7 +178,7 @@ class CreateTournamentSpockTest extends Specification{
         tournDto.setConclusionDate(dayTwo.format(formatter))
 
         when: "service call to create tournament"
-        tournService.createTournament(courseExecution.getId(), tournDto, user)
+        tournService.createTournament(courseExecution.getId(), tournDto, user.getId())
 
         then: "tournament not created, exception thrown"
         def exception = thrown(TutorException)
@@ -193,7 +193,7 @@ class CreateTournamentSpockTest extends Specification{
         tournDto.getTopics().clear()
 
         when: "service call to create tournament"
-        tournService.createTournament(courseExecution.getId(), tournDto, user)
+        tournService.createTournament(courseExecution.getId(), tournDto, user.getId())
 
         then: "tournament not created, exception thrown"
         def exception = thrown(TutorException)
@@ -208,7 +208,7 @@ class CreateTournamentSpockTest extends Specification{
         tournDto.setNumberOfQuestions(num)
 
         when: "service call to create tournament"
-        tournService.createTournament(courseExecution.getId(), tournDto, user)
+        tournService.createTournament(courseExecution.getId(), tournDto, user.getId())
 
         then: "tournament not created, exception thrown"
         def exception = thrown(TutorException)
@@ -226,7 +226,7 @@ class CreateTournamentSpockTest extends Specification{
         user.setRole(User.Role.TEACHER)
 
         when: "service call to create tournament"
-        tournService.createTournament(courseExecution.getId(), tournDto, user)
+        tournService.createTournament(courseExecution.getId(), tournDto, user.getId())
 
         then: "tournament not created, exception thrown"
         def exception = thrown(TutorException)
@@ -243,7 +243,7 @@ class CreateTournamentSpockTest extends Specification{
         tournDto.setAvailableDate(dayThree.format(formatter))
 
         when: "service call to create tournament"
-        tournService.createTournament(courseExecution.getId(), tournDto, user)
+        tournService.createTournament(courseExecution.getId(), tournDto, user.getId())
 
         then: "tournament not created, exception thrown"
         def exception = thrown(TutorException)
@@ -260,7 +260,7 @@ class CreateTournamentSpockTest extends Specification{
         tournDto.setConclusionDate(dayThree.format(formatter))
 
         when: "service call to create tournament"
-        tournService.createTournament(courseExecution.getId(), tournDto, user)
+        tournService.createTournament(courseExecution.getId(), tournDto, user.getId())
 
         then: "tournament not created, exception thrown"
         def exception = thrown(TutorException)

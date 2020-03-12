@@ -14,6 +14,7 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Topic;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.TopicDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.TopicRepository;
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.User;
+import pt.ulisboa.tecnico.socialsoftware.tutor.user.UserRepository;
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.dto.UserDto;
 
 import javax.persistence.EntityManager;
@@ -23,6 +24,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.*;
+
+import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.USER_NOT_FOUND;
 
 
 @Service
@@ -34,6 +37,9 @@ public class TournamentService {
     private CourseExecutionRepository courseExecutionRepository;
 
     @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
     private TopicRepository topicRepository;
 
     @PersistenceContext
@@ -43,7 +49,9 @@ public class TournamentService {
             value = { SQLException.class },
             backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
-    public TournamentDto  tournamentEnrollStudent(TournamentDto tournamentDto, User user) {
+    public TournamentDto  tournamentEnrollStudent(TournamentDto tournamentDto, int userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new TutorException(USER_NOT_FOUND, userId));
+
         Tournament tournament = getTournament(tournamentDto);
         tournament.addEnrolledStudent(user);
         return new TournamentDto(tournament);
@@ -67,11 +75,13 @@ public class TournamentService {
             value = { SQLException.class },
             backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
-    public TournamentDto createTournament(int executionId, TournamentDto tournDto, User user) {
+    public TournamentDto createTournament(int executionId, TournamentDto tournDto, int userId) {
 
         if (tournDto == null) {
             throw new TutorException(ErrorMessage.TOURNAMENT_IS_NULL);
         }
+
+        User user = userRepository.findById(userId).orElseThrow(() -> new TutorException(USER_NOT_FOUND, userId));
 
         if (user == null) {
             throw new TutorException(ErrorMessage.USER_IS_NULL);
