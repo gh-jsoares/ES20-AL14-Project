@@ -85,10 +85,6 @@ public class Option {
         this.question = question;
     }
 
-    public StudentQuestion getStudentQuestion() {
-        return studentQuestion;
-    }
-
     public void setStudentQuestion(StudentQuestion studentQuestion) {
         this.studentQuestion = studentQuestion;
     }

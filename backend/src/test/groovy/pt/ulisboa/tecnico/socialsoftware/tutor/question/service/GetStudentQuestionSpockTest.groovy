@@ -8,7 +8,6 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.StudentQuestionService
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Option
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.StudentQuestion
-import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.StudentQuestionDto
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.OptionRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.StudentQuestionRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.User
@@ -46,8 +45,7 @@ class GetStudentQuestionSpockTest extends Specification {
     def user
 
     def setup() {
-        user = new User(USER_NAME, USER_USERNAME, 1, User.Role.STUDENT)
-        userRepository.save(user)
+        user = createUser(1, USER_NAME, USER_USERNAME, User.Role.STUDENT)
     }
 
     def "student question exists"() {
@@ -111,11 +109,10 @@ class GetStudentQuestionSpockTest extends Specification {
         def studentQuestion = createStudentQuestion(1, QUESTION_TITLE, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name())
 
         and: "a username of a non student account"
-        user.setRole(User.Role.TEACHER)
-        def user = USER_USERNAME
+        def user = createUser(2, USER_NAME, USER_USERNAME + "_2", User.Role.TEACHER)
 
         when:
-        studentQuestionService.getStudentQuestion(user, studentQuestion.getId())
+        studentQuestionService.getStudentQuestion(user.getUsername(), studentQuestion.getId())
 
         then: "an error occurs"
         def error = thrown(TutorException)

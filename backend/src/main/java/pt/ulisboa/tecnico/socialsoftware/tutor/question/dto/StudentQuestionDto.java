@@ -17,7 +17,6 @@ public class StudentQuestionDto implements Serializable {
     private String status;
     private Set<OptionDto> options = new HashSet<>();
     private ImageDto image;
-    private Integer sequence;
     private String username;
 
     public StudentQuestionDto() {}
@@ -101,14 +100,6 @@ public class StudentQuestionDto implements Serializable {
         this.image = image;
     }
 
-    public Integer getSequence() {
-        return sequence;
-    }
-
-    public void setSequence(Integer sequence) {
-        this.sequence = sequence;
-    }
-
     public String getUsername() {
         return this.username;
     }
@@ -123,7 +114,6 @@ public class StudentQuestionDto implements Serializable {
                 ", status='" + status + '\'' +
                 ", options=" + options +
                 ", image=" + image +
-                ", sequence=" + sequence +
                 ", student=" + username +
                 '}';
     }
