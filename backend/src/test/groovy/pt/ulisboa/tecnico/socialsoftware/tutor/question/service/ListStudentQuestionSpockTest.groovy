@@ -11,10 +11,13 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.StudentQuesti
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.User
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.UserRepository
 import spock.lang.Specification
+import spock.lang.Unroll
 
 import java.time.LocalDateTime
 
 import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_NOT_A_STUDENT
+import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_NOT_FOUND
+import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_STUDENT_NOT_CREATOR
 import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_USER_NOT_FOUND
 
 @DataJpaTest
@@ -45,25 +48,24 @@ class ListStudentQuestionSpockTest extends Specification {
 
     def "student has submitted n questions"() {
         given: "a valid username"
-        def user = USER_USERNAME
+        USER_USERNAME
 
         and: "and a list of 5 student questions made by the student"
         1.upto(5, {
-            createStudentQuestion(it.intValue(), QUESTION_TITLE + it, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name(), user)
+            createStudentQuestion(it.intValue(), QUESTION_TITLE + it, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name(), USER_USERNAME)
         })
 
         and: "and a list of 5 student questions made by another student"
-        def user2 = USER_USERNAME + "_2"
         1.upto(5, {
-            createStudentQuestion(it.intValue() + 5, QUESTION_TITLE + it + 5, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name(), user2)
+            createStudentQuestion(it.intValue() + 5, QUESTION_TITLE + it + 5, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name(), USER_USERNAME + "_2")
         })
 
         when:
-        def result = studentQuestionService.listStudentQuestions(user)
+        def result = studentQuestionService.listStudentQuestions(USER_USERNAME)
 
         then: "the list returned has only questions made by the student"
         result.size() == 5
-        result.stream().allMatch({ sq -> (sq.getUsername() == user) })
+        result.stream().allMatch({ sq -> (sq.getUsername() == USER_USERNAME) })
         and: "reverse sorted by creation date"
         0.upto(result.size() - 2, {
             def date_1 = result[it.intValue()].getCreationDateAsObject()
@@ -72,29 +74,31 @@ class ListStudentQuestionSpockTest extends Specification {
         })
     }
 
-    def "student does not exist"() {
-        given: "a null user"
-        def user = null
+    @Unroll
+    def "invalid data user=#isUser | student=#isStudent | errorMessage=#errorMessage"() {
+        given: "a username"
+        def username = createUsername(isUser, isStudent)
 
         when:
-        studentQuestionService.listStudentQuestions(user)
+        studentQuestionService.listStudentQuestions(username)
 
-        then: "an error occurs"
+        then:
         def error = thrown(TutorException)
-        error.errorMessage == STUDENT_QUESTION_USER_NOT_FOUND
+        error.errorMessage == errorMessage
+
+        where:
+        isUser | isStudent || errorMessage
+        false  | true      || STUDENT_QUESTION_USER_NOT_FOUND
+        true   | false     || STUDENT_QUESTION_NOT_A_STUDENT
     }
 
-    def "user is not a student"() {
-        given: "a username of a non student user"
-        user.setRole(User.Role.TEACHER)
-        def user = USER_USERNAME
+    private String createUsername(boolean isUser, boolean isStudent) {
+        if (!isUser)
+            return null
+        if (!isStudent)
+            user.setRole(User.Role.TEACHER)
 
-        when:
-        studentQuestionService.listStudentQuestions(user)
-
-        then: "an error occurs"
-        def error = thrown(TutorException)
-        error.errorMessage == STUDENT_QUESTION_NOT_A_STUDENT
+        return user.getUsername()
     }
 
     private createStudentQuestion(int key, String title, String content, String status, String username) {

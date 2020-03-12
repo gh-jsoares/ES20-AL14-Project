@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
+import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.StudentQuestionService
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Option
@@ -13,6 +14,7 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.StudentQuesti
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.User
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.UserRepository
 import spock.lang.Specification
+import spock.lang.Unroll
 
 import java.time.LocalDateTime
 
@@ -74,65 +76,46 @@ class GetStudentQuestionSpockTest extends Specification {
         result.getOptions().stream().filter({ o -> o.getCorrect() }).count() == 1L
     }
 
-    def "the student question does not exist"() {
-        given: "an non existing student question"
-        def studentQuestionId = -1
+    @Unroll
+    def "invalid data studentQuestion=#isStudentQuestion | user=#isUser | student=#isStudent | studentQuestionCreator=#isCreator | errorMessage=#errorMessage"() {
+        given: "a student question"
+        def studentQuestionId = createStudentQuestion(isStudentQuestion)
 
-        and: "a username of a student"
-        def user = USER_USERNAME
-
-        when:
-        studentQuestionService.getStudentQuestion(user, studentQuestionId)
-
-        then: "data is correct"
-        def error = thrown(TutorException)
-        error.errorMessage == STUDENT_QUESTION_NOT_FOUND
-    }
-
-    def "the user does not exist"() {
-        given: "an existing student question"
-        def studentQuestion = createStudentQuestion(1, QUESTION_TITLE, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name())
-
-        and: "a null user"
-        def user = null
+        and: "a username"
+        def username = createUsername(isUser, isStudent, isCreator)
 
         when:
-        studentQuestionService.getStudentQuestion(user, studentQuestion.getId())
+        studentQuestionService.getStudentQuestion(username, studentQuestionId)
 
-        then: "an error occurs"
+        then:
         def error = thrown(TutorException)
-        error.errorMessage == STUDENT_QUESTION_USER_NOT_FOUND
+        error.errorMessage == errorMessage
+
+        where:
+        isStudentQuestion | isUser | isStudent | isCreator || errorMessage
+        false             | true   | true      | true      || STUDENT_QUESTION_NOT_FOUND
+        true              | false  | true      | true      || STUDENT_QUESTION_USER_NOT_FOUND
+        true              | true   | false     | true      || STUDENT_QUESTION_NOT_A_STUDENT
+        true              | true   | true      | false     || STUDENT_QUESTION_STUDENT_NOT_CREATOR
     }
 
-    def "the user is not a student"() {
-        given: "an existing student question"
-        def studentQuestion = createStudentQuestion(1, QUESTION_TITLE, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name())
-
-        and: "a username of a non student account"
-        def user = createUser(2, USER_NAME, USER_USERNAME + "_2", User.Role.TEACHER)
-
-        when:
-        studentQuestionService.getStudentQuestion(user.getUsername(), studentQuestion.getId())
-
-        then: "an error occurs"
-        def error = thrown(TutorException)
-        error.errorMessage == STUDENT_QUESTION_NOT_A_STUDENT
+    private int createStudentQuestion(boolean isStudentQuestion) {
+        if (isStudentQuestion)
+                return createStudentQuestion(1, QUESTION_TITLE, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name()).getId()
+        return -1
     }
 
-    def "the user is not the creator of the student question"() {
-        given: "an existing student question"
-        def studentQuestion = createStudentQuestion(1, QUESTION_TITLE, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name())
+    private String createUsername(boolean isUser, boolean isStudent, boolean isCreator) {
+        if (!isUser)
+            return null
+        if(!isCreator)
+            return createUser(2, USER_NAME, USER_USERNAME + "_2", User.Role.STUDENT).getUsername()
+        if (!isStudent)
+            user.setRole(User.Role.TEACHER)
 
-        and: "a username of a student that isnt the creator of the question"
-        def user = createUser(2, USER_NAME, USER_USERNAME + "_2", User.Role.STUDENT)
-
-        when:
-        studentQuestionService.getStudentQuestion(user.getUsername(), studentQuestion.getId())
-
-        then: "an error occurs"
-        def error = thrown(TutorException)
-        error.errorMessage == STUDENT_QUESTION_STUDENT_NOT_CREATOR
+        return user.getUsername()
     }
+
 
     private StudentQuestion createStudentQuestion(int key, String title, String content, String status) {
         def studentQuestion = new StudentQuestion()
