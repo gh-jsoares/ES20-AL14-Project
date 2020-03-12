@@ -85,6 +85,9 @@ public class StudentQuestionService {
         return new StudentQuestionDto(studentQuestion);
     }
 
+    @Retryable(
+            value = { SQLException.class },
+            backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public List<StudentQuestionDto> listStudentQuestions(String username) {
         User user = getUserIfExists(username);
@@ -100,6 +103,9 @@ public class StudentQuestionService {
                 .collect(Collectors.toList());
     }
 
+    @Retryable(
+            value = { SQLException.class },
+            backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public StudentQuestionDto getStudentQuestion(String username, int studentQuestionId) {
         User user = getUserIfExists(username);
