@@ -3,6 +3,7 @@ package pt.ulisboa.tecnico.socialsoftware.tutor.question.dto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.StudentQuestion;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -66,6 +67,10 @@ public class StudentQuestionDto implements Serializable {
 
     public String getCreationDate() {
         return creationDate;
+    }
+
+    public LocalDateTime getCreationDateAsObject() {
+        return LocalDateTime.parse(this.creationDate, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
     }
 
     public String getStatus() {

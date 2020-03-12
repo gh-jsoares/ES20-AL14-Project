@@ -125,6 +125,10 @@ public class StudentQuestion {
         return creationDate;
     }
 
+    public void setCreationDate(LocalDateTime creationDate) {
+        this.creationDate = creationDate;
+    }
+
     public Set<Option> getOptions() {
         return options;
     }

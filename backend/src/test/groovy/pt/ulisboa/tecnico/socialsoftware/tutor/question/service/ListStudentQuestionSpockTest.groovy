@@ -50,7 +50,7 @@ class ListStudentQuestionSpockTest extends Specification {
 
         and: "and a list of 5 student questions"
         1.upto(5, {
-            createStudentQuestion(QUESTION_TITLE + it, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name())
+            createStudentQuestion(it.intValue(), QUESTION_TITLE + it, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name())
         })
 
         when:
@@ -59,10 +59,10 @@ class ListStudentQuestionSpockTest extends Specification {
         then: "the returned list is correct"
         result.size() == 5
         and: "reverse sorted by creation date"
-        1.upto(result.size() - 1, {
-            def date_1 = LocalDateTime.parse(((StudentQuestionDto) result[it.intValue()]).getCreationDate())
-            def date_2 = LocalDateTime.parse(((StudentQuestionDto) result[it.intValue() + 1]).getCreationDate())
-            assert date_1.isAfter(date_2)
+        0.upto(result.size() - 2, {
+            def date_1 = result[it.intValue()].getCreationDateAsObject()
+            def date_2 = result[it.intValue() + 1].getCreationDateAsObject()
+            assert !date_1.isBefore(date_2)
         })
     }
 
@@ -91,14 +91,22 @@ class ListStudentQuestionSpockTest extends Specification {
         error.errorMessage == STUDENT_QUESTION_NOT_A_STUDENT
     }
 
-    private createStudentQuestion(String title, String content, String status) {
+    private createStudentQuestion(int key, String title, String content, String status) {
         def studentQuestion = new StudentQuestion()
-        studentQuestion.setKey(1)
+        studentQuestion.setKey(key)
         studentQuestion.setTitle(title)
         studentQuestion.setContent(content)
         studentQuestion.setStatus(StudentQuestion.Status.valueOf(status))
         studentQuestion.setStudent(userRepository.findByUsername(USER_USERNAME))
+        studentQuestion.setCreationDate(generateRandomCreationDate())
         studentQuestionRepository.save(studentQuestion)
+    }
+
+    private static generateRandomCreationDate() {
+        LocalDateTime now = LocalDateTime.now()
+        Random random = new Random()
+        int year = 60 * 60 * 24 * 365
+        return now.plusSeconds((long) random.nextInt(4 * year) - 2 * year) // +- 2 years
     }
 
     @TestConfiguration

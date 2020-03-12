@@ -6,6 +6,7 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
+import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.StudentQuestion;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Topic;
@@ -19,9 +20,8 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.user.UserRepository;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.sql.SQLException;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.*;
 
@@ -93,8 +93,21 @@ public class StudentQuestionService {
     }
 
     @Transactional(isolation = Isolation.REPEATABLE_READ)
-    public Set<StudentQuestionDto> listStudentQuestions(String username) {
-        return new HashSet<>();
+    public List<StudentQuestionDto> listStudentQuestions(String username) {
+        User user = userRepository.findByUsername(username);
+
+        checkUserExists(user);
+
+        // TODO: EXTRACT METHOD (ALSO FROM STUDENTQUESTION CONSTRUCTOR MAYBE)
+        if (user.getRole() != User.Role.STUDENT)
+            throw new TutorException(STUDENT_QUESTION_NOT_A_STUDENT);
+
+        return studentQuestionRepository.findAll().stream()
+                .map(StudentQuestionDto::new)
+                .sorted(Comparator
+                        .comparing(StudentQuestionDto::getCreationDateAsObject).reversed()
+                        .thenComparing(StudentQuestionDto::getTitle))
+                .collect(Collectors.toList());
     }
 
     private void checkUserExists(User user) {
