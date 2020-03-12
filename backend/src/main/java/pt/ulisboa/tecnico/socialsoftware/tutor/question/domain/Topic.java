@@ -3,6 +3,7 @@ package pt.ulisboa.tecnico.socialsoftware.tutor.question.domain;
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.Course;
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.TopicDto;
+import pt.ulisboa.tecnico.socialsoftware.tutor.tournament.Tournament;
 
 import javax.persistence.*;
 import java.util.*;
@@ -43,6 +44,9 @@ public class Topic {
 
     @ManyToMany
     private Set<StudentQuestion> studentQuestions = new HashSet<>();
+
+    @ManyToMany(fetch=FetchType.LAZY)
+    private Set<Tournament> tournaments = new HashSet<>();
 
     public Topic() {
     }
@@ -125,8 +129,16 @@ public class Topic {
     }
 
     private void checkDuplicateStudentQuestion(StudentQuestion studentQuestion) {
-        if(getStudentQuestions().stream().anyMatch(sq -> sq.getKey().equals(studentQuestion.getKey())))
+        if (getStudentQuestions().stream().anyMatch(sq -> sq.getKey().equals(studentQuestion.getKey())))
             throw new TutorException(STUDENT_QUESTION_TOPIC_ALREADY_ADDED);
+    }
+
+    public Set<Tournament> getTournaments() {
+        return tournaments;
+    }
+
+    public void addTournament(Tournament tournament) {
+        this.tournaments.add(tournament);
     }
 
     @Override

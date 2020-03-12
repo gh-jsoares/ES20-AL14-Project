@@ -12,6 +12,7 @@ public enum ErrorMessage {
     ASSESSMENT_NOT_FOUND("Assessment not found with id %d"),
     TOPIC_CONJUNCTION_NOT_FOUND("Topic Conjunction not found with id %d"),
     COURSE_EXECUTION_NOT_FOUND("Course execution not found with name %d"),
+    TOURNAMENT_NOT_FOUND("Tournament not found with id %d"),
 
     COURSE_NOT_FOUND("Course not found with name %s"),
     COURSE_NAME_IS_EMPTY("The course name is empty"),
@@ -41,6 +42,12 @@ public enum ErrorMessage {
     QUIZ_NO_LONGER_AVAILABLE("This quiz is no longer available"),
     QUIZ_NOT_YET_AVAILABLE("This quiz is not yet available"),
 
+    USER_IS_NULL("The user was not specified"),
+    TOURNAMENT_IS_NULL("The tournament was not specified"),
+    TOURNAMENT_USER_IS_NOT_STUDENT("The user with id %d is not a student"),
+    TOURNAMENT_STUDENT_NOT_ENROLLED_IN_TOURNAMENT_COURSE("The user with id %d is not enrolled in the course execution of the tournament"),
+    TOURNAMENT_NOT_OPEN("The tournament with id %d is not open"),
+
     NO_CORRECT_OPTION("Question does not have a correct option"),
     NOT_ENOUGH_QUESTIONS("Not enough questions to create a quiz"),
     QUESTION_MISSING_DATA("Missing information for quiz"),
@@ -69,6 +76,9 @@ public enum ErrorMessage {
     STUDENT_QUESTION_TOPIC_ALREADY_ADDED("The student question already belongs to the topic: %s"),
     STUDENT_QUESTION_USER_NOT_FOUND("The user was not found"),
     STUDENT_QUESTION_TOPIC_NOT_PRESENT("The topic '%s' was not found in the student question"),
+
+    TOURNAMENT_NOT_CONSISTENT("Field %s of tournament is not consistent"),
+
 
     ACCESS_DENIED("You do not have permission to view this resource"),
     CANNOT_OPEN_FILE("Cannot open file");
