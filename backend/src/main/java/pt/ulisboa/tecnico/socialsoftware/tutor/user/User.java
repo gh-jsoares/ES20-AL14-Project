@@ -7,7 +7,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import pt.ulisboa.tecnico.socialsoftware.tutor.answer.domain.QuizAnswer;
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecution;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Question;
+import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.StudentQuestion;
 import pt.ulisboa.tecnico.socialsoftware.tutor.quiz.domain.Quiz;
+import pt.ulisboa.tecnico.socialsoftware.tutor.tournament.Tournament;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -56,6 +58,15 @@ public class User implements UserDetails {
 
     @ManyToMany
     private Set<CourseExecution> courseExecutions = new HashSet<>();
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "student", fetch = FetchType.LAZY, orphanRemoval=true)
+    private Set<StudentQuestion> studentQuestions = new HashSet<>();
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "creator", fetch=FetchType.LAZY, orphanRemoval=true)
+    private Set<Tournament> createdTournaments = new HashSet<>();
+
+    @ManyToMany(mappedBy = "enrolledStudents", fetch=FetchType.LAZY)
+    private Set<Tournament> enrolledTournaments = new HashSet<>();
 
     public User() {
     }
@@ -152,6 +163,10 @@ public class User implements UserDetails {
 
     public void setCourseExecutions(Set<CourseExecution> courseExecutions) {
         this.courseExecutions = courseExecutions;
+    }
+
+    public Set<StudentQuestion> getStudentQuestions() {
+        return studentQuestions;
     }
 
     public Integer getNumberOfTeacherQuizzes() {
@@ -346,6 +361,26 @@ public class User implements UserDetails {
 
     public void addCourse(CourseExecution course) {
         this.courseExecutions.add(course);
+    }
+
+    public void addStudentQuestion(StudentQuestion studentQuestion) {
+        this.studentQuestions.add(studentQuestion);
+    }
+
+    public Set<Tournament> getCreatedTournaments() {
+        return createdTournaments;
+    }
+
+    public void addCreatedTournament(Tournament tournament) {
+        this.createdTournaments.add(tournament);
+    }
+
+    public Set<Tournament> getEnrolledTournament() {
+        return enrolledTournaments;
+    }
+
+    public void addEnrolledTournaments(Tournament tournament) {
+        this.enrolledTournaments.add(tournament);
     }
 
     @Override
