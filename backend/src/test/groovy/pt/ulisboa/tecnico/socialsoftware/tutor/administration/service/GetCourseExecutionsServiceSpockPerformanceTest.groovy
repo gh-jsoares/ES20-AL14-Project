@@ -41,7 +41,7 @@ class GetCourseExecutionsServiceSpockPerformanceTest extends Specification {
 
         then:
         true
-    }
+}
 
     @TestConfiguration
     static class ServiceImplTestContextConfiguration {

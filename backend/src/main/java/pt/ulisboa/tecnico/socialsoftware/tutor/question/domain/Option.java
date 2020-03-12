@@ -51,7 +51,7 @@ public class Option {
     }
 
     public Integer getSequence() {
-        if (sequence == null) {
+        if (sequence == null && getQuestion() != null) {
             getQuestion().setOptionsSequence();
         }
         return sequence;
@@ -83,10 +83,6 @@ public class Option {
 
     public void setQuestion(Question question) {
         this.question = question;
-    }
-
-    public StudentQuestion getStudentQuestion() {
-        return studentQuestion;
     }
 
     public void setStudentQuestion(StudentQuestion studentQuestion) {
