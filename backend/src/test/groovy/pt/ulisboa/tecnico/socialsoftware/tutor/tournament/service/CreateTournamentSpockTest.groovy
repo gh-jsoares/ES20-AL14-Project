@@ -92,10 +92,10 @@ class CreateTournamentSpockTest extends Specification{
         given: 'tournament with correct values'
         def tournDto = createTournamentDto(TOURN_TITLE, QUEST_NUM, days["+1"], days["+2"])
         and: "a student as creator"
-        def user = createUser(User.Role.STUDENT)
+        def userId = createUser(User.Role.STUDENT)
 
         when: "service call to create tournament"
-        tournService.createTournament(courseExecution.getId(), tournDto, user)
+        tournService.createTournament(courseExecution.getId(), tournDto, userId)
 
         then: "tournament in repository"
         tournRepository.count() == 1L
@@ -115,7 +115,7 @@ class CreateTournamentSpockTest extends Specification{
 
         and: "creator stored correctly"
         result.getCreator() != null
-        result.getCreator().getId() == user.getId()
+        result.getCreator().getId() == userId
 
         and: "topic stored correctly"
         result.getTopics().size() == 1
@@ -130,10 +130,10 @@ class CreateTournamentSpockTest extends Specification{
         def tournDto = createTournamentDto(TOURN_TITLE, QUEST_NUM, days["+1"], days["+2"])
         tournDto.getTopics().clear()
         and: "a student as creator"
-        def user = createUser(User.Role.STUDENT)
+        def userId = createUser(User.Role.STUDENT)
 
         when: "service call to create tournament"
-        tournService.createTournament(courseExecution.getId(), tournDto, user)
+        tournService.createTournament(courseExecution.getId(), tournDto, userId)
 
         then: "tournament not created, exception thrown"
         def exception = thrown(TutorException)
@@ -148,10 +148,10 @@ class CreateTournamentSpockTest extends Specification{
         def tournDto = createTournamentDto(TOURN_TITLE, QUEST_NUM, days["+1"], days["+2"])
         tournDto.getTopics().get(0).setId(-1)
         and: "a student as creator"
-        def user = createUser(User.Role.STUDENT)
+        def userId = createUser(User.Role.STUDENT)
 
         when: "service call to create tournament"
-        tournService.createTournament(courseExecution.getId(), tournDto, user)
+        tournService.createTournament(courseExecution.getId(), tournDto, userId)
 
         then: "tournament not created, exception thrown"
         def exception = thrown(TutorException)
@@ -167,10 +167,10 @@ class CreateTournamentSpockTest extends Specification{
         given: "a tournamentDto with wrong date order"
         def tournDto = createTournamentDto(TOURN_TITLE, QUEST_NUM, days[available], days[conclusion])
         and: "a student as creator"
-        def user = createUser(User.Role.STUDENT)
+        def userId = createUser(User.Role.STUDENT)
 
         when: "service call to create tournament"
-        tournService.createTournament(courseExecution.getId(), tournDto, user)
+        tournService.createTournament(courseExecution.getId(), tournDto, userId)
 
         then: "tournament not created, exception thrown"
         def exception = thrown(TutorException)
@@ -193,12 +193,12 @@ class CreateTournamentSpockTest extends Specification{
         given: "a tournamentDto"
         def tournDto = validDto ? createTournamentDto(title, numQuest, days["+1"], days["+2"]) : null
         and: "a user as creator"
-        def user = createUser(creator)
+        def userId = createUser(creator)
         and: "a courseExecutionId"
         def execId = validExecId ? courseExecution.getId() : -1
 
         when: "service call to create tournament"
-        tournService.createTournament(execId, tournDto, user)
+        tournService.createTournament(execId, tournDto, userId)
 
         then: "tournament not created, exception thrown"
         def exception = thrown(TutorException)
@@ -213,7 +213,7 @@ class CreateTournamentSpockTest extends Specification{
         null        | QUEST_NUM | User.Role.STUDENT | true      | true          || ErrorMessage.TOURNAMENT_NOT_CONSISTENT
         "   "       | QUEST_NUM | User.Role.STUDENT | true      | true          || ErrorMessage.TOURNAMENT_NOT_CONSISTENT
         TOURN_TITLE | -1        | User.Role.STUDENT | true      | true          || ErrorMessage.TOURNAMENT_NOT_CONSISTENT
-        TOURN_TITLE | QUEST_NUM | null              | true      | true          || ErrorMessage.USER_IS_NULL
+        TOURN_TITLE | QUEST_NUM | null              | true      | true          || ErrorMessage.USER_NOT_FOUND
         TOURN_TITLE | QUEST_NUM | User.Role.TEACHER | true      | true          || ErrorMessage.TOURNAMENT_USER_IS_NOT_STUDENT
         TOURN_TITLE | QUEST_NUM | User.Role.STUDENT | false     | true          || ErrorMessage.TOURNAMENT_IS_NULL
         TOURN_TITLE | QUEST_NUM | User.Role.STUDENT | true      | false         || ErrorMessage.COURSE_EXECUTION_NOT_FOUND
@@ -235,13 +235,13 @@ class CreateTournamentSpockTest extends Specification{
 
     def createUser(creator) {
         if (creator == null) {
-            return null
+            return -1
         }
         def user = new User(USER_NAME, USER_USERNAME, 1, creator)
         user.addCourse(courseExecution)
         courseExecution.addUser(user)
         userRepository.save(user)
-        return user
+        return user.getId()
     }
 
     @TestConfiguration

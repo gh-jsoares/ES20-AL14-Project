@@ -13,11 +13,15 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.TopicRepository;
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.User;
 
+import pt.ulisboa.tecnico.socialsoftware.tutor.user.UserRepository;
+
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+
+import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.USER_NOT_FOUND;
 
 
 @Service
@@ -29,6 +33,9 @@ public class TournamentService {
     private CourseExecutionRepository courseExecutionRepository;
 
     @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
     private TopicRepository topicRepository;
 
     @PersistenceContext
@@ -38,7 +45,9 @@ public class TournamentService {
             value = { SQLException.class },
             backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
-    public TournamentDto  tournamentEnrollStudent(TournamentDto tournamentDto, User user) {
+    public TournamentDto  tournamentEnrollStudent(TournamentDto tournamentDto, int userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new TutorException(USER_NOT_FOUND, userId));
+
         Tournament tournament = getTournament(tournamentDto);
         tournament.addEnrolledStudent(user);
         return new TournamentDto(tournament);
@@ -59,9 +68,9 @@ public class TournamentService {
             value = { SQLException.class },
             backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
-    public TournamentDto createTournament(int executionId, TournamentDto tournDto, User user) {
+    public TournamentDto createTournament(int executionId, TournamentDto tournDto, int userId) {
         checkTournamentDto(tournDto);
-        checkUser(user);
+        User user = getUser(userId);
         checkTopics(tournDto);
 
         CourseExecution courseExecution = getCourseExecution(executionId);
@@ -81,12 +90,15 @@ public class TournamentService {
                     .orElseThrow(() -> new TutorException(ErrorMessage.COURSE_EXECUTION_NOT_FOUND, executionId));
     }
 
-    private void checkUser(User user) {
-        if (user == null) {
-            throw new TutorException(ErrorMessage.USER_IS_NULL);
-        } else if (user.getRole() != User.Role.STUDENT) {
+    private User getUser(int userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new TutorException(USER_NOT_FOUND, userId));
+
+        if (user.getRole() != User.Role.STUDENT) {
             throw new TutorException(ErrorMessage.TOURNAMENT_USER_IS_NOT_STUDENT, user.getId());
         }
+
+        return user;
     }
 
     private void checkTopics(TournamentDto tournDto) {
