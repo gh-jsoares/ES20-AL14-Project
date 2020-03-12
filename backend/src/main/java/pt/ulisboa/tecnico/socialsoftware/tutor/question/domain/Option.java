@@ -27,6 +27,10 @@ public class Option {
     @JoinColumn(name = "question_id")
     private Question question;
 
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name = "student_question_id")
+    private StudentQuestion studentQuestion;
+
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "quizAnswer", orphanRemoval=true)
     private Set<QuestionAnswer> questionAnswers = new HashSet<>();
 
@@ -79,6 +83,14 @@ public class Option {
 
     public void setQuestion(Question question) {
         this.question = question;
+    }
+
+    public StudentQuestion getStudentQuestion() {
+        return studentQuestion;
+    }
+
+    public void setStudentQuestion(StudentQuestion studentQuestion) {
+        this.studentQuestion = studentQuestion;
     }
 
     public Set<QuestionAnswer> getQuestionAnswers() {
