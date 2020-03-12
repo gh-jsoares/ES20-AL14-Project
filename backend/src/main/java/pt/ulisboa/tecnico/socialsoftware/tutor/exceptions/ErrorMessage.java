@@ -72,6 +72,22 @@ public enum ErrorMessage {
     USER_IS_NOT_TEACHER("User with name %s is not a teacher"),
 
 
+    DUPLICATE_STUDENT_QUESTION("Duplicate student question: %s"),
+    TOO_MANY_CORRECT_OPTIONS_STUDENT_QUESTION("Student question should have only one correct option"),
+    NO_CORRECT_OPTION_STUDENT_QUESTION("Student question must have one correct option"),
+    STUDENT_QUESTION_MISSING_DATA("Missing information for student question"),
+    TOO_FEW_OPTIONS_STUDENT_QUESTION("Student question must have 4 options"),
+    STUDENT_QUESTION_TITLE_IS_EMPTY("The student question title is empty"),
+    STUDENT_QUESTION_CONTENT_IS_EMPTY("The student question content is empty"),
+    STUDENT_QUESTION_STATUS_IS_EMPTY("The student question status is empty"),
+    STUDENT_QUESTION_OPTION_CONTENT_IS_EMPTY("Options need to have content"),
+    STUDENT_QUESTION_NOT_A_STUDENT("You need to be a student to create a student question"),
+    STUDENT_QUESTION_TOPIC_NOT_FOUND("The topic needs to exist"),
+    STUDENT_QUESTION_NOT_FOUND("The student question does not exist"),
+    STUDENT_QUESTION_TOPIC_ALREADY_ADDED("The student question already belongs to the topic: %s"),
+    STUDENT_QUESTION_USER_NOT_FOUND("The user was not found"),
+    STUDENT_QUESTION_TOPIC_NOT_PRESENT("The topic '%s' was not found in the student question"),
+
     TOURNAMENT_NOT_CONSISTENT("Field %s of tournament is not consistent"),
 
 
