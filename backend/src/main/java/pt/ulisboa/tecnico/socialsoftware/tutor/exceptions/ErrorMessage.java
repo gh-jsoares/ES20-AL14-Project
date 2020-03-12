@@ -1,6 +1,12 @@
 package pt.ulisboa.tecnico.socialsoftware.tutor.exceptions;
 
 public enum ErrorMessage {
+
+    DISCUSSION_MESSAGE_EMPTY("The message is an empty or blank string."),
+    DISCUSSION_NOT_FOUND("Discussion not found with id %d"),
+    DISCUSSION_QUESTION_NOT_ANSWERED("Student with id %d tried to create a discussion about a question he didn't answer"),
+    USER_NOT_ENROLLED_IN_COURSE("%s - Not enrolled in the same question course execution"),
+
     QUIZ_NOT_FOUND("Quiz not found with id %d"),
     QUIZ_QUESTION_NOT_FOUND("Quiz question not found with id %d"),
     QUIZ_ANSWER_NOT_FOUND("Quiz answer not found with id %d"),
@@ -26,6 +32,7 @@ public enum ErrorMessage {
     QUESTION_OPTION_MISMATCH("Question %d does not have option %d"),
     COURSE_EXECUTION_MISMATCH("Course Execution %d does not have quiz %d"),
 
+    DUPLICATE_DISCUSSION("Duplicate discussion"),
     DUPLICATE_TOPIC("Duplicate topic: %s"),
     DUPLICATE_USER("Duplicate user: %s"),
     DUPLICATE_COURSE_EXECUTION("Duplicate course execution: %s"),
@@ -41,6 +48,7 @@ public enum ErrorMessage {
     USER_NOT_ENROLLED("%s - Not enrolled in any available course"),
     QUIZ_NO_LONGER_AVAILABLE("This quiz is no longer available"),
     QUIZ_NOT_YET_AVAILABLE("This quiz is not yet available"),
+    TEACHER_NOT_IN_COURSE_EXECUTION("This teacher is not in the course execution"),
 
     USER_IS_NULL("The user was not specified"),
     TOURNAMENT_IS_NULL("The tournament was not specified"),
@@ -55,10 +63,13 @@ public enum ErrorMessage {
     QUESTION_CHANGE_CORRECT_OPTION_HAS_ANSWERS("Can not change correct option of answered question"),
     QUIZ_HAS_ANSWERS("Quiz already has answers"),
     QUIZ_ALREADY_COMPLETED("Quiz already completed"),
+    DISCUSSION_ALREADY_ANSWERED("This request was already answered"),
+    EMPTY_ANSWER("The answer needs to have more than zero characters"),
     QUIZ_QUESTION_HAS_ANSWERS("Quiz question has answers"),
     FENIX_ERROR("Fenix Error"),
     AUTHENTICATION_ERROR("Authentication Error"),
     FENIX_CONFIGURATION_ERROR("Incorrect server configuration files for fenix"),
+    USER_IS_NOT_TEACHER("User with name %s is not a teacher"),
 
 
     DUPLICATE_STUDENT_QUESTION("Duplicate student question: %s"),
