@@ -219,7 +219,7 @@ public class Tournament {
 
 
     private void checkTitle(String title) {
-        if (title == null || title.trim().length() == 0) {
+        if (title == null || title.isBlank()) {
             throw new TutorException(TOURNAMENT_NOT_CONSISTENT, "Title");
         }
     }
