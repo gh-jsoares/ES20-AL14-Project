@@ -146,10 +146,12 @@ public class StudentQuestion {
     }
 
     public void addTopic(Topic topic) {
+        checkDuplicateTopic(topic);
         this.topics.add(topic);
     }
 
     public void removeTopic(Topic topic) {
+        checkTopicPresent(topic);
         this.topics.remove(topic);
     }
 
@@ -178,6 +180,16 @@ public class StudentQuestion {
 
         if (studentQuestionDto.getOptions().stream().filter(OptionDto::getCorrect).count() != 1)
             throw new TutorException(TOO_MANY_CORRECT_OPTIONS_STUDENT_QUESTION);
+    }
+
+    private void checkDuplicateTopic(Topic topic) {
+        if(getTopics().stream().anyMatch(t -> t.getId().equals(topic.getId())))
+            throw new TutorException(STUDENT_QUESTION_TOPIC_ALREADY_ADDED);
+    }
+
+    private void checkTopicPresent(Topic topic) {
+        if(getTopics().stream().noneMatch(t -> t.getId().equals(topic.getId())))
+            throw new TutorException(STUDENT_QUESTION_TOPIC_NOT_PRESENT);
     }
 
     private void populateCreationDate(StudentQuestionDto studentQuestionDto) {

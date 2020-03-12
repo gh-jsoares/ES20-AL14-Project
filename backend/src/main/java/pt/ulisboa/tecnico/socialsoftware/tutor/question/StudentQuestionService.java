@@ -63,8 +63,6 @@ public class StudentQuestionService {
         Topic topic = getTopicIfExists(topicDto);
         StudentQuestion studentQuestion = getStudentQuestionIfExists(studentQuestionDto);
 
-        checkDuplicateTopicInStudentQuestion(studentQuestion, topic);
-
         studentQuestion.addTopic(topic);
         topic.addStudentQuestion(studentQuestion);
         this.entityManager.persist(studentQuestion);
@@ -79,8 +77,6 @@ public class StudentQuestionService {
     public StudentQuestionDto removeTopicFromStudentQuestion(StudentQuestionDto studentQuestionDto, TopicDto topicDto) {
         Topic topic = getTopicIfExists(topicDto);
         StudentQuestion studentQuestion = getStudentQuestionIfExists(studentQuestionDto);
-
-        checkTopicPresentInStudentQuestion(studentQuestion, topic);
 
         studentQuestion.removeTopic(topic);
         topic.removeStudentQuestion(studentQuestion);
@@ -132,19 +128,6 @@ public class StudentQuestionService {
         if (studentQuestionRepository.findStudentQuestionByTitle(studentQuestionDto.getTitle()) != null)
             throw new TutorException(DUPLICATE_STUDENT_QUESTION, studentQuestionDto.getTitle());
     }
-
-    private void checkDuplicateTopicInStudentQuestion(StudentQuestion studentQuestion, Topic topic) {
-        if(studentQuestion.getTopics().stream().anyMatch(t -> t.getId().equals(topic.getId()))
-                || topic.getStudentQuestions().stream().anyMatch(sq -> sq.getKey().equals(studentQuestion.getKey())))
-            throw new TutorException(STUDENT_QUESTION_TOPIC_ALREADY_ADDED);
-    }
-
-    private void checkTopicPresentInStudentQuestion(StudentQuestion studentQuestion, Topic topic) {
-        if(studentQuestion.getTopics().stream().noneMatch(t -> t.getId().equals(topic.getId()))
-                || topic.getStudentQuestions().stream().noneMatch(sq -> sq.getKey().equals(studentQuestion.getKey())))
-            throw new TutorException(STUDENT_QUESTION_TOPIC_NOT_PRESENT);
-    }
-
 
     private Topic getTopicIfExists(TopicDto topicDto) {
         if (topicDto != null) {

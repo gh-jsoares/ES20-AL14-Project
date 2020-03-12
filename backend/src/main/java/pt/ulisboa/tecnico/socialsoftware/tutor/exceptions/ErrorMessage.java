@@ -1,6 +1,12 @@
 package pt.ulisboa.tecnico.socialsoftware.tutor.exceptions;
 
 public enum ErrorMessage {
+
+    DISCUSSION_MESSAGE_EMPTY("The message is an empty or blank string."),
+    DISCUSSION_NOT_FOUND("Discussion not found with id %d"),
+    DISCUSSION_QUESTION_NOT_ANSWERED("Student with id %d tried to create a discussion about a question he didn't answer"),
+    USER_NOT_ENROLLED_IN_COURSE("%s - Not enrolled in the same question course execution"),
+
     QUIZ_NOT_FOUND("Quiz not found with id %d"),
     QUIZ_QUESTION_NOT_FOUND("Quiz question not found with id %d"),
     QUIZ_ANSWER_NOT_FOUND("Quiz answer not found with id %d"),
@@ -12,6 +18,7 @@ public enum ErrorMessage {
     ASSESSMENT_NOT_FOUND("Assessment not found with id %d"),
     TOPIC_CONJUNCTION_NOT_FOUND("Topic Conjunction not found with id %d"),
     COURSE_EXECUTION_NOT_FOUND("Course execution not found with name %d"),
+    TOURNAMENT_NOT_FOUND("Tournament not found with id %d"),
 
     COURSE_NOT_FOUND("Course not found with name %s"),
     COURSE_NAME_IS_EMPTY("The course name is empty"),
@@ -25,6 +32,7 @@ public enum ErrorMessage {
     QUESTION_OPTION_MISMATCH("Question %d does not have option %d"),
     COURSE_EXECUTION_MISMATCH("Course Execution %d does not have quiz %d"),
 
+    DUPLICATE_DISCUSSION("Duplicate discussion"),
     DUPLICATE_TOPIC("Duplicate topic: %s"),
     DUPLICATE_USER("Duplicate user: %s"),
     DUPLICATE_COURSE_EXECUTION("Duplicate course execution: %s"),
@@ -40,6 +48,13 @@ public enum ErrorMessage {
     USER_NOT_ENROLLED("%s - Not enrolled in any available course"),
     QUIZ_NO_LONGER_AVAILABLE("This quiz is no longer available"),
     QUIZ_NOT_YET_AVAILABLE("This quiz is not yet available"),
+    TEACHER_NOT_IN_COURSE_EXECUTION("This teacher is not in the course execution"),
+
+    USER_IS_NULL("The user was not specified"),
+    TOURNAMENT_IS_NULL("The tournament was not specified"),
+    TOURNAMENT_USER_IS_NOT_STUDENT("The user with id %d is not a student"),
+    TOURNAMENT_STUDENT_NOT_ENROLLED_IN_TOURNAMENT_COURSE("The user with id %d is not enrolled in the course execution of the tournament"),
+    TOURNAMENT_NOT_OPEN("The tournament with id %d is not open"),
 
     NO_CORRECT_OPTION("Question does not have a correct option"),
     NOT_ENOUGH_QUESTIONS("Not enough questions to create a quiz"),
@@ -48,10 +63,13 @@ public enum ErrorMessage {
     QUESTION_CHANGE_CORRECT_OPTION_HAS_ANSWERS("Can not change correct option of answered question"),
     QUIZ_HAS_ANSWERS("Quiz already has answers"),
     QUIZ_ALREADY_COMPLETED("Quiz already completed"),
+    DISCUSSION_ALREADY_ANSWERED("This request was already answered"),
+    EMPTY_ANSWER("The answer needs to have more than zero characters"),
     QUIZ_QUESTION_HAS_ANSWERS("Quiz question has answers"),
     FENIX_ERROR("Fenix Error"),
     AUTHENTICATION_ERROR("Authentication Error"),
     FENIX_CONFIGURATION_ERROR("Incorrect server configuration files for fenix"),
+    USER_IS_NOT_TEACHER("User with name %s is not a teacher"),
 
 
     DUPLICATE_STUDENT_QUESTION("Duplicate student question: %s"),
@@ -69,6 +87,9 @@ public enum ErrorMessage {
     STUDENT_QUESTION_TOPIC_ALREADY_ADDED("The student question already belongs to the topic: %s"),
     STUDENT_QUESTION_USER_NOT_FOUND("The user was not found"),
     STUDENT_QUESTION_TOPIC_NOT_PRESENT("The topic '%s' was not found in the student question"),
+
+    TOURNAMENT_NOT_CONSISTENT("Field %s of tournament is not consistent"),
+
 
     ACCESS_DENIED("You do not have permission to view this resource"),
     CANNOT_OPEN_FILE("Cannot open file");
