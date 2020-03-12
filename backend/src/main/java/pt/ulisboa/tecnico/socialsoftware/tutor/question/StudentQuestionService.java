@@ -6,7 +6,6 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
-import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.StudentQuestion;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Topic;
@@ -45,9 +44,7 @@ public class StudentQuestionService {
             backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public StudentQuestionDto createStudentQuestion(String username, StudentQuestionDto studentQuestionDto) {
-        User user = userRepository.findByUsername(username);
-
-        checkUserExists(user);
+        User user = getUserIfExists(username);
 
         checkDuplicateQuestion(studentQuestionDto);
         generateNextStudentQuestionKey(studentQuestionDto);
@@ -94,13 +91,9 @@ public class StudentQuestionService {
 
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public List<StudentQuestionDto> listStudentQuestions(String username) {
-        User user = userRepository.findByUsername(username);
+        User user = getUserIfExists(username);
 
-        checkUserExists(user);
-
-        // TODO: EXTRACT METHOD (ALSO FROM STUDENTQUESTION CONSTRUCTOR MAYBE)
-        if (user.getRole() != User.Role.STUDENT)
-            throw new TutorException(STUDENT_QUESTION_NOT_A_STUDENT);
+        checkUserIsStudent(user);
 
         return studentQuestionRepository.findAll().stream()
                 .map(StudentQuestionDto::new)
@@ -108,6 +101,18 @@ public class StudentQuestionService {
                         .comparing(StudentQuestionDto::getCreationDateAsObject).reversed()
                         .thenComparing(StudentQuestionDto::getTitle))
                 .collect(Collectors.toList());
+    }
+
+    private User getUserIfExists(String username) {
+        User user = userRepository.findByUsername(username);
+
+        checkUserExists(user);
+        return user;
+    }
+
+    private void checkUserIsStudent(User user) {
+        if (user.getRole() != User.Role.STUDENT)
+            throw new TutorException(STUDENT_QUESTION_NOT_A_STUDENT);
     }
 
     private void checkUserExists(User user) {

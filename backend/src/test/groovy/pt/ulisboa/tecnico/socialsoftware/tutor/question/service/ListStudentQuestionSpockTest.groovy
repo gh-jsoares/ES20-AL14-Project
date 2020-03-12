@@ -7,8 +7,6 @@ import org.springframework.context.annotation.Bean
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.StudentQuestionService
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.StudentQuestion
-import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.OptionDto
-import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.StudentQuestionDto
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.StudentQuestionRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.User
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.UserRepository
