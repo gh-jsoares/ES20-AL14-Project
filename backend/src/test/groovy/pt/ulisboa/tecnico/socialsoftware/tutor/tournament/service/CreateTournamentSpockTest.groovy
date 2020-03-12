@@ -120,7 +120,7 @@ class CreateTournamentSpockTest extends Specification{
         and: "topic stored correctly"
         result.getTopics().size() == 1
         for (Topic t : result.getTopics()) {
-            t.getName() == TOPIC_NAME
+            assert t.getName() == TOPIC_NAME
         }
 
     }

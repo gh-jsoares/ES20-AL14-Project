@@ -10,7 +10,6 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecution;
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecutionRepository;
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage;
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException;
-import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.TopicDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.TopicRepository;
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.User;
 
@@ -19,7 +18,6 @@ import javax.persistence.PersistenceContext;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 
 
 @Service
@@ -96,12 +94,8 @@ public class TournamentService {
             throw new TutorException(ErrorMessage.TOURNAMENT_NOT_CONSISTENT, "Topics");
         }
 
-        List<TopicDto> topics = tournDto.getTopics();
-        for (TopicDto topicDto : topics) {
-            if (topicRepository.findById(topicDto.getId()).isEmpty()) {
-                throw new TutorException(ErrorMessage.TOPIC_NOT_FOUND, topicDto.getId());
-            }
-        }
+        tournDto.getTopics().forEach(topicDto -> topicRepository.findById(topicDto.getId())
+                .orElseThrow(() -> new TutorException(ErrorMessage.TOPIC_NOT_FOUND, topicDto.getId())));
     }
 
     private Tournament createTournament(TournamentDto tournDto, User user, CourseExecution courseExecution) {
@@ -114,10 +108,7 @@ public class TournamentService {
         tourn.setCreationDate(LocalDateTime.now());
         tourn.setCreator(user);
 
-        List<TopicDto> topics = tournDto.getTopics();
-        for (TopicDto topicDto : topics) {
-            topicRepository.findById(topicDto.getId()).ifPresent(tourn::addTopic);
-        }
+        tournDto.getTopics().forEach(topicDto -> topicRepository.findById(topicDto.getId()).ifPresent(tourn::addTopic));
 
         entityManager.persist(tourn);
         return tourn;
