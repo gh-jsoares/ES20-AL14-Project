@@ -19,8 +19,9 @@ import javax.persistence.PersistenceContext;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -129,6 +130,13 @@ public class TournamentService {
             backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public List<TournamentDto> getOpenTournaments(int executionId) {
-        return new ArrayList<>();
+        CourseExecution courseExecution = courseExecutionRepository.findById(executionId)
+                .orElseThrow(() -> new TutorException(ErrorMessage.COURSE_EXECUTION_NOT_FOUND, executionId));
+
+        return courseExecution.getTournaments().stream()
+                .filter(tourn -> !tourn.getState().equals(Tournament.State.CLOSED))
+                .sorted(Comparator.comparing(Tournament::getId).reversed())
+                .map(TournamentDto::new)
+                .collect(Collectors.toList());
     }
 }

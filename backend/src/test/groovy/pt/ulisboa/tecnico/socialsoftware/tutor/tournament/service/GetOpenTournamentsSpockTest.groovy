@@ -1,20 +1,30 @@
 package pt.ulisboa.tecnico.socialsoftware.tutor.tournament.service
 
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
+import org.springframework.boot.test.context.TestConfiguration
+import org.springframework.context.annotation.Bean
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.Course
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecution
+import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecutionRepository
+import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Topic
+import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.TopicRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.tournament.Tournament
 import pt.ulisboa.tecnico.socialsoftware.tutor.tournament.TournamentDto
+import pt.ulisboa.tecnico.socialsoftware.tutor.tournament.TournamentRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.tournament.TournamentService
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.User
+import pt.ulisboa.tecnico.socialsoftware.tutor.user.UserRepository
 import spock.lang.Specification
 
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 
+@DataJpaTest
 class GetOpenTournamentsSpockTest extends Specification{
     public static final String USER_NAME = "name"
     public static final String USER_USERNAME = "username"
@@ -27,11 +37,26 @@ class GetOpenTournamentsSpockTest extends Specification{
     public static final int QUEST_NUM = 1
 
 
-    TournamentService tournService = new TournamentService()
+    @Autowired
+    TournamentRepository tournRepository
 
-    def course
+    @Autowired
+    CourseRepository courseRepository
+
+    @Autowired
+    UserRepository userRepository
+
+    @Autowired
+    CourseExecutionRepository courseExecutionRepository
+
+    @Autowired
+    TopicRepository topicRepository
+
+    @Autowired
+    TournamentService tournService
+
     def courseExecution
-    //def days = []
+    def days = []
     def formatter
     def topic
     def user
@@ -40,32 +65,30 @@ class GetOpenTournamentsSpockTest extends Specification{
         formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
 
         // create course
-        course = new Course(COURSE_NAME, Course.Type.TECNICO)
-        //courseRepository.save(course)
+        def course = new Course(COURSE_NAME, Course.Type.TECNICO)
+        courseRepository.save(course)
 
         // create course execution
         courseExecution = new CourseExecution(course, ACRONYM, ACADEMIC_TERM, Course.Type.TECNICO)
-        courseExecution.setId(1)
-        //courseExecutionRepository.save(courseExecution)
+        courseExecutionRepository.save(courseExecution)
 
         // create topic
         topic = new Topic()
         topic.setName(TOPIC_NAME)
         topic.setCourse(course)
         course.addTopic(topic)
-        //topicRepository.save(topic)
+        topicRepository.save(topic)
 
         // create user
         user = new User(USER_NAME, USER_USERNAME, 1, User.Role.STUDENT)
         user.addCourse(courseExecution)
         courseExecution.addUser(user)
-        //userRepository.save(user)
+        userRepository.save(user)
 
         // create dates in different days
-        //days.add((LocalDateTime.now().plusDays(1)))
-        //days.add((LocalDateTime.now().plusDays(2)))
-        //days.add((LocalDateTime.now().plusDays(3)))
-        //days.add((LocalDateTime.now().plusDays(4)))
+        days.add(LocalDateTime.now().plusDays(1))
+        days.add(LocalDateTime.now().plusDays(2))
+
     }
 
     def createTournament(state) {
@@ -75,19 +98,19 @@ class GetOpenTournamentsSpockTest extends Specification{
         tourn.setState(state)
         tourn.setScramble(true)
         tourn.setCreationDate(LocalDateTime.now())
-        //tourn.setAvailableDate(days[0])
-        //tourn.setConclusionDate(days[1])
+        tourn.setAvailableDate(days[0])
+        tourn.setConclusionDate(days[1])
         tourn.setSeries(1)
         tourn.setVersion(VERSION)
         tourn.addTopic(topic)
         tourn.setCourseExecution(courseExecution)
         tourn.setCreator(user)
-        //tournRepository.save(tourn)
+        tournRepository.save(tourn)
         return tourn
     }
 
     def "only exists open tournaments"() {
-        given: "some open tournaments"
+        given: "only open tournaments"
         def stack = []
         stack.push(createTournament(Tournament.State.ENROLL))
         stack.push(createTournament(Tournament.State.ENROLL))
@@ -101,13 +124,14 @@ class GetOpenTournamentsSpockTest extends Specification{
         result.size() == 4
         and: "tournaments in right order (newer creation first)"
         for (TournamentDto tournDto : result) {
-            tournDto.getState() == stack.pop().getState()
+            assert tournDto.getId() == stack.pop().getId()
         }
     }
 
     def "exists both open and closed tournaments"() {
-        given: "some open tournaments"
+        given: "some open tournaments mixed with closed"
         def stack = []
+        createTournament(Tournament.State.CLOSED)
         stack.push(createTournament(Tournament.State.ENROLL))
         stack.push(createTournament(Tournament.State.ENROLL))
         createTournament(Tournament.State.CLOSED)
@@ -121,7 +145,7 @@ class GetOpenTournamentsSpockTest extends Specification{
         result.size() == 4
         and: "tournaments in right order (newer creation first)"
         for (TournamentDto tournDto : result) {
-            tournDto.getState() == stack.pop().getState()
+            assert tournDto.getId() == stack.pop().getId()
         }
     }
 
@@ -160,5 +184,15 @@ class GetOpenTournamentsSpockTest extends Specification{
         then: "exception is thrown"
         def exception = thrown(TutorException)
         exception.getErrorMessage() == ErrorMessage.COURSE_EXECUTION_NOT_FOUND
+    }
+
+
+    @TestConfiguration
+    static class TournamentServiceImplTestContextConfiguration {
+
+        @Bean
+        TournamentService tournamentService() {
+            return new TournamentService()
+        }
     }
 }
