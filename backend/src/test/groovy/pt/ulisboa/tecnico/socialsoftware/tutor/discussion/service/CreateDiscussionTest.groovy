@@ -117,20 +117,20 @@ class CreateDiscussionTest extends Specification {
         result.getId() != null
         result.getStudent().getKey() == student.getKey()
         result.getQuestion().getId() == question.getId()
-        assert result.getQuestion().getDiscussions().contains(result)
-        assert question.getDiscussions().contains(result)
-        assert student.getDiscussions().contains(result)
+        result.getQuestion().getDiscussions().contains(result)
+        question.getDiscussions().contains(result)
+        student.getDiscussions().contains(result)
 
         student.getRole() == User.Role.STUDENT
-        assert courseExecution.getUsers().contains(student)
-        assert courseExecution.getQuizzes().contains(quiz)
+        courseExecution.getUsers().contains(student)
+        courseExecution.getQuizzes().contains(quiz)
         quiz.getCourseExecution() == courseExecution
-        assert quiz.getQuizQuestions().contains(quizQuestion)
+        quiz.getQuizQuestions().contains(quizQuestion)
         quizQuestion.getQuestion() == question
-        assert student.getQuizAnswers().contains(quizAnswer)
-        assert quizAnswer.getQuestionAnswers().contains(questionAnswer)
+        student.getQuizAnswers().contains(quizAnswer)
+        quizAnswer.getQuestionAnswers().contains(questionAnswer)
         quizAnswer.getQuiz() == quiz
-        assert quizQuestion.getQuestionAnswers().contains(questionAnswer)
+        quizQuestion.getQuestionAnswers().contains(questionAnswer)
     }
 
     def "create a discussion with the same student and question"() {
