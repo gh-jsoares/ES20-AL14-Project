@@ -19,7 +19,9 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.user.UserRepository;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.*;
 
@@ -88,6 +90,11 @@ public class StudentQuestionService {
         this.entityManager.persist(studentQuestion);
 
         return new StudentQuestionDto(studentQuestion);
+    }
+
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public Set<StudentQuestionDto> listStudentQuestions(String username) {
+        return new HashSet<>();
     }
 
     private void checkUserExists(User user) {
