@@ -5,7 +5,7 @@ public enum ErrorMessage {
     DISCUSSION_MESSAGE_EMPTY("The message is an empty or blank string."),
     DISCUSSION_NOT_FOUND("Discussion not found with id %d"),
     DISCUSSION_QUESTION_NOT_ANSWERED("Student with id %d tried to create a discussion about a question he didn't answer"),
-    USER_NOT_ENROLLED_IN_COURSE("%s - Not enrolled in the same question course execution"),
+    USER_NOT_STUDENT("User %d is not a student"),
 
     QUIZ_NOT_FOUND("Quiz not found with id %d"),
     QUIZ_QUESTION_NOT_FOUND("Quiz question not found with id %d"),
@@ -65,7 +65,6 @@ public enum ErrorMessage {
     QUIZ_HAS_ANSWERS("Quiz already has answers"),
     QUIZ_ALREADY_COMPLETED("Quiz already completed"),
     DISCUSSION_ALREADY_ANSWERED("This request was already answered"),
-    EMPTY_ANSWER("The answer needs to have more than zero characters"),
     QUIZ_QUESTION_HAS_ANSWERS("Quiz question has answers"),
     FENIX_ERROR("Fenix Error"),
     AUTHENTICATION_ERROR("Authentication Error"),

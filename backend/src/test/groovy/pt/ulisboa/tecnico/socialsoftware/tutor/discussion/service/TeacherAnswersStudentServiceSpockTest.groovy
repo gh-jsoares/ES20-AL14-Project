@@ -99,9 +99,10 @@ class TeacherAnswersStudentServiceSpockTest extends Specification {
 
         DiscussionDto discussionDto = new DiscussionDto()
         discussionDto.setMessageFromStudent(MESSAGE)
-        discussion = new Discussion(student, question, discussionDto)
 
         questionRepository.save(question)
+        discussion = new Discussion(student, question, discussionDto)
+
         userRepository.save(student)
         discussionRepository.save(discussion)
 
@@ -226,9 +227,9 @@ class TeacherAnswersStudentServiceSpockTest extends Specification {
 
         where:
         answer         | username              || errorMessage
-        null           | TEACHER_NAME          || ErrorMessage.EMPTY_ANSWER
-        ""             | TEACHER_NAME          || ErrorMessage.EMPTY_ANSWER
-        "   "          | TEACHER_NAME          || ErrorMessage.EMPTY_ANSWER
+        null           | TEACHER_NAME          || ErrorMessage.DISCUSSION_MESSAGE_EMPTY
+        ""             | TEACHER_NAME          || ErrorMessage.DISCUSSION_MESSAGE_EMPTY
+        "   "          | TEACHER_NAME          || ErrorMessage.DISCUSSION_MESSAGE_EMPTY
         TEACHER_ANSWER | NON_EXISTING_TEACHER  || ErrorMessage.USER_NOT_FOUND
     }
 

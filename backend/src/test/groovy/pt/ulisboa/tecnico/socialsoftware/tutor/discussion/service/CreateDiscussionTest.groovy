@@ -30,6 +30,7 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.quiz.domain.Quiz
 import pt.ulisboa.tecnico.socialsoftware.tutor.quiz.domain.QuizQuestion
 import pt.ulisboa.tecnico.socialsoftware.tutor.answer.domain.QuestionAnswer
 import pt.ulisboa.tecnico.socialsoftware.tutor.answer.domain.QuizAnswer
+import spock.lang.Unroll
 
 
 @DataJpaTest
@@ -56,6 +57,7 @@ class CreateDiscussionTest extends Specification {
     @Autowired
     CourseExecutionRepository courseExecutionRepository
 
+    public static final Integer INVALID_ID = -1
     public static final String MESSAGE = "message"
     public static final String STUDENT_NAME = "student_test"
     public static final String COURSE_NAME = "course_test"
@@ -113,10 +115,11 @@ class CreateDiscussionTest extends Specification {
         discussionRepository.findAll().size() == 1
         def result = discussionRepository.findAll().get(0)
         result.getId() != null
-        result.getStudent() != null
         result.getStudent().getKey() == student.getKey()
-        result.getQuestion() != null
         result.getQuestion().getId() == question.getId()
+        result.getQuestion().getDiscussions().contains(result)
+        question.getDiscussions().contains(result)
+        student.getDiscussions().contains(result)
 
         student.getRole() == User.Role.STUDENT
         courseExecution.getUsers().contains(student)
@@ -148,12 +151,13 @@ class CreateDiscussionTest extends Specification {
         exception.errorMessage == ErrorMessage.DUPLICATE_DISCUSSION
     }
 
+    @Unroll
     def "create a discussion with an empty message is #msg"() {
-        given: "the definition of the discussion"
+        given: "the creation of the discussionDto"
         def discussionDto = new DiscussionDto()
         discussionDto.setMessageFromStudent(msg)
 
-        when: "add the discussion"
+        when: "create the discussion"
         discussionService.createDiscussion(student.getId(), question.getId(), discussionDto)
 
         then: "an error occurs"
@@ -161,23 +165,33 @@ class CreateDiscussionTest extends Specification {
         exception.errorMessage == ErrorMessage.DISCUSSION_MESSAGE_EMPTY
 
         where:
-        msg << [null, "\n\n\n", "\t"]
+        msg << [null, "\n\n\n", "\t", "", "    "]
     }
 
-    def "create a discussion with user not enrolled in course execution"() {
-        given: "the definition of the discussion"
+    def "create a discussion with invalid user"() {
+        given: "the creation of the discussionDto"
         def discussionDto = new DiscussionDto()
         discussionDto.setMessageFromStudent(MESSAGE)
-        and: "the definition of the invalid user"
-        User invalidStudent = new User('student2', "invalid student", 2, User.Role.STUDENT)
-        userRepository.save(invalidStudent)
 
-        when: "try to create discussion in the repository"
-        discussionService.createDiscussion(invalidStudent.getId(), question.getId(), discussionDto)
+        when: "creating the discussion"
+        discussionService.createDiscussion(INVALID_ID, question.getId(), discussionDto)
 
-        then: "user not enrolled exception"
+        then: "an error occurs"
         def exception = thrown(TutorException)
-        exception.errorMessage == ErrorMessage.USER_NOT_ENROLLED_IN_COURSE
+        exception.errorMessage == ErrorMessage.USER_NOT_FOUND
+    }
+
+    def "create a discussion with invalid question"() {
+        given: "the creation of the discussionDto"
+        def discussionDto = new DiscussionDto()
+        discussionDto.setMessageFromStudent(MESSAGE)
+
+        when: "creating the discussion"
+        discussionService.createDiscussion(student.getId(), INVALID_ID, discussionDto)
+
+        then: "an error occurs"
+        def exception = thrown(TutorException)
+        exception.errorMessage == ErrorMessage.QUESTION_NOT_FOUND
     }
 
     def "create a discussion before student submitting answer"() {
@@ -198,7 +212,23 @@ class CreateDiscussionTest extends Specification {
         exception.errorMessage == ErrorMessage.DISCUSSION_QUESTION_NOT_ANSWERED
     }
 
-    //useful tests: create, read, update, delete
+    def "create a discussion with invalid user type"() {
+        given: "the definition of the discussion"
+        def discussionDto = new DiscussionDto()
+        discussionDto.setMessageFromStudent(MESSAGE)
+        and: "the definition of the invalid user"
+        User invalidUser = new User('student2', "invalid student", 2, User.Role.TEACHER)
+        invalidUser.addCourse(courseExecution)
+        courseExecution.addUser(invalidUser)
+        userRepository.save(invalidUser)
+
+        when: "try to create discussion in the repository"
+        discussionService.createDiscussion(invalidUser.getId(), question.getId(), discussionDto)
+
+        then: "discussion question not answered exception"
+        def exception = thrown(TutorException)
+        exception.errorMessage == ErrorMessage.USER_NOT_STUDENT
+    }
 
     @TestConfiguration
     static class DiscussionServiceImplTestContextConfiguration {

@@ -6,6 +6,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import pt.ulisboa.tecnico.socialsoftware.tutor.answer.domain.QuizAnswer;
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecution;
+import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.domain.Discussion;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Question;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.StudentQuestion;
 import pt.ulisboa.tecnico.socialsoftware.tutor.quiz.domain.Quiz;
@@ -59,6 +60,10 @@ public class User implements UserDetails {
     @ManyToMany
     private Set<CourseExecution> courseExecutions = new HashSet<>();
 
+
+    @OneToMany
+    private Set<Discussion> discussions = new HashSet<>();
+
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "student", fetch = FetchType.LAZY, orphanRemoval=true)
     private Set<StudentQuestion> studentQuestions = new HashSet<>();
 
@@ -67,6 +72,7 @@ public class User implements UserDetails {
 
     @ManyToMany(mappedBy = "enrolledStudents", fetch=FetchType.LAZY)
     private Set<Tournament> enrolledTournaments = new HashSet<>();
+
 
     public User() {
     }
@@ -163,6 +169,19 @@ public class User implements UserDetails {
 
     public void setCourseExecutions(Set<CourseExecution> courseExecutions) {
         this.courseExecutions = courseExecutions;
+    }
+
+
+    public Set<Discussion> getDiscussions() {
+        return discussions;
+    }
+
+    public void setDiscussions(Set<Discussion> discussions) {
+        this.discussions = discussions;
+    }
+
+    public void addDiscussion(Discussion discussion) {
+        this.discussions.add(discussion);
     }
 
     public Set<StudentQuestion> getStudentQuestions() {
@@ -403,6 +422,7 @@ public class User implements UserDetails {
                 ", numberOfCorrectStudentAnswers=" + numberOfCorrectStudentAnswers +
                 ", creationDate=" + creationDate +
                 ", courseExecutions=" + courseExecutions +
+                ", discussions=" + discussions +
                 '}';
     }
 
