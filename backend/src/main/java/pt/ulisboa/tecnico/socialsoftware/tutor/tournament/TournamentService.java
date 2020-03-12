@@ -21,7 +21,9 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.USER_NOT_FOUND;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -46,7 +48,7 @@ public class TournamentService {
             backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public TournamentDto  tournamentEnrollStudent(TournamentDto tournamentDto, int userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new TutorException(USER_NOT_FOUND, userId));
+        User user = userRepository.findById(userId).orElseThrow(() -> new TutorException(ErrorMessage.USER_NOT_FOUND, userId));
 
         Tournament tournament = getTournament(tournamentDto);
         tournament.addEnrolledStudent(user);
@@ -92,7 +94,7 @@ public class TournamentService {
 
     private User getUser(int userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new TutorException(USER_NOT_FOUND, userId));
+                .orElseThrow(() -> new TutorException(ErrorMessage.USER_NOT_FOUND, userId));
 
         if (user.getRole() != User.Role.STUDENT) {
             throw new TutorException(ErrorMessage.TOURNAMENT_USER_IS_NOT_STUDENT, user.getId());
@@ -126,4 +128,17 @@ public class TournamentService {
         return tourn;
     }
 
+    @Retryable(
+            value = { SQLException.class },
+            backoff = @Backoff(delay = 5000))
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public List<TournamentDto> getOpenTournaments(int executionId) {
+        CourseExecution courseExecution = getCourseExecution(executionId);
+
+        return courseExecution.getTournaments().stream()
+                .filter(tourn -> !tourn.getState().equals(Tournament.State.CLOSED))
+                .sorted(Comparator.comparing(Tournament::getId).reversed())
+                .map(TournamentDto::new)
+                .collect(Collectors.toList());
+    }
 }
