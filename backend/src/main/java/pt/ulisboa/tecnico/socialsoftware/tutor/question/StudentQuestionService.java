@@ -105,7 +105,18 @@ public class StudentQuestionService {
 
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public StudentQuestionDto getStudentQuestion(String username, int studentQuestionId) {
-        return null;
+        User user = getUserIfExists(username);
+        StudentQuestion studentQuestion = getStudentQuestionIfExists(studentQuestionId);
+
+        checkUserIsStudent(user);
+        checkStudentIsCreatorOfQuestion(user, studentQuestion);
+
+        return new StudentQuestionDto(studentQuestion);
+    }
+
+    private void checkStudentIsCreatorOfQuestion(User user, StudentQuestion studentQuestion) {
+        if (!studentQuestion.getStudent().getUsername().equals(user.getUsername()))
+            throw new TutorException(STUDENT_QUESTION_STUDENT_NOT_CREATOR, studentQuestion.getTitle());
     }
 
     private User getUserIfExists(String username) {
@@ -162,10 +173,16 @@ public class StudentQuestionService {
 
     private StudentQuestion getStudentQuestionIfExists(StudentQuestionDto studentQuestionDto) {
         if (studentQuestionDto != null) {
-            Optional<StudentQuestion> studentQuestion = studentQuestionRepository.findByKey(studentQuestionDto.getKey());
+            Optional<StudentQuestion> studentQuestion = studentQuestionRepository.findById(studentQuestionDto.getId());
             if(studentQuestion.isPresent())
                 return studentQuestion.get();
         }
         throw new TutorException(STUDENT_QUESTION_NOT_FOUND);
+    }
+
+    private StudentQuestion getStudentQuestionIfExists(int studentQuestionId) {
+        StudentQuestionDto studentQuestionDto = new StudentQuestionDto();
+        studentQuestionDto.setId(studentQuestionId);
+        return getStudentQuestionIfExists(studentQuestionDto);
     }
 }

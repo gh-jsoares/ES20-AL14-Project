@@ -8,8 +8,8 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.StudentQuestionService
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Option
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.StudentQuestion
-import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.OptionDto
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.StudentQuestionDto
+import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.OptionRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.StudentQuestionRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.User
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.UserRepository
@@ -40,13 +40,15 @@ class GetStudentQuestionSpockTest extends Specification {
     @Autowired
     StudentQuestionRepository studentQuestionRepository
 
+    @Autowired
+    OptionRepository optionRepository
+
     def user
 
     def setup() {
         user = new User(USER_NAME, USER_USERNAME, 1, User.Role.STUDENT)
         userRepository.save(user)
     }
-
 
     def "student question exists"() {
         given: "an existing student question"
@@ -69,7 +71,7 @@ class GetStudentQuestionSpockTest extends Specification {
         result.getContent() == QUESTION_CONTENT
         result.getStatus() == StudentQuestion.Status.AWAITING_APPROVAL.name()
         result.getOptions().size() == 4
-        result.getStudent().getUsername() == USER_USERNAME
+        result.getUsername() == USER_USERNAME
         result.getOptions().stream().allMatch({ o -> o.getContent() == OPTION_CONTENT })
         result.getOptions().stream().filter({ o -> o.getCorrect() }).count() == 1L
     }
@@ -125,10 +127,10 @@ class GetStudentQuestionSpockTest extends Specification {
         def studentQuestion = createStudentQuestion(1, QUESTION_TITLE, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name())
 
         and: "a username of a student that isnt the creator of the question"
-        def user = USER_USERNAME + "_2"
+        def user = createUser(2, USER_NAME, USER_USERNAME + "_2", User.Role.STUDENT)
 
         when:
-        studentQuestionService.getStudentQuestion(user, studentQuestion.getId())
+        studentQuestionService.getStudentQuestion(user.getUsername(), studentQuestion.getId())
 
         then: "an error occurs"
         def error = thrown(TutorException)
@@ -147,7 +149,7 @@ class GetStudentQuestionSpockTest extends Specification {
         return studentQuestion
     }
 
-    private static createOptions(StudentQuestion studentQuestion, String content) {
+    private createOptions(StudentQuestion studentQuestion, String content) {
         def options = new HashSet<Option>()
 
         for (int i = 0; i < 4; i++) {
@@ -156,6 +158,7 @@ class GetStudentQuestionSpockTest extends Specification {
             option.setStudentQuestion(studentQuestion)
             options.add(option)
             studentQuestion.addOption(option)
+            optionRepository.save(option)
         }
         options.first().setCorrect(true)
     }
@@ -165,6 +168,11 @@ class GetStudentQuestionSpockTest extends Specification {
         Random random = new Random()
         int year = 60 * 60 * 24 * 365
         return now.plusSeconds((long) random.nextInt(4 * year) - 2 * year) // +- 2 years
+    }
+
+    private User createUser(int key, String name, String username, User.Role role) {
+        user = new User(name, username, key, role)
+        userRepository.save(user)
     }
 
     @TestConfiguration

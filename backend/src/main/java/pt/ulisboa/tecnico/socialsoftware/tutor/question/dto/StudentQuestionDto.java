@@ -109,6 +109,10 @@ public class StudentQuestionDto implements Serializable {
         this.sequence = sequence;
     }
 
+    public String getUsername() {
+        return this.username;
+    }
+
     @Override
     public String toString() {
         return "StudentQuestionDto{" +
