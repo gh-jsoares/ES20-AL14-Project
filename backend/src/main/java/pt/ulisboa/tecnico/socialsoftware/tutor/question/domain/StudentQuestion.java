@@ -153,6 +153,9 @@ public class StudentQuestion {
         this.topics.remove(topic);
     }
 
+    public void addOption(Option option) {
+        this.options.add(option);
+    }
 
     private void checkConsistentStudentQuestion(User user, StudentQuestionDto studentQuestionDto) {
         if (user.getRole() != User.Role.STUDENT)
