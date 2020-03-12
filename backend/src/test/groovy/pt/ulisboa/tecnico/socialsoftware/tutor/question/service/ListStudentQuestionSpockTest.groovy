@@ -109,8 +109,9 @@ class ListStudentQuestionSpockTest extends Specification {
     }
 
     private User createUser(int key, String name, String username, User.Role role) {
-        user = new User(name, username, key, role)
+        def user = new User(name, username, key, role)
         userRepository.save(user)
+        user
     }
 
     private static generateRandomCreationDate() {
