@@ -103,6 +103,11 @@ public class StudentQuestionService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public StudentQuestionDto getStudentQuestion(String username, int studentQuestionId) {
+        return null;
+    }
+
     private User getUserIfExists(String username) {
         User user = userRepository.findByUsername(username);
 
