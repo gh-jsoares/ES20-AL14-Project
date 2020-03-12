@@ -17,6 +17,10 @@ public class Image {
     @JoinColumn(name="question_id")
     private Question question;
 
+    @OneToOne
+    @JoinColumn(name="student_question_id")
+    private StudentQuestion studentQuestion;
+
     public Image() {}
 
     public Image(ImageDto imageDto) {
@@ -39,6 +43,14 @@ public class Image {
 
     public void setQuestion(Question question) {
         this.question = question;
+    }
+
+    public StudentQuestion getStudentQuestion() {
+        return studentQuestion;
+    }
+
+    public void setStudentQuestion(StudentQuestion studentQuestion) {
+        this.studentQuestion = studentQuestion;
     }
 
     public String getUrl() {

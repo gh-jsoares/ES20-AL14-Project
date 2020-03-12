@@ -23,9 +23,6 @@ public class TopicDto implements Serializable {
         this.numberOfQuestions = topic.getQuestions().size();
     }
 
-    public TopicDto(TopicDto topicDto) {
-    }
-
     public Integer getId() {
         return id;
     }
@@ -66,4 +63,5 @@ public class TopicDto implements Serializable {
                 ", parentTopic='" + parentTopic + '\'' +
                 '}';
     }
+
 }
