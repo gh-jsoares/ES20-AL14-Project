@@ -36,26 +36,34 @@ class ListStudentQuestionSpockTest extends Specification {
     StudentQuestionRepository studentQuestionRepository
 
     def user
+    def user_2
 
     def setup() {
-        user = new User(USER_NAME, USER_USERNAME, 1, User.Role.STUDENT)
-        userRepository.save(user)
+        user = createUser(1, USER_NAME, USER_USERNAME, User.Role.STUDENT)
+        user_2 = createUser(2, USER_NAME, USER_USERNAME + "_2", User.Role.STUDENT)
     }
 
     def "student has submitted n questions"() {
         given: "a valid username"
         def user = USER_USERNAME
 
-        and: "and a list of 5 student questions"
+        and: "and a list of 5 student questions made by the student"
         1.upto(5, {
-            createStudentQuestion(it.intValue(), QUESTION_TITLE + it, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name())
+            createStudentQuestion(it.intValue(), QUESTION_TITLE + it, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name(), user)
+        })
+
+        and: "and a list of 5 student questions made by another student"
+        def user2 = USER_USERNAME + "_2"
+        1.upto(5, {
+            createStudentQuestion(it.intValue() + 5, QUESTION_TITLE + it + 5, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name(), user2)
         })
 
         when:
         def result = studentQuestionService.listStudentQuestions(user)
 
-        then: "the returned list is correct"
+        then: "the list returned has only questions made by the student"
         result.size() == 5
+        result.stream().allMatch({ sq -> (sq.getUsername() == user) })
         and: "reverse sorted by creation date"
         0.upto(result.size() - 2, {
             def date_1 = result[it.intValue()].getCreationDateAsObject()
@@ -89,15 +97,20 @@ class ListStudentQuestionSpockTest extends Specification {
         error.errorMessage == STUDENT_QUESTION_NOT_A_STUDENT
     }
 
-    private createStudentQuestion(int key, String title, String content, String status) {
+    private createStudentQuestion(int key, String title, String content, String status, String username) {
         def studentQuestion = new StudentQuestion()
         studentQuestion.setKey(key)
         studentQuestion.setTitle(title)
         studentQuestion.setContent(content)
         studentQuestion.setStatus(StudentQuestion.Status.valueOf(status))
-        studentQuestion.setStudent(userRepository.findByUsername(USER_USERNAME))
+        studentQuestion.setStudent(userRepository.findByUsername(username))
         studentQuestion.setCreationDate(generateRandomCreationDate())
         studentQuestionRepository.save(studentQuestion)
+    }
+
+    private User createUser(int key, String name, String username, User.Role role) {
+        user = new User(name, username, key, role)
+        userRepository.save(user)
     }
 
     private static generateRandomCreationDate() {

@@ -93,6 +93,7 @@ public class StudentQuestionService {
 
         return studentQuestionRepository.findAll().stream()
                 .map(StudentQuestionDto::new)
+                .filter(sq -> sq.getUsername().equals(username))
                 .sorted(Comparator
                         .comparing(StudentQuestionDto::getCreationDateAsObject).reversed()
                         .thenComparing(StudentQuestionDto::getTitle))

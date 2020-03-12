@@ -32,19 +32,26 @@ class ListStudentQuestionPerformanceSpockTest extends Specification {
     StudentQuestionRepository studentQuestionRepository
 
     def user
+    def user_2
 
     def setup() {
-        user = new User(USER_NAME, USER_USERNAME, 1, User.Role.STUDENT)
-        userRepository.save(user)
+        user = createUser(1, USER_NAME, USER_USERNAME, User.Role.STUDENT)
+        user_2 = createUser(2, USER_NAME, USER_USERNAME + "_2", User.Role.STUDENT)
     }
 
     def "performance testing to get 1000 student questions"() {
         given: "a valid username"
         def user = USER_USERNAME
 
-        and: "and a list of 1000 student questions"
+        and: "and a list of 1000 student questions made by the student"
         1.upto(1000, {
-            createStudentQuestion(it.intValue(), QUESTION_TITLE + it, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name())
+            createStudentQuestion(it.intValue(), QUESTION_TITLE + it, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name(), user)
+        })
+
+        and: "and a list of 1000 student questions made by another student"
+        def user2 = USER_USERNAME + "_2"
+        1.upto(1000, {
+            createStudentQuestion(it.intValue() + 1000, QUESTION_TITLE + it + 1000, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name(), user2)
         })
 
         when:
@@ -52,6 +59,7 @@ class ListStudentQuestionPerformanceSpockTest extends Specification {
 
         then: "the returned list is correct"
         result.size() == 1000
+        result.stream().allMatch({ sq -> (sq.getUsername() == user) })
         and: "reverse sorted by creation date"
         0.upto(result.size() - 2, {
             def date_1 = result[it.intValue()].getCreationDateAsObject()
@@ -60,13 +68,13 @@ class ListStudentQuestionPerformanceSpockTest extends Specification {
         })
     }
 
-    private createStudentQuestion(int key, String title, String content, String status) {
+    private createStudentQuestion(int key, String title, String content, String status, String username) {
         def studentQuestion = new StudentQuestion()
         studentQuestion.setKey(key)
         studentQuestion.setTitle(title)
         studentQuestion.setContent(content)
         studentQuestion.setStatus(StudentQuestion.Status.valueOf(status))
-        studentQuestion.setStudent(userRepository.findByUsername(USER_USERNAME))
+        studentQuestion.setStudent(userRepository.findByUsername(username))
         studentQuestion.setCreationDate(generateRandomCreationDate())
         studentQuestionRepository.save(studentQuestion)
     }
@@ -76,6 +84,11 @@ class ListStudentQuestionPerformanceSpockTest extends Specification {
         Random random = new Random()
         int year = 60 * 60 * 24 * 365
         return now.plusSeconds((long) random.nextInt(4 * year) - 2 * year) // +- 2 years
+    }
+
+    private User createUser(int key, String name, String username, User.Role role) {
+        user = new User(name, username, key, role)
+        userRepository.save(user)
     }
 
     @TestConfiguration
