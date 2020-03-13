@@ -10,6 +10,8 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecution;
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecutionRepository;
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage;
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException;
+import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Topic;
+import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.TopicDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.TopicRepository;
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.User;
 
@@ -71,11 +73,12 @@ public class TournamentService {
             backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public TournamentDto createTournament(int executionId, TournamentDto tournDto, int userId) {
+        CourseExecution courseExecution = getCourseExecution(executionId);
+
         checkTournamentDto(tournDto);
         User user = getUser(userId);
-        checkTopics(tournDto);
+        checkTopics(tournDto, courseExecution);
 
-        CourseExecution courseExecution = getCourseExecution(executionId);
         Tournament tourn = createTournament(tournDto, user, courseExecution);
 
         return new TournamentDto(tourn);
@@ -103,13 +106,19 @@ public class TournamentService {
         return user;
     }
 
-    private void checkTopics(TournamentDto tournDto) {
+    private void checkTopics(TournamentDto tournDto, CourseExecution courseExecution) {
         if (tournDto.getTopics() == null || tournDto.getTopics().isEmpty()) {
             throw new TutorException(ErrorMessage.TOURNAMENT_NOT_CONSISTENT, "Topics");
         }
 
-        tournDto.getTopics().forEach(topicDto -> topicRepository.findById(topicDto.getId())
-                .orElseThrow(() -> new TutorException(ErrorMessage.TOPIC_NOT_FOUND, topicDto.getId())));
+        int courseId = courseExecution.getCourse().getId();
+        for (TopicDto topicDto : tournDto.getTopics()) {
+            Topic topic = topicRepository.findById(topicDto.getId())
+                    .orElseThrow(() -> new TutorException(ErrorMessage.TOPIC_NOT_FOUND, topicDto.getId()));
+            if (topic.getCourse().getId() != courseId) {
+                throw new TutorException(ErrorMessage.TOURNAMENT_TOPIC_WRONG_COURSE, topicDto.getId());
+            }
+        }
     }
 
     private Tournament createTournament(TournamentDto tournDto, User user, CourseExecution courseExecution) {
