@@ -88,6 +88,7 @@ public enum ErrorMessage {
     STUDENT_QUESTION_USER_NOT_FOUND("The user was not found"),
     STUDENT_QUESTION_TOPIC_NOT_PRESENT("The topic '%s' was not found in the student question"),
     STUDENT_QUESTION_STUDENT_NOT_CREATOR("The student is not the creator of the student question: %s"),
+    STUDENT_QUESTION_NOT_A_TEACHER("The user is not a teacher"),
 
     TOURNAMENT_NOT_CONSISTENT("Field %s of tournament is not consistent"),
 
