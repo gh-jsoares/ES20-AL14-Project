@@ -166,7 +166,13 @@ public class StudentQuestionService {
             backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public StudentQuestionDto rejectStudentQuestion(String username, int studentQuestionId, String explanation) {
-        return null;
+        User user = getUserIfExists(username);
+        StudentQuestion studentQuestion = getStudentQuestionIfExists(studentQuestionId);
+
+        checkUserIsTeacher(user);
+        studentQuestion.doReject(user, explanation);
+
+        return new StudentQuestionDto(studentQuestion);
     }
 
 

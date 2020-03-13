@@ -188,7 +188,33 @@ public class StudentQuestion {
         this.reviewedDate = LocalDateTime.now();
         this.status = Status.ACCEPTED;
 
-        user.addReviewedStudentQuestion(this);
+        this.lastReviewer.addReviewedStudentQuestion(this);
+    }
+
+    public void doAwait() {
+        this.lastReviewer.removeReviewedStudentQuestion(this);
+
+        this.lastReviewer = null;
+        this.reviewedDate = null;
+        this.status = Status.AWAITING_APPROVAL;
+        this.rejectedExplanation = null;
+    }
+
+    public void doReject(User user, String rejectedExplanation) {
+        checkAwaitingApproval();
+        checkRejectedExplanation(rejectedExplanation);
+
+        this.lastReviewer = user;
+        this.reviewedDate = LocalDateTime.now();
+        this.status = Status.REJECTED;
+        this.rejectedExplanation = rejectedExplanation;
+
+        this.lastReviewer.addReviewedStudentQuestion(this);
+    }
+
+    private void checkRejectedExplanation(String rejectedExplanation) {
+        if (rejectedExplanation == null || rejectedExplanation.trim().length() == 0)
+            throw new TutorException(STUDENT_QUESTION_REJECT_NO_EXPLANATION);
     }
 
     private void checkAwaitingApproval() {

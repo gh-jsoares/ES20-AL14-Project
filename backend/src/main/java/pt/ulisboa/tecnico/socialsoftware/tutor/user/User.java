@@ -194,7 +194,13 @@ public class User implements UserDetails {
     }
 
     public void addReviewedStudentQuestion(StudentQuestion studentQuestion) {
-        this.reviewedStudentQuestions.add(studentQuestion);
+        if(this.reviewedStudentQuestions.stream().noneMatch(sq -> sq.getId().equals(studentQuestion.getId())))
+            this.reviewedStudentQuestions.add(studentQuestion);
+    }
+
+    public void removeReviewedStudentQuestion(StudentQuestion studentQuestion) {
+        if(this.reviewedStudentQuestions.stream().anyMatch(sq -> sq.getId().equals(studentQuestion.getId())))
+            this.reviewedStudentQuestions.remove(studentQuestion);
     }
 
     public Integer getNumberOfTeacherQuizzes() {
