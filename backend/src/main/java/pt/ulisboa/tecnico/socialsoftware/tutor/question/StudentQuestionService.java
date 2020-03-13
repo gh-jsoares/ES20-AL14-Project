@@ -134,6 +134,14 @@ public class StudentQuestionService {
                 .collect(Collectors.toList());
     }
 
+    @Retryable(
+            value = { SQLException.class },
+            backoff = @Backoff(delay = 5000))
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public StudentQuestionDto getStudentQuestionAsTeacher(String username, int studentQuestionId) {
+        return null;
+    }
+
     private void checkStudentIsCreatorOfQuestion(User user, StudentQuestion studentQuestion) {
         if (!studentQuestion.getStudent().getUsername().equals(user.getUsername()))
             throw new TutorException(STUDENT_QUESTION_STUDENT_NOT_CREATOR, studentQuestion.getTitle());
