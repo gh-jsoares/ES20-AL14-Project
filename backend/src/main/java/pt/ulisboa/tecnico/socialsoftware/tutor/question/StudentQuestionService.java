@@ -122,7 +122,16 @@ public class StudentQuestionService {
             backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public List<StudentQuestionDto> listAllStudentQuestions(String username) {
-        return null;
+        User user = getUserIfExists(username);
+
+        checkUserIsTeacher(user);
+
+        return studentQuestionRepository.findAll().stream()
+                .map(StudentQuestionDto::new)
+                .sorted(Comparator
+                        .comparing(StudentQuestionDto::getCreationDateAsObject).reversed()
+                        .thenComparing(StudentQuestionDto::getTitle))
+                .collect(Collectors.toList());
     }
 
     private void checkStudentIsCreatorOfQuestion(User user, StudentQuestion studentQuestion) {
@@ -141,6 +150,12 @@ public class StudentQuestionService {
         if (user.getRole() != User.Role.STUDENT)
             throw new TutorException(STUDENT_QUESTION_NOT_A_STUDENT);
     }
+
+    private void checkUserIsTeacher(User user) {
+        if (user.getRole() != User.Role.TEACHER)
+            throw new TutorException(STUDENT_QUESTION_NOT_A_TEACHER);
+    }
+
 
     private void checkUserExists(User user) {
         if (user == null)
