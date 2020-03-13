@@ -182,6 +182,7 @@ public class StudentQuestion {
     }
 
     public void doApprove(User user) {
+        checkUserIsTeacher(user);
         checkAwaitingApproval();
 
         this.lastReviewer = user;
@@ -201,6 +202,7 @@ public class StudentQuestion {
     }
 
     public void doReject(User user, String rejectedExplanation) {
+        checkUserIsTeacher(user);
         checkAwaitingApproval();
         checkRejectedExplanation(rejectedExplanation);
 
@@ -211,6 +213,12 @@ public class StudentQuestion {
 
         this.lastReviewer.addReviewedStudentQuestion(this);
     }
+
+    private void checkUserIsTeacher(User user) {
+        if (user.getRole() != User.Role.TEACHER)
+            throw new TutorException(STUDENT_QUESTION_NOT_A_TEACHER);
+    }
+
 
     private void checkRejectedExplanation(String rejectedExplanation) {
         if (rejectedExplanation == null || rejectedExplanation.trim().length() == 0)

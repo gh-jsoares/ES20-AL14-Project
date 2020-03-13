@@ -155,7 +155,6 @@ public class StudentQuestionService {
         User user = getUserIfExists(username);
         StudentQuestion studentQuestion = getStudentQuestionIfExists(studentQuestionId);
 
-        checkUserIsTeacher(user);
         studentQuestion.doApprove(user);
 
         return new StudentQuestionDto(studentQuestion);
@@ -169,13 +168,10 @@ public class StudentQuestionService {
         User user = getUserIfExists(username);
         StudentQuestion studentQuestion = getStudentQuestionIfExists(studentQuestionId);
 
-        checkUserIsTeacher(user);
         studentQuestion.doReject(user, explanation);
 
         return new StudentQuestionDto(studentQuestion);
     }
-
-
 
     private void checkStudentIsCreatorOfQuestion(User user, StudentQuestion studentQuestion) {
         if (!studentQuestion.getStudent().getUsername().equals(user.getUsername()))
@@ -189,16 +185,15 @@ public class StudentQuestionService {
         return user;
     }
 
-    private void checkUserIsStudent(User user) {
-        if (user.getRole() != User.Role.STUDENT)
-            throw new TutorException(STUDENT_QUESTION_NOT_A_STUDENT);
-    }
-
     private void checkUserIsTeacher(User user) {
         if (user.getRole() != User.Role.TEACHER)
             throw new TutorException(STUDENT_QUESTION_NOT_A_TEACHER);
     }
 
+    private void checkUserIsStudent(User user) {
+        if (user.getRole() != User.Role.STUDENT)
+            throw new TutorException(STUDENT_QUESTION_NOT_A_STUDENT);
+    }
 
     private void checkUserExists(User user) {
         if (user == null)
