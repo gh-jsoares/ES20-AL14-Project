@@ -54,6 +54,7 @@ public class TournamentService {
 
         Tournament tournament = getTournament(tournamentDto);
         tournament.addEnrolledStudent(user);
+        user.addEnrolledTournament(tournament);
         return new TournamentDto(tournament);
     }
 

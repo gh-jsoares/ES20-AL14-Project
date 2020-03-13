@@ -394,11 +394,11 @@ public class User implements UserDetails {
         this.createdTournaments.add(tournament);
     }
 
-    public Set<Tournament> getEnrolledTournament() {
+    public Set<Tournament> getEnrolledTournaments() {
         return enrolledTournaments;
     }
 
-    public void addEnrolledTournaments(Tournament tournament) {
+    public void addEnrolledTournament(Tournament tournament) {
         this.enrolledTournaments.add(tournament);
     }
 
