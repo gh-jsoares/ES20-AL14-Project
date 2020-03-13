@@ -96,6 +96,12 @@ class TournamentEnrollSpockTest extends Specification{
             if (student.getUsername() == USERNAME)
                 userIn = true
         userIn
+        def tournaments = user.getEnrolledTournaments()
+        def tournamentIn = false
+        for (Tournament tourn: tournaments)
+            if (tourn.getId() == tournament.getId())
+                tournamentIn = true
+        tournamentIn
     }
 
     @Unroll
@@ -163,8 +169,10 @@ class TournamentEnrollSpockTest extends Specification{
     }
 
     def enrollUserInTournament(isUserEnrolledInTournament){
-        if (isUserEnrolledInTournament)
+        if (isUserEnrolledInTournament) {
             tournament.addEnrolledStudent(user)
+            user.addEnrolledTournament(tournament)
+        }
     }
 
     @TestConfiguration
