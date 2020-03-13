@@ -35,14 +35,30 @@ public class StudentQuestionDto implements Serializable {
         this.options = studentQuestion.getOptions().stream().map(OptionDto::new).collect(Collectors.toSet());
         this.creatorUsername = studentQuestion.getStudent().getUsername();
 
-        if (studentQuestion.getImage() != null)
-            this.image = new ImageDto(studentQuestion.getImage());
-        if (studentQuestion.getCreationDate() != null)
-            this.creationDate = studentQuestion.getCreationDate().format(DateTimeFormatter.ofPattern(DATE_TIME_FORMAT));
-        if (studentQuestion.getReviewedDate() != null)
-            this.reviewedDate = studentQuestion.getReviewedDate().format(DateTimeFormatter.ofPattern(DATE_TIME_FORMAT));
+        populateImage(studentQuestion);
+        populateCreationDate(studentQuestion);
+        populateReviewedDate(studentQuestion);
+        populateLastReviewer(studentQuestion);
+    }
+
+    private void populateLastReviewer(StudentQuestion studentQuestion) {
         if (studentQuestion.getLastReviewer() != null)
             this.lastReviewerUsername = studentQuestion.getLastReviewer().getUsername();
+    }
+
+    private void populateReviewedDate(StudentQuestion studentQuestion) {
+        if (studentQuestion.getReviewedDate() != null)
+            this.reviewedDate = studentQuestion.getReviewedDate().format(DateTimeFormatter.ofPattern(DATE_TIME_FORMAT));
+    }
+
+    private void populateCreationDate(StudentQuestion studentQuestion) {
+        if (studentQuestion.getCreationDate() != null)
+            this.creationDate = studentQuestion.getCreationDate().format(DateTimeFormatter.ofPattern(DATE_TIME_FORMAT));
+    }
+
+    private void populateImage(StudentQuestion studentQuestion) {
+        if (studentQuestion.getImage() != null)
+            this.image = new ImageDto(studentQuestion.getImage());
     }
 
     public Integer getId() {
@@ -115,18 +131,6 @@ public class StudentQuestionDto implements Serializable {
 
     public String getLastReviewerUsername() {
         return this.lastReviewerUsername;
-    }
-
-    public void setLastReviewerUsername(String lastReviewerUsername) {
-        this.lastReviewerUsername = lastReviewerUsername;
-    }
-
-    public String getReviewedDate() {
-        return reviewedDate;
-    }
-
-    public void setReviewedDate(String reviewedDate) {
-        this.reviewedDate = reviewedDate;
     }
 
     @Override
