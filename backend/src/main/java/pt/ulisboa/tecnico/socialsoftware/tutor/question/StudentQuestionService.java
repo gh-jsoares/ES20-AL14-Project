@@ -40,7 +40,7 @@ public class StudentQuestionService {
     private EntityManager entityManager;
 
     @Retryable(
-            value = { SQLException.class },
+            value = {SQLException.class},
             backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public StudentQuestionDto createStudentQuestion(String username, StudentQuestionDto studentQuestionDto) {
@@ -56,12 +56,12 @@ public class StudentQuestionService {
     }
 
     @Retryable(
-            value = { SQLException.class },
+            value = {SQLException.class},
             backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
-    public StudentQuestionDto addTopicToStudentQuestion(StudentQuestionDto studentQuestionDto, TopicDto topicDto) {
-        Topic topic = getTopicIfExists(topicDto);
-        StudentQuestion studentQuestion = getStudentQuestionIfExists(studentQuestionDto);
+    public StudentQuestionDto addTopicToStudentQuestion(int studentQuestionId, int topicId) {
+        Topic topic = getTopicIfExists(topicId);
+        StudentQuestion studentQuestion = getStudentQuestionIfExists(studentQuestionId);
 
         studentQuestion.addTopic(topic);
         topic.addStudentQuestion(studentQuestion);
@@ -71,12 +71,12 @@ public class StudentQuestionService {
     }
 
     @Retryable(
-            value = { SQLException.class },
+            value = {SQLException.class},
             backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
-    public StudentQuestionDto removeTopicFromStudentQuestion(StudentQuestionDto studentQuestionDto, TopicDto topicDto) {
-        Topic topic = getTopicIfExists(topicDto);
-        StudentQuestion studentQuestion = getStudentQuestionIfExists(studentQuestionDto);
+    public StudentQuestionDto removeTopicFromStudentQuestion(int studentQuestionId, int topicId) {
+        Topic topic = getTopicIfExists(topicId);
+        StudentQuestion studentQuestion = getStudentQuestionIfExists(studentQuestionId);
 
         studentQuestion.removeTopic(topic);
         topic.removeStudentQuestion(studentQuestion);
@@ -86,7 +86,7 @@ public class StudentQuestionService {
     }
 
     @Retryable(
-            value = { SQLException.class },
+            value = {SQLException.class},
             backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public List<StudentQuestionDto> listStudentQuestions(String username) {
@@ -96,7 +96,7 @@ public class StudentQuestionService {
 
         return studentQuestionRepository.findAll().stream()
                 .map(StudentQuestionDto::new)
-                .filter(sq -> sq.getUsername().equals(username))
+                .filter(sq -> sq.getCreatorUsername().equals(username))
                 .sorted(Comparator
                         .comparing(StudentQuestionDto::getCreationDateAsObject).reversed()
                         .thenComparing(StudentQuestionDto::getTitle))
@@ -104,7 +104,7 @@ public class StudentQuestionService {
     }
 
     @Retryable(
-            value = { SQLException.class },
+            value = {SQLException.class},
             backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public StudentQuestionDto getStudentQuestion(String username, int studentQuestionId) {
@@ -113,6 +113,62 @@ public class StudentQuestionService {
 
         checkUserIsStudent(user);
         checkStudentIsCreatorOfQuestion(user, studentQuestion);
+
+        return new StudentQuestionDto(studentQuestion);
+    }
+
+    @Retryable(
+            value = {SQLException.class},
+            backoff = @Backoff(delay = 5000))
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public List<StudentQuestionDto> listAllStudentQuestions(String username) {
+        User user = getUserIfExists(username);
+
+        checkUserIsTeacher(user);
+
+        return studentQuestionRepository.findAll().stream()
+                .map(StudentQuestionDto::new)
+                .sorted(Comparator
+                        .comparing(StudentQuestionDto::getCreationDateAsObject).reversed()
+                        .thenComparing(StudentQuestionDto::getTitle))
+                .collect(Collectors.toList());
+    }
+
+    @Retryable(
+            value = {SQLException.class},
+            backoff = @Backoff(delay = 5000))
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public StudentQuestionDto getStudentQuestionAsTeacher(String username, int studentQuestionId) {
+        User user = getUserIfExists(username);
+        StudentQuestion studentQuestion = getStudentQuestionIfExists(studentQuestionId);
+
+        checkUserIsTeacher(user);
+
+        return new StudentQuestionDto(studentQuestion);
+    }
+
+    @Retryable(
+            value = {SQLException.class},
+            backoff = @Backoff(delay = 5000))
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public StudentQuestionDto approveStudentQuestion(String username, int studentQuestionId) {
+        User user = getUserIfExists(username);
+        StudentQuestion studentQuestion = getStudentQuestionIfExists(studentQuestionId);
+
+        studentQuestion.doApprove(user);
+
+        return new StudentQuestionDto(studentQuestion);
+    }
+
+    @Retryable(
+            value = {SQLException.class},
+            backoff = @Backoff(delay = 5000))
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public StudentQuestionDto rejectStudentQuestion(String username, int studentQuestionId, String explanation) {
+        User user = getUserIfExists(username);
+        StudentQuestion studentQuestion = getStudentQuestionIfExists(studentQuestionId);
+
+        studentQuestion.doReject(user, explanation);
 
         return new StudentQuestionDto(studentQuestion);
     }
@@ -127,6 +183,11 @@ public class StudentQuestionService {
 
         checkUserExists(user);
         return user;
+    }
+
+    private void checkUserIsTeacher(User user) {
+        if (user.getRole() != User.Role.TEACHER)
+            throw new TutorException(STUDENT_QUESTION_NOT_A_TEACHER);
     }
 
     private void checkUserIsStudent(User user) {
@@ -152,27 +213,18 @@ public class StudentQuestionService {
             throw new TutorException(DUPLICATE_STUDENT_QUESTION, studentQuestionDto.getTitle());
     }
 
-    private Topic getTopicIfExists(TopicDto topicDto) {
-        if (topicDto != null) {
-            Optional<Topic> topic = topicRepository.findById(topicDto.getId());
-            if(topic.isPresent())
-                return topic.get();
-        }
-        throw new TutorException(STUDENT_QUESTION_TOPIC_NOT_FOUND);
-    }
-
-    private StudentQuestion getStudentQuestionIfExists(StudentQuestionDto studentQuestionDto) {
-        if (studentQuestionDto != null) {
-            Optional<StudentQuestion> studentQuestion = studentQuestionRepository.findById(studentQuestionDto.getId());
-            if(studentQuestion.isPresent())
-                return studentQuestion.get();
-        }
-        throw new TutorException(STUDENT_QUESTION_NOT_FOUND);
+    private Topic getTopicIfExists(int topicId) {
+        Optional<Topic> topic = topicRepository.findById(topicId);
+        if (topic.isEmpty())
+            throw new TutorException(STUDENT_QUESTION_TOPIC_NOT_FOUND);
+        return topic.get();
     }
 
     private StudentQuestion getStudentQuestionIfExists(int studentQuestionId) {
-        StudentQuestionDto studentQuestionDto = new StudentQuestionDto();
-        studentQuestionDto.setId(studentQuestionId);
-        return getStudentQuestionIfExists(studentQuestionDto);
+        Optional<StudentQuestion> studentQuestion = studentQuestionRepository.findById(studentQuestionId);
+        if (studentQuestion.isEmpty())
+            throw new TutorException(STUDENT_QUESTION_NOT_FOUND);
+
+        return studentQuestion.get();
     }
 }

@@ -1,10 +1,9 @@
-package pt.ulisboa.tecnico.socialsoftware.tutor.question.service
+package pt.ulisboa.tecnico.socialsoftware.tutor.question.service.studentquestions
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
-import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.StudentQuestionService
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Option
@@ -18,16 +17,16 @@ import spock.lang.Unroll
 
 import java.time.LocalDateTime
 
-import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_NOT_A_STUDENT
+import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_NOT_A_TEACHER
 import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_NOT_FOUND
 import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_USER_NOT_FOUND
-import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_STUDENT_NOT_CREATOR
 
 @DataJpaTest
-class GetStudentQuestionSpockTest extends Specification {
+class TeacherGetStudentQuestionSpockTest extends Specification {
 
     public static final String USER_NAME = "Alfredo Costa"
     public static final String USER_USERNAME = "alcosta"
+    public static final String TEACHER_USERNAME = "T_alcosta"
     public static final String QUESTION_TITLE = 'question title'
     public static final String QUESTION_CONTENT = 'question content'
     public static final String OPTION_CONTENT = "optionId content"
@@ -44,10 +43,12 @@ class GetStudentQuestionSpockTest extends Specification {
     @Autowired
     OptionRepository optionRepository
 
-    def user
+    def student
+    def teacher
 
     def setup() {
-        user = createUser(1, USER_NAME, USER_USERNAME, User.Role.STUDENT)
+        student = createUser(1, USER_NAME, USER_USERNAME, User.Role.STUDENT)
+        teacher = createUser(2, USER_NAME, TEACHER_USERNAME, User.Role.TEACHER)
     }
 
     def "student question exists"() {
@@ -57,11 +58,11 @@ class GetStudentQuestionSpockTest extends Specification {
         and: "it has 4 options"
         createOptions(studentQuestion, OPTION_CONTENT)
 
-        and: "a username of a student"
-        def user = USER_USERNAME
+        and: "a username of a teacher"
+        TEACHER_USERNAME
 
         when:
-        def result = studentQuestionService.getStudentQuestion(user, studentQuestion.getId())
+        def result = studentQuestionService.getStudentQuestionAsTeacher(TEACHER_USERNAME, studentQuestion.getId())
 
         then: "data is correct"
         result != null
@@ -71,51 +72,47 @@ class GetStudentQuestionSpockTest extends Specification {
         result.getContent() == QUESTION_CONTENT
         result.getStatus() == StudentQuestion.Status.AWAITING_APPROVAL.name()
         result.getOptions().size() == 4
-        result.getUsername() == USER_USERNAME
+        result.getCreatorUsername() == USER_USERNAME
         result.getOptions().stream().allMatch({ o -> o.getContent() == OPTION_CONTENT })
         result.getOptions().stream().filter({ o -> o.getCorrect() }).count() == 1L
     }
 
     @Unroll
-    def "invalid data studentQuestion=#isStudentQuestion | user=#isUser | student=#isStudent | studentQuestionCreator=#isCreator | errorMessage=#errorMessage"() {
+    def "invalid data studentQuestion=#isStudentQuestion | user=#isUser | teacher=#isTeacher | errorMessage=#errorMessage"() {
         given: "a student question"
         def studentQuestionId = createStudentQuestion(isStudentQuestion)
 
         and: "a username"
-        def username = createUsername(isUser, isStudent, isCreator)
+        def username = createUsername(isUser, isTeacher)
 
         when:
-        studentQuestionService.getStudentQuestion(username, studentQuestionId)
+        studentQuestionService.getStudentQuestionAsTeacher(username, studentQuestionId)
 
         then:
         def error = thrown(TutorException)
         error.errorMessage == errorMessage
 
         where:
-        isStudentQuestion | isUser | isStudent | isCreator || errorMessage
-        false             | true   | true      | true      || STUDENT_QUESTION_NOT_FOUND
-        true              | false  | true      | true      || STUDENT_QUESTION_USER_NOT_FOUND
-        true              | true   | false     | true      || STUDENT_QUESTION_NOT_A_STUDENT
-        true              | true   | true      | false     || STUDENT_QUESTION_STUDENT_NOT_CREATOR
+        isStudentQuestion | isUser | isTeacher || errorMessage
+        false             | true   | true      || STUDENT_QUESTION_NOT_FOUND
+        true              | false  | true      || STUDENT_QUESTION_USER_NOT_FOUND
+        true              | true   | false     || STUDENT_QUESTION_NOT_A_TEACHER
     }
 
     private int createStudentQuestion(boolean isStudentQuestion) {
         if (isStudentQuestion)
-                return createStudentQuestion(1, QUESTION_TITLE, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name()).getId()
+            return createStudentQuestion(1, QUESTION_TITLE, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name()).getId()
         return -1
     }
 
-    private String createUsername(boolean isUser, boolean isStudent, boolean isCreator) {
+    private String createUsername(boolean isUser, boolean isTeacher) {
         if (!isUser)
             return null
-        if(!isCreator)
-            return createUser(2, USER_NAME, USER_USERNAME + "_2", User.Role.STUDENT).getUsername()
-        if (!isStudent)
-            user.setRole(User.Role.TEACHER)
+        if (!isTeacher)
+            return student.getUsername()
 
-        return user.getUsername()
+        return teacher.getUsername()
     }
-
 
     private StudentQuestion createStudentQuestion(int key, String title, String content, String status) {
         def studentQuestion = new StudentQuestion()
@@ -151,8 +148,9 @@ class GetStudentQuestionSpockTest extends Specification {
     }
 
     private User createUser(int key, String name, String username, User.Role role) {
-        user = new User(name, username, key, role)
+        def user = new User(name, username, key, role)
         userRepository.save(user)
+        user
     }
 
     @TestConfiguration

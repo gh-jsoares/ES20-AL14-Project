@@ -56,6 +56,16 @@ public class StudentQuestion {
     @ManyToMany(mappedBy = "studentQuestions")
     private Set<Topic> topics = new HashSet<>();
 
+    @Column(name = "reviewed_date")
+    private LocalDateTime reviewedDate;
+
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name = "last_reviewer_id")
+    private User lastReviewer;
+
+    @Column(columnDefinition = "TEXT")
+    private String rejectedExplanation;
+
     public StudentQuestion() {
 
     }
@@ -159,6 +169,67 @@ public class StudentQuestion {
         this.options.add(option);
     }
 
+    public LocalDateTime getReviewedDate() {
+        return reviewedDate;
+    }
+
+    public User getLastReviewer() {
+        return lastReviewer;
+    }
+
+    public String getRejectedExplanation() {
+        return rejectedExplanation;
+    }
+
+    public void doApprove(User user) {
+        checkUserIsTeacher(user);
+        checkAwaitingApproval();
+
+        this.lastReviewer = user;
+        this.reviewedDate = LocalDateTime.now();
+        this.status = Status.ACCEPTED;
+
+        this.lastReviewer.addReviewedStudentQuestion(this);
+    }
+
+    public void doAwait() {
+        this.lastReviewer.removeReviewedStudentQuestion(this);
+
+        this.lastReviewer = null;
+        this.reviewedDate = null;
+        this.status = Status.AWAITING_APPROVAL;
+        this.rejectedExplanation = null;
+    }
+
+    public void doReject(User user, String rejectedExplanation) {
+        checkUserIsTeacher(user);
+        checkAwaitingApproval();
+        checkRejectedExplanation(rejectedExplanation);
+
+        this.lastReviewer = user;
+        this.reviewedDate = LocalDateTime.now();
+        this.status = Status.REJECTED;
+        this.rejectedExplanation = rejectedExplanation;
+
+        this.lastReviewer.addReviewedStudentQuestion(this);
+    }
+
+    private void checkUserIsTeacher(User user) {
+        if (user.getRole() != User.Role.TEACHER)
+            throw new TutorException(STUDENT_QUESTION_NOT_A_TEACHER);
+    }
+
+
+    private void checkRejectedExplanation(String rejectedExplanation) {
+        if (rejectedExplanation == null || rejectedExplanation.trim().length() == 0)
+            throw new TutorException(STUDENT_QUESTION_REJECT_NO_EXPLANATION);
+    }
+
+    private void checkAwaitingApproval() {
+        if (!status.equals(Status.AWAITING_APPROVAL))
+            throw new TutorException(STUDENT_QUESTION_NOT_AWAITING_APPROVAL, getTitle());
+    }
+
     private void checkConsistentStudentQuestion(User user, StudentQuestionDto studentQuestionDto) {
         if (user.getRole() != User.Role.STUDENT)
             throw new TutorException(STUDENT_QUESTION_NOT_A_STUDENT);
@@ -175,8 +246,11 @@ public class StudentQuestion {
         if (studentQuestionDto.getOptions().stream().anyMatch(optionDto -> optionDto.getContent() == null || optionDto.getContent().trim().length() == 0))
             throw new TutorException(STUDENT_QUESTION_OPTION_CONTENT_IS_EMPTY);
 
-        if (studentQuestionDto.getOptions().size() != 4)
+        if (studentQuestionDto.getOptions().size() < 4)
             throw new TutorException(TOO_FEW_OPTIONS_STUDENT_QUESTION);
+
+        if (studentQuestionDto.getOptions().size() > 4)
+            throw new TutorException(TOO_MANY_OPTIONS_STUDENT_QUESTION);
 
         if (studentQuestionDto.getOptions().stream().noneMatch(OptionDto::getCorrect))
             throw new TutorException(NO_CORRECT_OPTION_STUDENT_QUESTION);

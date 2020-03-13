@@ -1,4 +1,4 @@
-package pt.ulisboa.tecnico.socialsoftware.tutor.question.service
+package pt.ulisboa.tecnico.socialsoftware.tutor.question.service.studentquestions
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
@@ -15,16 +15,15 @@ import spock.lang.Unroll
 
 import java.time.LocalDateTime
 
-import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_NOT_A_STUDENT
-import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_NOT_FOUND
-import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_STUDENT_NOT_CREATOR
+import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_NOT_A_TEACHER
 import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_USER_NOT_FOUND
 
 @DataJpaTest
-class ListStudentQuestionSpockTest extends Specification {
+class TeacherListStudentQuestionSpockTest extends Specification {
 
     public static final String USER_NAME = "Alfredo Costa"
     public static final String USER_USERNAME = "alcosta"
+    public static final String TEACHER_USERNAME = "T_alcosta"
     public static final String QUESTION_TITLE = 'question title'
     public static final String QUESTION_CONTENT = 'question content'
     public static final String OPTION_CONTENT = "optionId content"
@@ -38,34 +37,29 @@ class ListStudentQuestionSpockTest extends Specification {
     @Autowired
     StudentQuestionRepository studentQuestionRepository
 
-    def user
-    def user_2
+    def student
+    def teacher
 
     def setup() {
-        user = createUser(1, USER_NAME, USER_USERNAME, User.Role.STUDENT)
-        user_2 = createUser(2, USER_NAME, USER_USERNAME + "_2", User.Role.STUDENT)
+        student = createUser(1, USER_NAME, USER_USERNAME, User.Role.STUDENT)
+        teacher = createUser(2, USER_NAME, TEACHER_USERNAME, User.Role.TEACHER)
     }
 
-    def "student has submitted n questions"() {
-        given: "a valid username"
-        USER_USERNAME
+    def "N student questions exist and are listed"() {
+        given: "a teacher user's username"
+        TEACHER_USERNAME
 
-        and: "and a list of 5 student questions made by the student"
+        and: "and a list of 5 student questions made by a student"
         1.upto(5, {
             createStudentQuestion(it.intValue(), QUESTION_TITLE + it, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name(), USER_USERNAME)
         })
 
-        and: "and a list of 5 student questions made by another student"
-        1.upto(5, {
-            createStudentQuestion(it.intValue() + 5, QUESTION_TITLE + it + 5, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name(), USER_USERNAME + "_2")
-        })
-
         when:
-        def result = studentQuestionService.listStudentQuestions(USER_USERNAME)
+        def result = studentQuestionService.listAllStudentQuestions(TEACHER_USERNAME)
 
-        then: "the list returned has only questions made by the student"
+        then: "the list returned has all the questions made by the students"
         result.size() == 5
-        result.stream().allMatch({ sq -> (sq.getUsername() == USER_USERNAME) })
+        result.stream().allMatch({ sq -> (sq.getCreatorUsername() == USER_USERNAME) })
         and: "reverse sorted by creation date"
         0.upto(result.size() - 2, {
             def date_1 = result[it.intValue()].getCreationDateAsObject()
@@ -75,30 +69,30 @@ class ListStudentQuestionSpockTest extends Specification {
     }
 
     @Unroll
-    def "invalid data user=#isUser | student=#isStudent | errorMessage=#errorMessage"() {
+    def "invalid data user=#isUser | teacher=#isTeacher | errorMessage=#errorMessage"() {
         given: "a username"
-        def username = createUsername(isUser, isStudent)
+        def username = createUsername(isUser, isTeacher)
 
         when:
-        studentQuestionService.listStudentQuestions(username)
+        studentQuestionService.listAllStudentQuestions(username)
 
         then:
         def error = thrown(TutorException)
         error.errorMessage == errorMessage
 
         where:
-        isUser | isStudent || errorMessage
+        isUser | isTeacher || errorMessage
         false  | true      || STUDENT_QUESTION_USER_NOT_FOUND
-        true   | false     || STUDENT_QUESTION_NOT_A_STUDENT
+        true   | false     || STUDENT_QUESTION_NOT_A_TEACHER
     }
 
-    private String createUsername(boolean isUser, boolean isStudent) {
+    private String createUsername(boolean isUser, boolean isTeacher) {
         if (!isUser)
             return null
-        if (!isStudent)
-            user.setRole(User.Role.TEACHER)
+        if (!isTeacher)
+            return student.getUsername()
 
-        return user.getUsername()
+        return teacher.getUsername()
     }
 
     private createStudentQuestion(int key, String title, String content, String status, String username) {
@@ -132,5 +126,4 @@ class ListStudentQuestionSpockTest extends Specification {
             return new StudentQuestionService()
         }
     }
-
 }
