@@ -20,6 +20,8 @@ public class DiscussionDto implements Serializable {
         setId(discussion.getId());
         setMessageFromStudent(discussion.getMessageFromStudent());
         setMessage(discussion.getTeacherAnswer());
+        if (discussion.getTeacher() != null)
+            setUserName(discussion.getTeacher().getUsername());
     }
 
     public Integer getId() {
