@@ -246,8 +246,11 @@ public class StudentQuestion {
         if (studentQuestionDto.getOptions().stream().anyMatch(optionDto -> optionDto.getContent() == null || optionDto.getContent().trim().length() == 0))
             throw new TutorException(STUDENT_QUESTION_OPTION_CONTENT_IS_EMPTY);
 
-        if (studentQuestionDto.getOptions().size() != 4)
+        if (studentQuestionDto.getOptions().size() < 4)
             throw new TutorException(TOO_FEW_OPTIONS_STUDENT_QUESTION);
+
+        if (studentQuestionDto.getOptions().size() > 4)
+            throw new TutorException(TOO_MANY_OPTIONS_STUDENT_QUESTION);
 
         if (studentQuestionDto.getOptions().stream().noneMatch(OptionDto::getCorrect))
             throw new TutorException(NO_CORRECT_OPTION_STUDENT_QUESTION);

@@ -1,5 +1,6 @@
 package pt.ulisboa.tecnico.socialsoftware.tutor.question.service.studentquestions
 
+
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.boot.test.context.TestConfiguration
@@ -17,11 +18,9 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.TopicReposito
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.User
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.UserRepository
 import spock.lang.Specification
+import spock.lang.Unroll
 
-import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_NOT_FOUND
-import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_TOPIC_NOT_PRESENT
-import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_TOPIC_NOT_FOUND
-
+import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.*
 
 @DataJpaTest
 class RemoveTopicFromStudentQuestionSpockTest extends Specification {
@@ -50,7 +49,9 @@ class RemoveTopicFromStudentQuestionSpockTest extends Specification {
     CourseRepository courseRepository
 
     def user
+    StudentQuestion studentQuestion
     Course course
+    Topic topic
 
     def setup() {
         user = new User(USER_NAME, USER_USERNAME, 1, User.Role.STUDENT)
@@ -58,23 +59,24 @@ class RemoveTopicFromStudentQuestionSpockTest extends Specification {
 
         course = new Course(COURSE_NAME, Course.Type.TECNICO)
         courseRepository.save(course)
+
+        studentQuestion = createStudentQuestion(QUESTION_TITLE, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name())
+        topic = createTopic(TOPIC_NAME, course)
     }
 
     def "remove existing topic from existing student question"() {
         given: "an existing student question"
-        def studentQuestion = createStudentQuestion(QUESTION_TITLE, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name())
-        def studentQuestionDto = new StudentQuestionDto(studentQuestion)
+        def studentQuestionId = studentQuestion.getId()
 
         and: "an existing topic"
-        def topic = createTopic(TOPIC_NAME, course)
-        def topicDto = new TopicDto(topic)
+        def topicId = topic.getId()
 
         and: "the student question belongs to the topic"
         studentQuestion.addTopic(topic)
         topic.addStudentQuestion(studentQuestion)
 
         when:
-        studentQuestionService.removeTopicFromStudentQuestion(studentQuestionDto, topicDto)
+        studentQuestionService.removeTopicFromStudentQuestion(studentQuestionId, topicId)
 
         then: "the topic is removed"
         studentQuestionRepository.count() == 1L
@@ -87,58 +89,45 @@ class RemoveTopicFromStudentQuestionSpockTest extends Specification {
         resultTopic.getStudentQuestions().size() == 0
     }
 
-    def "topic does not exist but studentquestion does"() {
+    @Unroll
+    def "invalid data: studentQuestion=#isStudentQuestion | topic=#isTopic | presentTopic=#isPresentTopic || errorMessage=#errorMessage"() {
         given: "an existing student question"
-        def studentQuestion = createStudentQuestion(QUESTION_TITLE, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name())
-        def studentQuestionDto = new StudentQuestionDto(studentQuestion)
+        def studentQuestionId = createStudentQuestion(isStudentQuestion)
 
-        and: "a null topic"
-        def topicDto = null
-
-        when:
-        studentQuestionService.removeTopicFromStudentQuestion(studentQuestionDto, topicDto)
-
-        then: "an error occurs"
-        def error = thrown(TutorException)
-        error.errorMessage == STUDENT_QUESTION_TOPIC_NOT_FOUND
-    }
-
-    def "topic exists but studentquestion does not"() {
-        given: "a null student question"
-        def studentQuestionDto = null
-
-        and: "an existing topic"
-        def topic = createTopic(TOPIC_NAME, course)
-        def topicDto = new TopicDto(topic)
+        and: "a topic"
+        def topicId = createTopic(isTopic, isPresentTopic)
 
         when:
-        studentQuestionService.removeTopicFromStudentQuestion(studentQuestionDto, topicDto)
+        studentQuestionService.removeTopicFromStudentQuestion(studentQuestionId, topicId)
 
-        then: "an error occurs"
+        then:
         def error = thrown(TutorException)
-        error.errorMessage == STUDENT_QUESTION_NOT_FOUND
+        error.errorMessage == errorMessage
+
+        where:
+        isStudentQuestion | isTopic | isPresentTopic || errorMessage
+        false             | true    | true            || STUDENT_QUESTION_NOT_FOUND
+        true              | false   | true            || STUDENT_QUESTION_TOPIC_NOT_FOUND
+        true              | true    | false             || STUDENT_QUESTION_TOPIC_NOT_PRESENT
     }
 
-    def "try to remove topic not present in student question"() {
-        given: "an existing student question"
-        def studentQuestion = createStudentQuestion(QUESTION_TITLE, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name())
-        def studentQuestionDto = new StudentQuestionDto(studentQuestion)
+    private int createTopic(boolean isTopic, boolean isPresentTopic) {
+        if (!isTopic)
+            return -1
 
-        and: "an existing topic"
-        def topic = createTopic(TOPIC_NAME, course)
-        def topicDto = new TopicDto(topic)
+        if (isPresentTopic)
+            studentQuestion.addTopic(topic)
 
-        and: "the student question does not contain the topic"
-
-        when:
-        studentQuestionService.removeTopicFromStudentQuestion(studentQuestionDto, topicDto)
-
-        then: "an error occurs"
-        def error = thrown(TutorException)
-        error.errorMessage == STUDENT_QUESTION_TOPIC_NOT_PRESENT
+        return topic.getId()
     }
 
-    private createStudentQuestion(String title, String content, String status) {
+    private int createStudentQuestion(boolean isStudentQuestion) {
+        if (isStudentQuestion)
+            return studentQuestion.getId()
+        return -1
+    }
+
+    private StudentQuestion createStudentQuestion(String title, String content, String status) {
         def studentQuestion = new StudentQuestion()
         studentQuestion.setKey(1)
         studentQuestion.setTitle(title)
@@ -146,6 +135,7 @@ class RemoveTopicFromStudentQuestionSpockTest extends Specification {
         studentQuestion.setStatus(StudentQuestion.Status.valueOf(status))
         studentQuestion.setStudent(userRepository.findByUsername(USER_USERNAME))
         studentQuestionRepository.save(studentQuestion)
+        studentQuestion
     }
 
     private Topic createTopic(String name, Course course) {

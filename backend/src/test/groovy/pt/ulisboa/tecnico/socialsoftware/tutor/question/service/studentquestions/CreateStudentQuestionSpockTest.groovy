@@ -23,7 +23,11 @@ import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.ST
 import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_TITLE_IS_EMPTY
 import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_CONTENT_IS_EMPTY
 import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_STATUS_IS_EMPTY
+import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.NO_CORRECT_OPTION_STUDENT_QUESTION
 import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_USER_NOT_FOUND
+import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.TOO_FEW_OPTIONS_STUDENT_QUESTION
+import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.TOO_MANY_CORRECT_OPTIONS_STUDENT_QUESTION
+import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.TOO_MANY_OPTIONS_STUDENT_QUESTION
 
 @DataJpaTest
 class CreateStudentQuestionSpockTest extends Specification {
@@ -114,140 +118,6 @@ class CreateStudentQuestionSpockTest extends Specification {
         result.getImage().getWidth() == 20
     }
 
-    def "user doesnt exist"() {
-        given: "a studentQuestionDto"
-        def studentQuestionDto = createStudentQuestionDto(QUESTION_TITLE, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name())
-
-        and: "a null user"
-        def user = null
-
-        when:
-        studentQuestionService.createStudentQuestion(user, studentQuestionDto)
-
-        then: "an error occurs"
-        def error = thrown(TutorException)
-        error.errorMessage == STUDENT_QUESTION_USER_NOT_FOUND
-    }
-
-    def "option content is empty"() {
-        given: "a studentQuestionDto"
-        def studentQuestionDto = createStudentQuestionDto(QUESTION_TITLE, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name())
-
-        and: "a username"
-        USER_USERNAME
-
-        and: "4 optionId without content"
-        createOptions(studentQuestionDto, null, 4, 1)
-
-        when:
-        studentQuestionService.createStudentQuestion(USER_USERNAME, studentQuestionDto)
-
-        then: "an error occurs"
-        def error = thrown(TutorException)
-        error.errorMessage == STUDENT_QUESTION_OPTION_CONTENT_IS_EMPTY
-    }
-
-    @Unroll
-    def "invalid arguments: title=#title | content=#content | status=#status || errorMessage=#errorMessage"() {
-        given: "a studentquestiondto"
-        def studentQuestionDto = createStudentQuestionDto(title, content, status)
-
-        and: "4 optionId"
-        createOptions(studentQuestionDto, OPTION_CONTENT, 4, 1)
-
-        and: "a username"
-        USER_USERNAME
-        
-        when: "create a student question with invalid data"
-        studentQuestionService.createStudentQuestion(USER_USERNAME, studentQuestionDto)
-
-        then:
-        def error = thrown(TutorException)
-        error.errorMessage == errorMessage
-
-        where:
-        title          | content          | status                                          || errorMessage
-        null           | QUESTION_CONTENT | StudentQuestion.Status.AWAITING_APPROVAL.name() || STUDENT_QUESTION_TITLE_IS_EMPTY
-        "      "       | QUESTION_CONTENT | StudentQuestion.Status.AWAITING_APPROVAL.name() || STUDENT_QUESTION_TITLE_IS_EMPTY
-        QUESTION_TITLE | null             | StudentQuestion.Status.AWAITING_APPROVAL.name() || STUDENT_QUESTION_CONTENT_IS_EMPTY
-        QUESTION_TITLE | "     "          | StudentQuestion.Status.AWAITING_APPROVAL.name() || STUDENT_QUESTION_CONTENT_IS_EMPTY
-        QUESTION_TITLE | QUESTION_CONTENT | null                                            || STUDENT_QUESTION_STATUS_IS_EMPTY
-        QUESTION_TITLE | QUESTION_CONTENT | "      "                                        || STUDENT_QUESTION_STATUS_IS_EMPTY
-    }
-
-    def "student question was not created by student"() {
-        given: "a studentquestiondto"
-        def studentQuestionDto = createStudentQuestionDto(QUESTION_TITLE, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name())
-
-        and: "4 optionId"
-        createOptions(studentQuestionDto, OPTION_CONTENT, 4, 1)
-
-        and: "a username of a non student account"
-        user.setRole(User.Role.TEACHER)
-        USER_USERNAME
-
-        when: "create a student question with invalid data"
-        studentQuestionService.createStudentQuestion(USER_USERNAME, studentQuestionDto)
-
-        then: "an error occurs"
-        def error = thrown(TutorException)
-        error.errorMessage == STUDENT_QUESTION_NOT_A_STUDENT
-    }
-
-    def "student question has no correct options"() {
-        given: "a studentQuestionDto"
-        def studentQuestionDto = createStudentQuestionDto(QUESTION_TITLE, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name())
-
-        and: "4 not correct optionId"
-        createOptions(studentQuestionDto, OPTION_CONTENT, 4, 0)
-        
-        and: "a username"
-        USER_USERNAME
-
-        when:
-        studentQuestionService.createStudentQuestion(USER_USERNAME, studentQuestionDto)
-
-        then: "an error occurs"
-        def exception = thrown(TutorException)
-        exception.errorMessage == ErrorMessage.NO_CORRECT_OPTION_STUDENT_QUESTION
-    }
-
-    def "student question has less than 4 options"() {
-        given: "a studentQuestionDto"
-        def studentQuestionDto = createStudentQuestionDto(QUESTION_TITLE, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name())
-
-        and: "less than 4 optionId"
-        createOptions(studentQuestionDto, OPTION_CONTENT, 3, 1)
-
-        and: "a username"
-        USER_USERNAME
-
-        when:
-        studentQuestionService.createStudentQuestion(USER_USERNAME, studentQuestionDto)
-
-        then: "an error occurs"
-        def exception = thrown(TutorException)
-        exception.errorMessage == ErrorMessage.TOO_FEW_OPTIONS_STUDENT_QUESTION
-    }
-
-    def "student question has more than one correct option"() {
-        given: "a studentquestiondto"
-        def studentQuestionDto = createStudentQuestionDto(QUESTION_TITLE, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name())
-
-        and: "four correct optionId"
-        createOptions(studentQuestionDto, OPTION_CONTENT, 4, 2)
-
-        and: "a username"
-        USER_USERNAME
-
-        when: "create a student question with more than one correct option"
-        studentQuestionService.createStudentQuestion(USER_USERNAME, studentQuestionDto)
-
-        then: "an error occurs"
-        def exception = thrown(TutorException)
-        exception.errorMessage == ErrorMessage.TOO_MANY_CORRECT_OPTIONS_STUDENT_QUESTION
-    }
-
     def "student already created a question with that title"() {
         given: "a studentquestion exists in database"
         createStudentQuestion(QUESTION_TITLE, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name())
@@ -266,13 +136,80 @@ class CreateStudentQuestionSpockTest extends Specification {
         exception.errorMessage == ErrorMessage.DUPLICATE_STUDENT_QUESTION
     }
 
+    @Unroll
+    def "invalid arguments: title=#title | content=#content | status=#status | optionContent=#optionContent || errorMessage=#errorMessage"() {
+        given: "a studentquestiondto"
+        def studentQuestionDto = createStudentQuestionDto(title, content, status)
+
+        and: "4 optionId"
+        createOptions(studentQuestionDto, optionContent, 4, 1)
+
+        and: "a username"
+        USER_USERNAME
+
+        when: "create a student question with invalid data"
+        studentQuestionService.createStudentQuestion(USER_USERNAME, studentQuestionDto)
+
+        then:
+        def error = thrown(TutorException)
+        error.errorMessage == errorMessage
+
+        where:
+        title          | content          | status                                          | optionContent  || errorMessage
+        null           | QUESTION_CONTENT | StudentQuestion.Status.AWAITING_APPROVAL.name() | OPTION_CONTENT || STUDENT_QUESTION_TITLE_IS_EMPTY
+        "      "       | QUESTION_CONTENT | StudentQuestion.Status.AWAITING_APPROVAL.name() | OPTION_CONTENT || STUDENT_QUESTION_TITLE_IS_EMPTY
+        QUESTION_TITLE | null             | StudentQuestion.Status.AWAITING_APPROVAL.name() | OPTION_CONTENT || STUDENT_QUESTION_CONTENT_IS_EMPTY
+        QUESTION_TITLE | "     "          | StudentQuestion.Status.AWAITING_APPROVAL.name() | OPTION_CONTENT || STUDENT_QUESTION_CONTENT_IS_EMPTY
+        QUESTION_TITLE | QUESTION_CONTENT | null                                            | OPTION_CONTENT || STUDENT_QUESTION_STATUS_IS_EMPTY
+        QUESTION_TITLE | QUESTION_CONTENT | "      "                                        | OPTION_CONTENT || STUDENT_QUESTION_STATUS_IS_EMPTY
+        QUESTION_TITLE | QUESTION_CONTENT | StudentQuestion.Status.AWAITING_APPROVAL.name() | null           || STUDENT_QUESTION_OPTION_CONTENT_IS_EMPTY
+        QUESTION_TITLE | QUESTION_CONTENT | StudentQuestion.Status.AWAITING_APPROVAL.name() | "      "       || STUDENT_QUESTION_OPTION_CONTENT_IS_EMPTY
+    }
+
+    @Unroll
+    def "invalid data options=#numberOptions | correctOptions=#numberCorrectOptions | user=#isUser | student=#isStudent | errorMessage=#errorMessage"() {
+        given: "a studentquestiondto"
+        def studentQuestionDto = createStudentQuestionDto(QUESTION_TITLE, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name())
+
+        and: "options"
+        createOptions(studentQuestionDto, OPTION_CONTENT, numberOptions, numberCorrectOptions)
+
+        and: "a username"
+        def username = createUsername(isUser, isStudent)
+
+        when: "create a student question with invalid data"
+        studentQuestionService.createStudentQuestion(username, studentQuestionDto)
+
+        then: "an error occurs"
+        def error = thrown(TutorException)
+        error.errorMessage == errorMessage
+
+        where:
+        numberOptions | numberCorrectOptions | isUser | isStudent || errorMessage
+        0             | 1                    | true   | true      || TOO_FEW_OPTIONS_STUDENT_QUESTION
+        5             | 1                    | true   | true      || TOO_MANY_OPTIONS_STUDENT_QUESTION
+        4             | 0                    | true   | true      || NO_CORRECT_OPTION_STUDENT_QUESTION
+        4             | 2                    | true   | true      || TOO_MANY_CORRECT_OPTIONS_STUDENT_QUESTION
+        4             | 1                    | false  | true      || STUDENT_QUESTION_USER_NOT_FOUND
+        4             | 1                    | true   | false     || STUDENT_QUESTION_NOT_A_STUDENT
+    }
+
+    private String createUsername(boolean isUser, boolean isStudent) {
+        if (!isUser)
+            return null
+        if (!isStudent)
+            user.setRole(User.Role.TEACHER)
+
+        return user.getUsername()
+    }
+
     private static createOptions(StudentQuestionDto studentQuestionDto, String content, int number_of_options, int number_of_correct) {
         def options = new HashSet<OptionDto>()
         for (int i = 0; i < number_of_options; i++) {
             def optionDto = new OptionDto()
             optionDto.setContent(content)
 
-            if(number_of_correct-- > 0)
+            if (number_of_correct-- > 0)
                 optionDto.setCorrect(true)
 
             options.add(optionDto)
