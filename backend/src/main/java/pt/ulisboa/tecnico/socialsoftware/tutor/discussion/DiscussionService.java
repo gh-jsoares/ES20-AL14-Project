@@ -74,6 +74,9 @@ public class DiscussionService {
         }
     }
 
+    @Retryable(
+        value = { SQLException.class },
+        backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public void teacherAnswersStudent(Integer discussionId, DiscussionDto discussionDto) {
         Discussion discussion = discussionRepository.findById(discussionId).orElseThrow(() -> new TutorException(ErrorMessage.DISCUSSION_NOT_FOUND, discussionId));
@@ -93,6 +96,10 @@ public class DiscussionService {
         return teacher;
     }
 
+    @Retryable(
+        value = { SQLException.class },
+        backoff = @Backoff(delay = 5000))
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
     public List<DiscussionDto> getDiscussionStudent(Integer studentId) {
         User student = getStudent(studentId);
 

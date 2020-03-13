@@ -114,19 +114,9 @@ class StudentSeesTeacherAnswerTest extends Specification {
         given: "two answered discussions"
         DiscussionDto discussionDto = new DiscussionDto()
         discussionDto.setMessageFromStudent(MESSAGE)
-        firstDiscussion = new Discussion(student, question, discussionDto)
-        secondDiscussion = new Discussion(student, question, discussionDto)
 
-        firstDiscussion.setTeacherAnswer(TEACHER_ANSWER)
-        firstDiscussion.setTeacher(teacher)
-        discussionRepository.save(firstDiscussion)
-
-        secondDiscussion.setTeacherAnswer(TEACHER_ANSWER)
-        secondDiscussion.setTeacher(teacher)
-        discussionRepository.save(secondDiscussion)
-
-        student.addDiscussion(firstDiscussion)
-        student.addDiscussion(secondDiscussion)
+        createBasicDiscussion(student,question, discussionDto)
+        createBasicDiscussion(student,question, discussionDto)
 
         when: "search for student discussions"
         def result = discussionService.getDiscussionStudent(student.getId())
@@ -180,6 +170,15 @@ class StudentSeesTeacherAnswerTest extends Specification {
         then: "an exception is thrown"
         def exception = thrown(TutorException)
         exception.errorMessage == ErrorMessage.USER_NOT_STUDENT
+    }
+
+    def createBasicDiscussion(User student, Question question, DiscussionDto discussionDto) {
+        Discussion discussion = new Discussion(student, question, discussionDto)
+        discussion.setTeacherAnswer(TEACHER_ANSWER)
+        discussion.setTeacher(teacher)
+        discussionRepository.save(discussion)
+
+        student.addDiscussion(discussion)
     }
 
     @TestConfiguration
