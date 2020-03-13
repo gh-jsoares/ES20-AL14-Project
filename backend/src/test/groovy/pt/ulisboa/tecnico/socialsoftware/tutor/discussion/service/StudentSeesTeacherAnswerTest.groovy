@@ -27,7 +27,7 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.user.UserRepository
 import spock.lang.Specification
 
 @DataJpaTest
-class StudentSeesTeacherAnswer extends Specification {
+class StudentSeesTeacherAnswerTest extends Specification {
     @Autowired
     DiscussionService discussionService
 
