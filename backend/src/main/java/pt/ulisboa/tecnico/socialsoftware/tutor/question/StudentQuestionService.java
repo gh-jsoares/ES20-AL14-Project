@@ -96,7 +96,7 @@ public class StudentQuestionService {
 
         return studentQuestionRepository.findAll().stream()
                 .map(StudentQuestionDto::new)
-                .filter(sq -> sq.getUsername().equals(username))
+                .filter(sq -> sq.getCreatorUsername().equals(username))
                 .sorted(Comparator
                         .comparing(StudentQuestionDto::getCreationDateAsObject).reversed()
                         .thenComparing(StudentQuestionDto::getTitle))
@@ -145,6 +145,14 @@ public class StudentQuestionService {
         checkUserIsTeacher(user);
 
         return new StudentQuestionDto(studentQuestion);
+    }
+
+    @Retryable(
+            value = { SQLException.class },
+            backoff = @Backoff(delay = 5000))
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public StudentQuestionDto approveStudentQuestion(String username, int studentQuestionId) {
+        return null;
     }
 
     private void checkStudentIsCreatorOfQuestion(User user, StudentQuestion studentQuestion) {

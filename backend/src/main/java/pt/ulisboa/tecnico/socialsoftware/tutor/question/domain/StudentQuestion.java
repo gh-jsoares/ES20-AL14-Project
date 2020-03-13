@@ -56,6 +56,13 @@ public class StudentQuestion {
     @ManyToMany(mappedBy = "studentQuestions")
     private Set<Topic> topics = new HashSet<>();
 
+    @Column(name = "reviewed_date")
+    private LocalDateTime reviewedDate;
+
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name = "last_reviewer_id")
+    private User lastReviewer;
+
     public StudentQuestion() {
 
     }
@@ -157,6 +164,22 @@ public class StudentQuestion {
 
     public void addOption(Option option) {
         this.options.add(option);
+    }
+
+    public LocalDateTime getReviewedDate() {
+        return reviewedDate;
+    }
+
+    public void setReviewedDate(LocalDateTime reviewedDate) {
+        this.reviewedDate = reviewedDate;
+    }
+
+    public User getLastReviewer() {
+        return lastReviewer;
+    }
+
+    public void setLastReviewer(User lastReviewer) {
+        this.lastReviewer = lastReviewer;
     }
 
     private void checkConsistentStudentQuestion(User user, StudentQuestionDto studentQuestionDto) {

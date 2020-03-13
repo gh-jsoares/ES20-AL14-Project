@@ -16,8 +16,6 @@ import spock.lang.Unroll
 import java.time.LocalDateTime
 
 import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_NOT_A_STUDENT
-import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_NOT_FOUND
-import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_STUDENT_NOT_CREATOR
 import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_USER_NOT_FOUND
 
 @DataJpaTest
@@ -65,7 +63,7 @@ class StudentListStudentQuestionSpockTest extends Specification {
 
         then: "the list returned has only questions made by the student"
         result.size() == 5
-        result.stream().allMatch({ sq -> (sq.getUsername() == USER_USERNAME) })
+        result.stream().allMatch({ sq -> (sq.getCreatorUsername() == USER_USERNAME) })
         and: "reverse sorted by creation date"
         0.upto(result.size() - 2, {
             def date_1 = result[it.intValue()].getCreationDateAsObject()

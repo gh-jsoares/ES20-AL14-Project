@@ -59,7 +59,7 @@ class TeacherListStudentQuestionSpockTest extends Specification {
 
         then: "the list returned has all the questions made by the students"
         result.size() == 5
-        result.stream().allMatch({ sq -> (sq.getUsername() == USER_USERNAME) })
+        result.stream().allMatch({ sq -> (sq.getCreatorUsername() == USER_USERNAME) })
         and: "reverse sorted by creation date"
         0.upto(result.size() - 2, {
             def date_1 = result[it.intValue()].getCreationDateAsObject()

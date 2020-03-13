@@ -9,6 +9,9 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class StudentQuestionDto implements Serializable {
+
+    private static final String DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm";
+
     private Integer id;
     private Integer key;
     private String title;
@@ -17,7 +20,9 @@ public class StudentQuestionDto implements Serializable {
     private String status;
     private Set<OptionDto> options = new HashSet<>();
     private ImageDto image;
-    private String username;
+    private String creatorUsername;
+    private String lastReviewerUsername = null;
+    private String reviewedDate = null;
 
     public StudentQuestionDto() {}
 
@@ -28,12 +33,16 @@ public class StudentQuestionDto implements Serializable {
         this.content = studentQuestion.getContent();
         this.status = studentQuestion.getStatus().name();
         this.options = studentQuestion.getOptions().stream().map(OptionDto::new).collect(Collectors.toSet());
-        this.username = studentQuestion.getStudent().getUsername();
+        this.creatorUsername = studentQuestion.getStudent().getUsername();
 
         if (studentQuestion.getImage() != null)
             this.image = new ImageDto(studentQuestion.getImage());
         if (studentQuestion.getCreationDate() != null)
-            this.creationDate = studentQuestion.getCreationDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+            this.creationDate = studentQuestion.getCreationDate().format(DateTimeFormatter.ofPattern(DATE_TIME_FORMAT));
+        if (studentQuestion.getReviewedDate() != null)
+            this.reviewedDate = studentQuestion.getReviewedDate().format(DateTimeFormatter.ofPattern(DATE_TIME_FORMAT));
+        if (studentQuestion.getLastReviewer() != null)
+            this.lastReviewerUsername = studentQuestion.getLastReviewer().getUsername();
     }
 
     public Integer getId() {
@@ -73,7 +82,7 @@ public class StudentQuestionDto implements Serializable {
     }
 
     public LocalDateTime getCreationDateAsObject() {
-        return LocalDateTime.parse(this.creationDate, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+        return LocalDateTime.parse(this.creationDate, DateTimeFormatter.ofPattern(DATE_TIME_FORMAT));
     }
 
     public String getStatus() {
@@ -100,8 +109,24 @@ public class StudentQuestionDto implements Serializable {
         this.image = image;
     }
 
-    public String getUsername() {
-        return this.username;
+    public String getCreatorUsername() {
+        return this.creatorUsername;
+    }
+
+    public String getLastReviewerUsername() {
+        return this.lastReviewerUsername;
+    }
+
+    public void setLastReviewerUsername(String lastReviewerUsername) {
+        this.lastReviewerUsername = lastReviewerUsername;
+    }
+
+    public String getReviewedDate() {
+        return reviewedDate;
+    }
+
+    public void setReviewedDate(String reviewedDate) {
+        this.reviewedDate = reviewedDate;
     }
 
     @Override
@@ -114,7 +139,7 @@ public class StudentQuestionDto implements Serializable {
                 ", status='" + status + '\'' +
                 ", options=" + options +
                 ", image=" + image +
-                ", student=" + username +
+                ", student=" + creatorUsername +
                 '}';
     }
 

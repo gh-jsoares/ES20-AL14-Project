@@ -72,7 +72,7 @@ class TeacherGetStudentQuestionSpockTest extends Specification {
         result.getContent() == QUESTION_CONTENT
         result.getStatus() == StudentQuestion.Status.AWAITING_APPROVAL.name()
         result.getOptions().size() == 4
-        result.getUsername() == USER_USERNAME
+        result.getCreatorUsername() == USER_USERNAME
         result.getOptions().stream().allMatch({ o -> o.getContent() == OPTION_CONTENT })
         result.getOptions().stream().filter({ o -> o.getCorrect() }).count() == 1L
     }

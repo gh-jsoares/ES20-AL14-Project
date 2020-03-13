@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
-import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.StudentQuestionService
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Option
@@ -71,7 +70,7 @@ class StudentGetStudentQuestionSpockTest extends Specification {
         result.getContent() == QUESTION_CONTENT
         result.getStatus() == StudentQuestion.Status.AWAITING_APPROVAL.name()
         result.getOptions().size() == 4
-        result.getUsername() == USER_USERNAME
+        result.getCreatorUsername() == USER_USERNAME
         result.getOptions().stream().allMatch({ o -> o.getContent() == OPTION_CONTENT })
         result.getOptions().stream().filter({ o -> o.getCorrect() }).count() == 1L
     }
