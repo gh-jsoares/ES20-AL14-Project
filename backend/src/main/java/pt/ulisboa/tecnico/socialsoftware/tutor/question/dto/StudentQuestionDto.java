@@ -23,6 +23,7 @@ public class StudentQuestionDto implements Serializable {
     private String creatorUsername;
     private String lastReviewerUsername = null;
     private String reviewedDate = null;
+    private String rejectedExplanation = null;
 
     public StudentQuestionDto() {}
 
@@ -39,6 +40,7 @@ public class StudentQuestionDto implements Serializable {
         populateCreationDate(studentQuestion);
         populateReviewedDate(studentQuestion);
         populateLastReviewer(studentQuestion);
+        populateRejectedExplanation(studentQuestion);
     }
 
     private void populateLastReviewer(StudentQuestion studentQuestion) {
@@ -59,6 +61,11 @@ public class StudentQuestionDto implements Serializable {
     private void populateImage(StudentQuestion studentQuestion) {
         if (studentQuestion.getImage() != null)
             this.image = new ImageDto(studentQuestion.getImage());
+    }
+
+    private void populateRejectedExplanation(StudentQuestion studentQuestion) {
+        if (studentQuestion.getRejectedExplanation() != null)
+            this.rejectedExplanation = studentQuestion.getRejectedExplanation();
     }
 
     public Integer getId() {
@@ -131,6 +138,14 @@ public class StudentQuestionDto implements Serializable {
 
     public String getLastReviewerUsername() {
         return this.lastReviewerUsername;
+    }
+
+    public String getReviewedDate() {
+        return this.reviewedDate;
+    }
+
+    public String getRejectedExplanation() {
+        return rejectedExplanation;
     }
 
     @Override

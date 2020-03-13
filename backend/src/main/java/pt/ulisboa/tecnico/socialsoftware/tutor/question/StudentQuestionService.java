@@ -161,6 +161,16 @@ public class StudentQuestionService {
         return new StudentQuestionDto(studentQuestion);
     }
 
+    @Retryable(
+            value = { SQLException.class },
+            backoff = @Backoff(delay = 5000))
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public StudentQuestionDto rejectStudentQuestion(String username, int studentQuestionId, String explanation) {
+        return null;
+    }
+
+
+
     private void checkStudentIsCreatorOfQuestion(User user, StudentQuestion studentQuestion) {
         if (!studentQuestion.getStudent().getUsername().equals(user.getUsername()))
             throw new TutorException(STUDENT_QUESTION_STUDENT_NOT_CREATOR, studentQuestion.getTitle());

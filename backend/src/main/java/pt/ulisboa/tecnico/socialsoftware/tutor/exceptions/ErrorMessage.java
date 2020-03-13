@@ -90,6 +90,7 @@ public enum ErrorMessage {
     STUDENT_QUESTION_STUDENT_NOT_CREATOR("The student is not the creator of the student question: %s"),
     STUDENT_QUESTION_NOT_A_TEACHER("The user is not a teacher"),
     STUDENT_QUESTION_NOT_AWAITING_APPROVAL("The student question '%s' is not awaiting approval"),
+    STUDENT_QUESTION_REJECT_NO_EXPLANATION("To reject a student question you need to write an explanation"),
 
     TOURNAMENT_NOT_CONSISTENT("Field %s of tournament is not consistent"),
 

@@ -63,6 +63,9 @@ public class StudentQuestion {
     @JoinColumn(name = "last_reviewer_id")
     private User lastReviewer;
 
+    @Column(columnDefinition = "TEXT")
+    private String rejectedExplanation;
+
     public StudentQuestion() {
 
     }
@@ -172,6 +175,10 @@ public class StudentQuestion {
 
     public User getLastReviewer() {
         return lastReviewer;
+    }
+
+    public String getRejectedExplanation() {
+        return rejectedExplanation;
     }
 
     public void doApprove(User user) {
