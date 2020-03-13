@@ -170,16 +170,23 @@ public class StudentQuestion {
         return reviewedDate;
     }
 
-    public void setReviewedDate(LocalDateTime reviewedDate) {
-        this.reviewedDate = reviewedDate;
-    }
-
     public User getLastReviewer() {
         return lastReviewer;
     }
 
-    public void setLastReviewer(User lastReviewer) {
-        this.lastReviewer = lastReviewer;
+    public void doApprove(User user) {
+        checkAwaitingApproval();
+
+        this.lastReviewer = user;
+        this.reviewedDate = LocalDateTime.now();
+        this.status = Status.ACCEPTED;
+
+        user.addReviewedStudentQuestion(this);
+    }
+
+    private void checkAwaitingApproval() {
+        if (!status.equals(Status.AWAITING_APPROVAL))
+            throw new TutorException(STUDENT_QUESTION_NOT_AWAITING_APPROVAL, getTitle());
     }
 
     private void checkConsistentStudentQuestion(User user, StudentQuestionDto studentQuestionDto) {

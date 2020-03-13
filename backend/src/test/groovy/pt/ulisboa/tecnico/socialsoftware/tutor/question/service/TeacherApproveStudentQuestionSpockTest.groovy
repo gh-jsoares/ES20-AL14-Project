@@ -77,6 +77,11 @@ class TeacherApproveStudentQuestionSpockTest extends Specification {
         result.getOptions().stream().allMatch({ o -> o.getContent() == OPTION_CONTENT })
         result.getOptions().stream().filter({ o -> o.getCorrect() }).count() == 1L
         result.getLastReviewerUsername() == TEACHER_USERNAME
+
+        and: "teacher contains reviewed question"
+        def resultTeacher = userRepository.findByUsername(TEACHER_USERNAME)
+        resultTeacher.getReviewedStudentQuestions().size() == 1
+        resultTeacher.getReviewedStudentQuestions()[0].getId() == result.getId()
     }
 
     @Unroll

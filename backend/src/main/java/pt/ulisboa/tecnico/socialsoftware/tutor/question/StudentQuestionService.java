@@ -152,7 +152,13 @@ public class StudentQuestionService {
             backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public StudentQuestionDto approveStudentQuestion(String username, int studentQuestionId) {
-        return null;
+        User user = getUserIfExists(username);
+        StudentQuestion studentQuestion = getStudentQuestionIfExists(studentQuestionId);
+
+        checkUserIsTeacher(user);
+        studentQuestion.doApprove(user);
+
+        return new StudentQuestionDto(studentQuestion);
     }
 
     private void checkStudentIsCreatorOfQuestion(User user, StudentQuestion studentQuestion) {
