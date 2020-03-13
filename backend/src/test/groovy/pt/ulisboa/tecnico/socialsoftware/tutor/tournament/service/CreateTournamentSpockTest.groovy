@@ -161,6 +161,36 @@ class CreateTournamentSpockTest extends Specification{
         tournRepository.count() == 0L
     }
 
+    def "create a tournament with topic from different course"() {
+        given: "a tournament"
+        def tournDto = createTournamentDto(TOURN_TITLE, QUEST_NUM, days["+1"], days["+2"])
+
+        and: "a different course"
+        def otherCourse = new Course("Other Course", Course.Type.TECNICO)
+        courseRepository.save(otherCourse)
+
+        and: "a topic from that course"
+        def otherTopic = new Topic()
+        otherTopic.setName(TOPIC_NAME)
+        otherTopic.setCourse(otherCourse)
+        otherCourse.addTopic(otherTopic)
+        topicRepository.save(otherTopic)
+        tournDto.addTopic(new TopicDto(otherTopic))
+
+        and: "a student as creator"
+        def userId = createUser(User.Role.STUDENT)
+
+        when: "service call to create tournament"
+        tournService.createTournament(courseExecution.getId(), tournDto, userId)
+
+        then: "tournament not created, exception thrown"
+        def exception = thrown(TutorException)
+        exception.getErrorMessage() == ErrorMessage.TOURNAMENT_TOPIC_WRONG_COURSE
+
+        and: "tournament not in repository"
+        tournRepository.count() == 0L
+    }
+
 
     @Unroll
     def "invalid date order: #creation-creation #available-available #conclusion-conclusion"() {

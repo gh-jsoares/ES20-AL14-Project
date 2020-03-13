@@ -17,16 +17,18 @@ public class DiscussionDto implements Serializable {
     public DiscussionDto() {}
 
     public DiscussionDto(Discussion discussion) {
-        this.id = discussion.getId();
-        this.messageFromStudent = discussion.getMessageFromStudent();
-        this.message = discussion.getTeacherAnswer();
+        setId(discussion.getId());
+        setMessageFromStudent(discussion.getMessageFromStudent());
+        setMessage(discussion.getTeacherAnswer());
+        if (discussion.getTeacher() != null)
+            setUserName(discussion.getTeacher().getUsername());
     }
 
     public Integer getId() {
         return id;
     }
 
-    public void setId(Integer id) {this.id = id; }
+    public void setId(Integer id) { this.id = id; }
 
     public String getMessageFromStudent() { return messageFromStudent; }
 

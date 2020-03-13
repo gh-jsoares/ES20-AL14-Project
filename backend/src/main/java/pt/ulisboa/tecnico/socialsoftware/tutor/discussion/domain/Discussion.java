@@ -1,7 +1,9 @@
 package pt.ulisboa.tecnico.socialsoftware.tutor.discussion.domain;
 
-import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecution;
+import pt.ulisboa.tecnico.socialsoftware.tutor.answer.domain.QuestionAnswer;
+import pt.ulisboa.tecnico.socialsoftware.tutor.answer.domain.QuizAnswer;
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException;
+import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Question;
 import pt.ulisboa.tecnico.socialsoftware.tutor.quiz.domain.Quiz;
 import pt.ulisboa.tecnico.socialsoftware.tutor.quiz.domain.QuizQuestion;
@@ -9,10 +11,8 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.user.User;
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.dto.DiscussionDto;
 
 import javax.persistence.*;
-import java.util.List;
-import java.util.stream.Collectors;
 
-import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.*;
+import java.util.Collection;
 
 @Entity
 @Table(name = "discussions")
@@ -42,10 +42,14 @@ public class Discussion {
     }
 
     public Discussion(User student, Question question, DiscussionDto dto) {
-        this.student = student;
-        this.question = question;
-        this.messageFromStudent = dto.getMessageFromStudent();
-        this.teacherAnswer = dto.getMessage();
+        checkMessage(dto.getMessageFromStudent());
+        verifyIfAnsweredQuestion(question.getId(), student);
+        setStudent(student);
+        setQuestion(question);
+        setMessageFromStudent(dto.getMessageFromStudent());
+        setTeacherAnswer(dto.getMessage());
+        question.addDiscussion(this);
+        student.addDiscussion(this);
     }
 
     public Integer getId() {
@@ -82,35 +86,41 @@ public class Discussion {
 
     public void setTeacher(User teacher) { this.teacher = teacher; }
 
+    private void verifyIfAnsweredQuestion(Integer questionId, User student) {
+        if (student.getQuizAnswers().stream()
+                .map(QuizAnswer::getQuestionAnswers)
+                .flatMap(Collection::stream)
+                .map(QuestionAnswer::getQuizQuestion)
+                .map(QuizQuestion::getQuestion)
+                .noneMatch(quest -> quest.getId().equals(questionId)))
+            throw new TutorException(ErrorMessage.DISCUSSION_QUESTION_NOT_ANSWERED, student.getId());
+    }
+
     public void updateTeacherAnswer(User teacher, DiscussionDto discussionDto) {
         checkIfDiscussionHasBeenAnswered();
         checkIfTeacherIsEnrolledInQuestionCourseExecution(teacher);
-        checkIfAnswerIsEmpty(discussionDto);
+        checkMessage(discussionDto.getMessage());
 
         setTeacherAnswer(discussionDto.getMessage());
         setTeacher(teacher);
     }
 
-    private void checkIfAnswerIsEmpty(DiscussionDto discussionDto) {
-        String teacherAns = discussionDto.getMessage();
-        if (teacherAns == null || teacherAns.isBlank()) {
-            throw new TutorException(EMPTY_ANSWER);
+    private void checkMessage(String message) {
+        if (message == null || message.isBlank()) {
+            throw new TutorException(ErrorMessage.DISCUSSION_MESSAGE_EMPTY);
         }
     }
 
     private void checkIfTeacherIsEnrolledInQuestionCourseExecution(User teacher) {
-        List<CourseExecution> teacherEnrolledInQuestionCourse = this.getQuestion().getQuizQuestions().stream()
+        if (this.getQuestion().getQuizQuestions().stream()
                 .map(QuizQuestion::getQuiz)
                 .map(Quiz::getCourseExecution)
-                .filter(courseExecution -> teacher.getCourseExecutions().contains(courseExecution))
-                .collect(Collectors.toList());
-
-        if (teacherEnrolledInQuestionCourse.isEmpty())
-            throw new TutorException(TEACHER_NOT_IN_COURSE_EXECUTION);
+                .noneMatch(courseExecution -> teacher.getCourseExecutions().contains(courseExecution)))
+            throw new TutorException(ErrorMessage.TEACHER_NOT_IN_COURSE_EXECUTION);
     }
 
     private void checkIfDiscussionHasBeenAnswered() {
         if (this.getTeacher() != null)
-            throw new TutorException(DISCUSSION_ALREADY_ANSWERED);
+            throw new TutorException(ErrorMessage.DISCUSSION_ALREADY_ANSWERED);
     }
 }

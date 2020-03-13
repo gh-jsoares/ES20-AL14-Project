@@ -6,6 +6,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import pt.ulisboa.tecnico.socialsoftware.tutor.answer.domain.QuizAnswer;
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecution;
+import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.domain.Discussion;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Question;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.StudentQuestion;
 import pt.ulisboa.tecnico.socialsoftware.tutor.quiz.domain.Quiz;
@@ -59,6 +60,10 @@ public class User implements UserDetails {
     @ManyToMany
     private Set<CourseExecution> courseExecutions = new HashSet<>();
 
+
+    @OneToMany
+    private Set<Discussion> discussions = new HashSet<>();
+
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "student", fetch = FetchType.LAZY, orphanRemoval=true)
     private Set<StudentQuestion> studentQuestions = new HashSet<>();
 
@@ -67,6 +72,9 @@ public class User implements UserDetails {
 
     @ManyToMany(mappedBy = "enrolledStudents", fetch=FetchType.LAZY)
     private Set<Tournament> enrolledTournaments = new HashSet<>();
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "lastReviewer", fetch = FetchType.LAZY, orphanRemoval=true)
+    private Set<StudentQuestion> reviewedStudentQuestions = new HashSet<>();
 
     public User() {
     }
@@ -165,8 +173,34 @@ public class User implements UserDetails {
         this.courseExecutions = courseExecutions;
     }
 
+    public Set<Discussion> getDiscussions() {
+        return discussions;
+    }
+
+    public void setDiscussions(Set<Discussion> discussions) {
+        this.discussions = discussions;
+    }
+
+    public void addDiscussion(Discussion discussion) {
+        this.discussions.add(discussion);
+    }
+
     public Set<StudentQuestion> getStudentQuestions() {
         return studentQuestions;
+    }
+
+    public Set<StudentQuestion> getReviewedStudentQuestions() {
+        return reviewedStudentQuestions;
+    }
+
+    public void addReviewedStudentQuestion(StudentQuestion studentQuestion) {
+        if(this.reviewedStudentQuestions.stream().noneMatch(sq -> sq.getId().equals(studentQuestion.getId())))
+            this.reviewedStudentQuestions.add(studentQuestion);
+    }
+
+    public void removeReviewedStudentQuestion(StudentQuestion studentQuestion) {
+        if(this.reviewedStudentQuestions.stream().anyMatch(sq -> sq.getId().equals(studentQuestion.getId())))
+            this.reviewedStudentQuestions.remove(studentQuestion);
     }
 
     public Integer getNumberOfTeacherQuizzes() {
@@ -375,11 +409,11 @@ public class User implements UserDetails {
         this.createdTournaments.add(tournament);
     }
 
-    public Set<Tournament> getEnrolledTournament() {
+    public Set<Tournament> getEnrolledTournaments() {
         return enrolledTournaments;
     }
 
-    public void addEnrolledTournaments(Tournament tournament) {
+    public void addEnrolledTournament(Tournament tournament) {
         this.enrolledTournaments.add(tournament);
     }
 
@@ -403,6 +437,7 @@ public class User implements UserDetails {
                 ", numberOfCorrectStudentAnswers=" + numberOfCorrectStudentAnswers +
                 ", creationDate=" + creationDate +
                 ", courseExecutions=" + courseExecutions +
+                ", discussions=" + discussions +
                 '}';
     }
 

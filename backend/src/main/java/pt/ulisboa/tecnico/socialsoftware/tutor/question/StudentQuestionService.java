@@ -19,7 +19,8 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.user.UserRepository;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.sql.SQLException;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.*;
 
@@ -39,13 +40,11 @@ public class StudentQuestionService {
     private EntityManager entityManager;
 
     @Retryable(
-            value = { SQLException.class },
+            value = {SQLException.class},
             backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public StudentQuestionDto createStudentQuestion(String username, StudentQuestionDto studentQuestionDto) {
-        User user = userRepository.findByUsername(username);
-
-        checkUserExists(user);
+        User user = getUserIfExists(username);
 
         checkDuplicateQuestion(studentQuestionDto);
         generateNextStudentQuestionKey(studentQuestionDto);
@@ -57,12 +56,12 @@ public class StudentQuestionService {
     }
 
     @Retryable(
-            value = { SQLException.class },
+            value = {SQLException.class},
             backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
-    public StudentQuestionDto addTopicToStudentQuestion(StudentQuestionDto studentQuestionDto, TopicDto topicDto) {
-        Topic topic = getTopicIfExists(topicDto);
-        StudentQuestion studentQuestion = getStudentQuestionIfExists(studentQuestionDto);
+    public StudentQuestionDto addTopicToStudentQuestion(int studentQuestionId, int topicId) {
+        Topic topic = getTopicIfExists(topicId);
+        StudentQuestion studentQuestion = getStudentQuestionIfExists(studentQuestionId);
 
         studentQuestion.addTopic(topic);
         topic.addStudentQuestion(studentQuestion);
@@ -72,18 +71,128 @@ public class StudentQuestionService {
     }
 
     @Retryable(
-            value = { SQLException.class },
+            value = {SQLException.class},
             backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
-    public StudentQuestionDto removeTopicFromStudentQuestion(StudentQuestionDto studentQuestionDto, TopicDto topicDto) {
-        Topic topic = getTopicIfExists(topicDto);
-        StudentQuestion studentQuestion = getStudentQuestionIfExists(studentQuestionDto);
+    public StudentQuestionDto removeTopicFromStudentQuestion(int studentQuestionId, int topicId) {
+        Topic topic = getTopicIfExists(topicId);
+        StudentQuestion studentQuestion = getStudentQuestionIfExists(studentQuestionId);
 
         studentQuestion.removeTopic(topic);
         topic.removeStudentQuestion(studentQuestion);
         this.entityManager.persist(studentQuestion);
 
         return new StudentQuestionDto(studentQuestion);
+    }
+
+    @Retryable(
+            value = {SQLException.class},
+            backoff = @Backoff(delay = 5000))
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public List<StudentQuestionDto> listStudentQuestions(String username) {
+        User user = getUserIfExists(username);
+
+        checkUserIsStudent(user);
+
+        return studentQuestionRepository.findAll().stream()
+                .map(StudentQuestionDto::new)
+                .filter(sq -> sq.getCreatorUsername().equals(username))
+                .sorted(Comparator
+                        .comparing(StudentQuestionDto::getCreationDateAsObject).reversed()
+                        .thenComparing(StudentQuestionDto::getTitle))
+                .collect(Collectors.toList());
+    }
+
+    @Retryable(
+            value = {SQLException.class},
+            backoff = @Backoff(delay = 5000))
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public StudentQuestionDto getStudentQuestion(String username, int studentQuestionId) {
+        User user = getUserIfExists(username);
+        StudentQuestion studentQuestion = getStudentQuestionIfExists(studentQuestionId);
+
+        checkUserIsStudent(user);
+        checkStudentIsCreatorOfQuestion(user, studentQuestion);
+
+        return new StudentQuestionDto(studentQuestion);
+    }
+
+    @Retryable(
+            value = {SQLException.class},
+            backoff = @Backoff(delay = 5000))
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public List<StudentQuestionDto> listAllStudentQuestions(String username) {
+        User user = getUserIfExists(username);
+
+        checkUserIsTeacher(user);
+
+        return studentQuestionRepository.findAll().stream()
+                .map(StudentQuestionDto::new)
+                .sorted(Comparator
+                        .comparing(StudentQuestionDto::getCreationDateAsObject).reversed()
+                        .thenComparing(StudentQuestionDto::getTitle))
+                .collect(Collectors.toList());
+    }
+
+    @Retryable(
+            value = {SQLException.class},
+            backoff = @Backoff(delay = 5000))
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public StudentQuestionDto getStudentQuestionAsTeacher(String username, int studentQuestionId) {
+        User user = getUserIfExists(username);
+        StudentQuestion studentQuestion = getStudentQuestionIfExists(studentQuestionId);
+
+        checkUserIsTeacher(user);
+
+        return new StudentQuestionDto(studentQuestion);
+    }
+
+    @Retryable(
+            value = {SQLException.class},
+            backoff = @Backoff(delay = 5000))
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public StudentQuestionDto approveStudentQuestion(String username, int studentQuestionId) {
+        User user = getUserIfExists(username);
+        StudentQuestion studentQuestion = getStudentQuestionIfExists(studentQuestionId);
+
+        studentQuestion.doApprove(user);
+
+        return new StudentQuestionDto(studentQuestion);
+    }
+
+    @Retryable(
+            value = {SQLException.class},
+            backoff = @Backoff(delay = 5000))
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public StudentQuestionDto rejectStudentQuestion(String username, int studentQuestionId, String explanation) {
+        User user = getUserIfExists(username);
+        StudentQuestion studentQuestion = getStudentQuestionIfExists(studentQuestionId);
+
+        studentQuestion.doReject(user, explanation);
+
+        return new StudentQuestionDto(studentQuestion);
+    }
+
+    private void checkStudentIsCreatorOfQuestion(User user, StudentQuestion studentQuestion) {
+        if (!studentQuestion.getStudent().getUsername().equals(user.getUsername()))
+            throw new TutorException(STUDENT_QUESTION_STUDENT_NOT_CREATOR, studentQuestion.getTitle());
+    }
+
+    private User getUserIfExists(String username) {
+        User user = userRepository.findByUsername(username);
+
+        checkUserExists(user);
+        return user;
+    }
+
+    private void checkUserIsTeacher(User user) {
+        if (user.getRole() != User.Role.TEACHER)
+            throw new TutorException(STUDENT_QUESTION_NOT_A_TEACHER);
+    }
+
+    private void checkUserIsStudent(User user) {
+        if (user.getRole() != User.Role.STUDENT)
+            throw new TutorException(STUDENT_QUESTION_NOT_A_STUDENT);
     }
 
     private void checkUserExists(User user) {
@@ -104,21 +213,18 @@ public class StudentQuestionService {
             throw new TutorException(DUPLICATE_STUDENT_QUESTION, studentQuestionDto.getTitle());
     }
 
-    private Topic getTopicIfExists(TopicDto topicDto) {
-        if (topicDto != null) {
-            Optional<Topic> topic = topicRepository.findById(topicDto.getId());
-            if(topic.isPresent())
-                return topic.get();
-        }
-        throw new TutorException(STUDENT_QUESTION_TOPIC_NOT_FOUND);
+    private Topic getTopicIfExists(int topicId) {
+        Optional<Topic> topic = topicRepository.findById(topicId);
+        if (topic.isEmpty())
+            throw new TutorException(STUDENT_QUESTION_TOPIC_NOT_FOUND);
+        return topic.get();
     }
 
-    private StudentQuestion getStudentQuestionIfExists(StudentQuestionDto studentQuestionDto) {
-        if (studentQuestionDto != null) {
-            Optional<StudentQuestion> studentQuestion = studentQuestionRepository.findByKey(studentQuestionDto.getKey());
-            if(studentQuestion.isPresent())
-                return studentQuestion.get();
-        }
-        throw new TutorException(STUDENT_QUESTION_NOT_FOUND);
+    private StudentQuestion getStudentQuestionIfExists(int studentQuestionId) {
+        Optional<StudentQuestion> studentQuestion = studentQuestionRepository.findById(studentQuestionId);
+        if (studentQuestion.isEmpty())
+            throw new TutorException(STUDENT_QUESTION_NOT_FOUND);
+
+        return studentQuestion.get();
     }
 }
