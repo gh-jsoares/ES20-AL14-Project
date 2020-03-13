@@ -9,6 +9,7 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.course.Course
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecution
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecutionRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseRepository
+import pt.ulisboa.tecnico.socialsoftware.tutor.user.*
 import spock.lang.Specification
 
 @DataJpaTest
@@ -36,11 +37,11 @@ class GetCourseExecutionsServiceSpockPerformanceTest extends Specification {
         })
 
         when:
-        1.upto(1, { administrationService.getCourseExecutions()})
+        1.upto(1, { administrationService.getCourseExecutions(User.Role.ADMIN)})
 
         then:
         true
-    }
+}
 
     @TestConfiguration
     static class ServiceImplTestContextConfiguration {

@@ -3,11 +3,15 @@ package pt.ulisboa.tecnico.socialsoftware.tutor.question.dto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.StudentQuestion;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class StudentQuestionDto implements Serializable {
+
+    private static final String DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm";
+
     private Integer id;
     private Integer key;
     private String title;
@@ -16,8 +20,10 @@ public class StudentQuestionDto implements Serializable {
     private String status;
     private Set<OptionDto> options = new HashSet<>();
     private ImageDto image;
-    private Integer sequence;
-    private String username;
+    private String creatorUsername;
+    private String lastReviewerUsername = null;
+    private String reviewedDate = null;
+    private String rejectedExplanation = null;
 
     public StudentQuestionDto() {}
 
@@ -28,16 +34,46 @@ public class StudentQuestionDto implements Serializable {
         this.content = studentQuestion.getContent();
         this.status = studentQuestion.getStatus().name();
         this.options = studentQuestion.getOptions().stream().map(OptionDto::new).collect(Collectors.toSet());
-        this.username = studentQuestion.getStudent().getUsername();
+        this.creatorUsername = studentQuestion.getStudent().getUsername();
 
+        populateImage(studentQuestion);
+        populateCreationDate(studentQuestion);
+        populateReviewedDate(studentQuestion);
+        populateLastReviewer(studentQuestion);
+        populateRejectedExplanation(studentQuestion);
+    }
+
+    private void populateLastReviewer(StudentQuestion studentQuestion) {
+        if (studentQuestion.getLastReviewer() != null)
+            this.lastReviewerUsername = studentQuestion.getLastReviewer().getUsername();
+    }
+
+    private void populateReviewedDate(StudentQuestion studentQuestion) {
+        if (studentQuestion.getReviewedDate() != null)
+            this.reviewedDate = studentQuestion.getReviewedDate().format(DateTimeFormatter.ofPattern(DATE_TIME_FORMAT));
+    }
+
+    private void populateCreationDate(StudentQuestion studentQuestion) {
+        if (studentQuestion.getCreationDate() != null)
+            this.creationDate = studentQuestion.getCreationDate().format(DateTimeFormatter.ofPattern(DATE_TIME_FORMAT));
+    }
+
+    private void populateImage(StudentQuestion studentQuestion) {
         if (studentQuestion.getImage() != null)
             this.image = new ImageDto(studentQuestion.getImage());
-        if (studentQuestion.getCreationDate() != null)
-            this.creationDate = studentQuestion.getCreationDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+    }
+
+    private void populateRejectedExplanation(StudentQuestion studentQuestion) {
+        if (studentQuestion.getRejectedExplanation() != null)
+            this.rejectedExplanation = studentQuestion.getRejectedExplanation();
     }
 
     public Integer getId() {
         return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
     }
 
     public Integer getKey() {
@@ -68,6 +104,10 @@ public class StudentQuestionDto implements Serializable {
         return creationDate;
     }
 
+    public LocalDateTime getCreationDateAsObject() {
+        return LocalDateTime.parse(this.creationDate, DateTimeFormatter.ofPattern(DATE_TIME_FORMAT));
+    }
+
     public String getStatus() {
         return status;
     }
@@ -92,12 +132,20 @@ public class StudentQuestionDto implements Serializable {
         this.image = image;
     }
 
-    public Integer getSequence() {
-        return sequence;
+    public String getCreatorUsername() {
+        return this.creatorUsername;
     }
 
-    public void setSequence(Integer sequence) {
-        this.sequence = sequence;
+    public String getLastReviewerUsername() {
+        return this.lastReviewerUsername;
+    }
+
+    public String getReviewedDate() {
+        return this.reviewedDate;
+    }
+
+    public String getRejectedExplanation() {
+        return rejectedExplanation;
     }
 
     @Override
@@ -110,8 +158,7 @@ public class StudentQuestionDto implements Serializable {
                 ", status='" + status + '\'' +
                 ", options=" + options +
                 ", image=" + image +
-                ", sequence=" + sequence +
-                ", student=" + username +
+                ", student=" + creatorUsername +
                 '}';
     }
 

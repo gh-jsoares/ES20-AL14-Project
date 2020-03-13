@@ -1,4 +1,4 @@
-package pt.ulisboa.tecnico.socialsoftware.tutor.question.service
+package pt.ulisboa.tecnico.socialsoftware.tutor.question.service.studentquestions
 
 
 import org.springframework.beans.factory.annotation.Autowired
@@ -18,6 +18,7 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.TopicReposito
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.User
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.UserRepository
 import spock.lang.Specification
+import spock.lang.Unroll
 
 import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.*
 
@@ -48,7 +49,9 @@ class AddTopicToStudentQuestionSpockTest extends Specification {
     CourseRepository courseRepository
 
     def user
+    StudentQuestion studentQuestion
     Course course
+    Topic topic
 
     def setup() {
         user = new User(USER_NAME, USER_USERNAME, 1, User.Role.STUDENT)
@@ -56,19 +59,20 @@ class AddTopicToStudentQuestionSpockTest extends Specification {
 
         course = new Course(COURSE_NAME, Course.Type.TECNICO)
         courseRepository.save(course)
+
+        studentQuestion = createStudentQuestion(QUESTION_TITLE, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name())
+        topic = createTopic(TOPIC_NAME, course)
     }
 
     def "add existing topic to existing student question"() {
         given: "an existing student question"
-        def studentQuestion = createStudentQuestion(QUESTION_TITLE, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name())
-        def studentQuestionDto = new StudentQuestionDto(studentQuestion)
+        def studentQuestionId = studentQuestion.getId()
 
         and: "an existing topic"
-        def topic = createTopic(TOPIC_NAME, course)
-        def topicDto = new TopicDto(topic)
+        def topicId = topic.getId()
 
         when:
-        studentQuestionService.addTopicToStudentQuestion(studentQuestionDto, topicDto)
+        studentQuestionService.addTopicToStudentQuestion(studentQuestionId, topicId)
 
         then: "the topic is added"
         studentQuestionRepository.count() == 1L
@@ -79,62 +83,48 @@ class AddTopicToStudentQuestionSpockTest extends Specification {
         result.getTopics().size() == 1
         def resultTopic = result.getTopics().first()
         resultTopic.getStudentQuestions().size() == 1
-        resultTopic.getStudentQuestions().stream().anyMatch({ts -> ts.getId() == result.getId()})
+        resultTopic.getStudentQuestions().stream().anyMatch({ ts -> ts.getId() == result.getId() })
     }
 
-    def "topic does not exist but studentquestion does"() {
+    @Unroll
+    def "invalid data: studentQuestion=#isStudentQuestion | topic=#isTopic | duplicateTopic=#isDuplicateTopic || errorMessage=#errorMessage"() {
         given: "an existing student question"
-        def studentQuestion = createStudentQuestion(QUESTION_TITLE, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name())
-        def studentQuestionDto = new StudentQuestionDto(studentQuestion)
+        def studentQuestionId = createStudentQuestion(isStudentQuestion)
 
-        and: "a null topic"
-        def topicDto = null
-
-        when:
-        studentQuestionService.addTopicToStudentQuestion(studentQuestionDto, topicDto)
-
-        then: "an error occurs"
-        def error = thrown(TutorException)
-        error.errorMessage == STUDENT_QUESTION_TOPIC_NOT_FOUND
-    }
-
-    def "topic exists but studentquestion does not"() {
-        given: "a null student question"
-        def studentQuestionDto = null
-
-        and: "an existing topic"
-        def topic = createTopic(TOPIC_NAME, course)
-        def topicDto = new TopicDto(topic)
+        and: "a topic"
+        def topicId = createTopic(isTopic, isDuplicateTopic)
 
         when:
-        studentQuestionService.addTopicToStudentQuestion(studentQuestionDto, topicDto)
+        studentQuestionService.addTopicToStudentQuestion(studentQuestionId, topicId)
 
-        then: "an error occurs"
+        then:
         def error = thrown(TutorException)
-        error.errorMessage == STUDENT_QUESTION_NOT_FOUND
+        error.errorMessage == errorMessage
+
+        where:
+        isStudentQuestion | isTopic | isDuplicateTopic || errorMessage
+        false             | true    | false            || STUDENT_QUESTION_NOT_FOUND
+        true              | false   | false            || STUDENT_QUESTION_TOPIC_NOT_FOUND
+        true              | true    | true             || STUDENT_QUESTION_TOPIC_ALREADY_ADDED
     }
 
-    def "try to add already added topic to student question"() {
-        given: "an existing student question"
-        def studentQuestion = createStudentQuestion(QUESTION_TITLE, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name())
-        def studentQuestionDto = new StudentQuestionDto(studentQuestion)
+    private int createTopic(boolean isTopic, boolean isDuplicateTopic) {
+        if (!isTopic)
+            return -1
 
-        and: "an existing topic"
-        def topic = createTopic(TOPIC_NAME, course)
-        def topicDto = new TopicDto(topic)
+        if (isDuplicateTopic)
+            studentQuestion.addTopic(topic)
 
-        and: "the student question already contains the topic"
-        studentQuestion.addTopic(topic)
-
-        when:
-        studentQuestionService.addTopicToStudentQuestion(studentQuestionDto, topicDto)
-
-        then: "an error occurs"
-        def error = thrown(TutorException)
-        error.errorMessage == STUDENT_QUESTION_TOPIC_ALREADY_ADDED
+        return topic.getId()
     }
 
-    private createStudentQuestion(String title, String content, String status) {
+    private int createStudentQuestion(boolean isStudentQuestion) {
+        if (isStudentQuestion)
+            return studentQuestion.getId()
+        return -1
+    }
+
+    private StudentQuestion createStudentQuestion(String title, String content, String status) {
         def studentQuestion = new StudentQuestion()
         studentQuestion.setKey(1)
         studentQuestion.setTitle(title)
@@ -142,6 +132,7 @@ class AddTopicToStudentQuestionSpockTest extends Specification {
         studentQuestion.setStatus(StudentQuestion.Status.valueOf(status))
         studentQuestion.setStudent(userRepository.findByUsername(USER_USERNAME))
         studentQuestionRepository.save(studentQuestion)
+        studentQuestion
     }
 
     private Topic createTopic(String name, Course course) {

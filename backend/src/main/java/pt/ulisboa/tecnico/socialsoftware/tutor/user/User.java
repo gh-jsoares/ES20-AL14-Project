@@ -73,6 +73,8 @@ public class User implements UserDetails {
     @ManyToMany(mappedBy = "enrolledStudents", fetch=FetchType.LAZY)
     private Set<Tournament> enrolledTournaments = new HashSet<>();
 
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "lastReviewer", fetch = FetchType.LAZY, orphanRemoval=true)
+    private Set<StudentQuestion> reviewedStudentQuestions = new HashSet<>();
 
     public User() {
     }
@@ -171,7 +173,6 @@ public class User implements UserDetails {
         this.courseExecutions = courseExecutions;
     }
 
-
     public Set<Discussion> getDiscussions() {
         return discussions;
     }
@@ -186,6 +187,20 @@ public class User implements UserDetails {
 
     public Set<StudentQuestion> getStudentQuestions() {
         return studentQuestions;
+    }
+
+    public Set<StudentQuestion> getReviewedStudentQuestions() {
+        return reviewedStudentQuestions;
+    }
+
+    public void addReviewedStudentQuestion(StudentQuestion studentQuestion) {
+        if(this.reviewedStudentQuestions.stream().noneMatch(sq -> sq.getId().equals(studentQuestion.getId())))
+            this.reviewedStudentQuestions.add(studentQuestion);
+    }
+
+    public void removeReviewedStudentQuestion(StudentQuestion studentQuestion) {
+        if(this.reviewedStudentQuestions.stream().anyMatch(sq -> sq.getId().equals(studentQuestion.getId())))
+            this.reviewedStudentQuestions.remove(studentQuestion);
     }
 
     public Integer getNumberOfTeacherQuizzes() {
@@ -394,11 +409,11 @@ public class User implements UserDetails {
         this.createdTournaments.add(tournament);
     }
 
-    public Set<Tournament> getEnrolledTournament() {
+    public Set<Tournament> getEnrolledTournaments() {
         return enrolledTournaments;
     }
 
-    public void addEnrolledTournaments(Tournament tournament) {
+    public void addEnrolledTournament(Tournament tournament) {
         this.enrolledTournaments.add(tournament);
     }
 

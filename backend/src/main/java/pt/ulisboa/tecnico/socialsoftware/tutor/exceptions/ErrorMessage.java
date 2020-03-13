@@ -17,14 +17,15 @@ public enum ErrorMessage {
     TOPIC_NOT_FOUND("Topic not found with id %d"),
     ASSESSMENT_NOT_FOUND("Assessment not found with id %d"),
     TOPIC_CONJUNCTION_NOT_FOUND("Topic Conjunction not found with id %d"),
-    COURSE_EXECUTION_NOT_FOUND("Course execution not found with name %d"),
     TOURNAMENT_NOT_FOUND("Tournament not found with id %d"),
+    COURSE_EXECUTION_NOT_FOUND("Course execution not found with id %d"),
 
     COURSE_NOT_FOUND("Course not found with name %s"),
     COURSE_NAME_IS_EMPTY("The course name is empty"),
     COURSE_TYPE_NOT_DEFINED("The course type is not defined"),
     COURSE_EXECUTION_ACRONYM_IS_EMPTY("The course execution acronym is empty"),
     COURSE_EXECUTION_ACADEMIC_TERM_IS_EMPTY("The course execution academic term is empty"),
+    CANNOT_DELETE_COURSE_EXECUTION("The course execution cannot be deleted %s"),
     USERNAME_NOT_FOUND("Username %s not found"),
 
     QUIZ_USER_MISMATCH("Quiz %s is not assigned to student %s"),
@@ -55,6 +56,7 @@ public enum ErrorMessage {
     TOURNAMENT_USER_IS_NOT_STUDENT("The user with id %d is not a student"),
     TOURNAMENT_STUDENT_NOT_ENROLLED_IN_TOURNAMENT_COURSE("The user with id %d is not enrolled in the course execution of the tournament"),
     TOURNAMENT_NOT_OPEN("The tournament with id %d is not open"),
+    TOURNAMENT_TOPIC_WRONG_COURSE("The topic with id %d doesn't belong to the same course as the tournament"),
 
     NO_CORRECT_OPTION("Question does not have a correct option"),
     NOT_ENOUGH_QUESTIONS("Not enough questions to create a quiz"),
@@ -75,8 +77,7 @@ public enum ErrorMessage {
     DUPLICATE_STUDENT_QUESTION("Duplicate student question: %s"),
     TOO_MANY_CORRECT_OPTIONS_STUDENT_QUESTION("Student question should have only one correct option"),
     NO_CORRECT_OPTION_STUDENT_QUESTION("Student question must have one correct option"),
-    STUDENT_QUESTION_MISSING_DATA("Missing information for student question"),
-    TOO_FEW_OPTIONS_STUDENT_QUESTION("Student question must have 4 options"),
+    TOO_FEW_OPTIONS_STUDENT_QUESTION("Student question cant have less than 4 options"),
     STUDENT_QUESTION_TITLE_IS_EMPTY("The student question title is empty"),
     STUDENT_QUESTION_CONTENT_IS_EMPTY("The student question content is empty"),
     STUDENT_QUESTION_STATUS_IS_EMPTY("The student question status is empty"),
@@ -87,6 +88,11 @@ public enum ErrorMessage {
     STUDENT_QUESTION_TOPIC_ALREADY_ADDED("The student question already belongs to the topic: %s"),
     STUDENT_QUESTION_USER_NOT_FOUND("The user was not found"),
     STUDENT_QUESTION_TOPIC_NOT_PRESENT("The topic '%s' was not found in the student question"),
+    STUDENT_QUESTION_STUDENT_NOT_CREATOR("The student is not the creator of the student question: %s"),
+    STUDENT_QUESTION_NOT_A_TEACHER("The user is not a teacher"),
+    STUDENT_QUESTION_NOT_AWAITING_APPROVAL("The student question '%s' is not awaiting approval"),
+    STUDENT_QUESTION_REJECT_NO_EXPLANATION("To reject a student question you need to write an explanation"),
+    TOO_MANY_OPTIONS_STUDENT_QUESTION("Student question cant have more than 4 options"),
 
     TOURNAMENT_NOT_CONSISTENT("Field %s of tournament is not consistent"),
 

@@ -1,5 +1,6 @@
 package pt.ulisboa.tecnico.socialsoftware.tutor.tournament;
 
+import org.springframework.data.annotation.Transient;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.TopicDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.quiz.dto.QuizDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.dto.UserDto;
@@ -26,7 +27,8 @@ public class TournamentDto implements Serializable {
     private Integer series;
     private String version;
 
-    private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    @Transient
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     public TournamentDto(){
 
@@ -162,7 +164,7 @@ public class TournamentDto implements Serializable {
         if (getCreationDate() == null || getCreationDate().isEmpty()) {
             return null;
         }
-        return LocalDateTime.parse(getConclusionDate(), formatter);
+        return LocalDateTime.parse(getCreationDate(), formatter);
     }
 
     public LocalDateTime getAvailableDateDate() {
