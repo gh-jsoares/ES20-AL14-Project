@@ -19,6 +19,9 @@ import org.springframework.stereotype.Service;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.sql.SQLException;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException;
 
@@ -42,7 +45,7 @@ public class DiscussionService {
         backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public DiscussionDto createDiscussion(Integer studentId, Integer questionId, DiscussionDto discussionDto) {
-        User student = getUser(studentId);
+        User student = getStudent(studentId);
 
         Question question = getQuestion(questionId);
 
@@ -53,7 +56,7 @@ public class DiscussionService {
         return new DiscussionDto(discussion);
     }
 
-    private User getUser(Integer studentId) {
+    private User getStudent(Integer studentId) {
         User student = userRepository.findById(studentId).orElseThrow(() -> new TutorException(ErrorMessage.USER_NOT_FOUND, studentId));
         if (student.getRole() != User.Role.STUDENT) {
             throw new TutorException(ErrorMessage.USER_NOT_STUDENT, studentId);
@@ -88,5 +91,14 @@ public class DiscussionService {
             throw new TutorException(ErrorMessage.USER_IS_NOT_TEACHER, discussionDto.getUserName());
         }
         return teacher;
+    }
+
+    public List<DiscussionDto> getDiscussionStudent(Integer studentId) {
+        User student = getStudent(studentId);
+
+        Set<Discussion> discussions = student.getDiscussions();
+        return discussions.stream()
+                .map(DiscussionDto::new)
+                .collect(Collectors.toList());
     }
 }
