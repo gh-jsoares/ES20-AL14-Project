@@ -1,4 +1,4 @@
-package pt.ulisboa.tecnico.socialsoftware.tutor.question.service
+package pt.ulisboa.tecnico.socialsoftware.tutor.question.service.studentquestions
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
@@ -17,15 +17,13 @@ import spock.lang.Unroll
 
 import java.time.LocalDateTime
 
-import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_NOT_AWAITING_APPROVAL
 import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_NOT_A_TEACHER
 import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_NOT_FOUND
 import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_USER_NOT_FOUND
-import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_REJECT_NO_EXPLANATION
-
+import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_NOT_AWAITING_APPROVAL
 
 @DataJpaTest
-class TeacherRejectStudentQuestionSpockTest extends Specification {
+class TeacherApproveStudentQuestionSpockTest extends Specification {
 
     public static final String USER_NAME = "Alfredo Costa"
     public static final String USER_USERNAME = "alcosta"
@@ -33,7 +31,6 @@ class TeacherRejectStudentQuestionSpockTest extends Specification {
     public static final String QUESTION_TITLE = 'question title'
     public static final String QUESTION_CONTENT = 'question content'
     public static final String OPTION_CONTENT = "optionId content"
-    public static final String EXPLANATION = "Not enough quality"
 
     @Autowired
     StudentQuestionService studentQuestionService
@@ -55,7 +52,7 @@ class TeacherRejectStudentQuestionSpockTest extends Specification {
         teacher = createUser(2, USER_NAME, TEACHER_USERNAME, User.Role.TEACHER)
     }
 
-    def "a teacher rejects an existing student question awaiting approval, providing an explanation"() {
+    def "a teacher approves an existing student question awaiting approval"() {
         given: "an existing student question"
         def studentQuestion = createStudentQuestion(1, QUESTION_TITLE, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name())
 
@@ -66,7 +63,7 @@ class TeacherRejectStudentQuestionSpockTest extends Specification {
         TEACHER_USERNAME
 
         when:
-        def result = studentQuestionService.rejectStudentQuestion(TEACHER_USERNAME, studentQuestion.getId(), EXPLANATION)
+        def result = studentQuestionService.approveStudentQuestion(TEACHER_USERNAME, studentQuestion.getId())
 
         then: "data is correct"
         result != null
@@ -74,13 +71,12 @@ class TeacherRejectStudentQuestionSpockTest extends Specification {
         result.getKey() == 1
         result.getTitle() == QUESTION_TITLE
         result.getContent() == QUESTION_CONTENT
-        result.getStatus() == StudentQuestion.Status.REJECTED.name()
+        result.getStatus() == StudentQuestion.Status.ACCEPTED.name()
         result.getOptions().size() == 4
         result.getCreatorUsername() == USER_USERNAME
         result.getOptions().stream().allMatch({ o -> o.getContent() == OPTION_CONTENT })
         result.getOptions().stream().filter({ o -> o.getCorrect() }).count() == 1L
         result.getLastReviewerUsername() == TEACHER_USERNAME
-        result.getRejectedExplanation() == EXPLANATION
 
         and: "teacher contains reviewed question"
         def resultTeacher = userRepository.findByUsername(TEACHER_USERNAME)
@@ -89,7 +85,7 @@ class TeacherRejectStudentQuestionSpockTest extends Specification {
     }
 
     @Unroll
-    def "invalid data studentQuestion=#isStudentQuestion | awaitingApproval=#isAwaitingApproval | user=#isUser | teacher=#isTeacher | explanation=#explanation | errorMessage=#errorMessage"() {
+    def "invalid data studentQuestion=#isStudentQuestion | awaitingApproval=#isAwaitingApproval | user=#isUser | teacher=#isTeacher | errorMessage=#errorMessage"() {
         given: "a student question"
         def studentQuestionId = createStudentQuestion(isStudentQuestion, isAwaitingApproval)
 
@@ -97,20 +93,18 @@ class TeacherRejectStudentQuestionSpockTest extends Specification {
         def username = createUsername(isUser, isTeacher)
 
         when:
-        studentQuestionService.rejectStudentQuestion(username, studentQuestionId, explanation)
+        studentQuestionService.approveStudentQuestion(username, studentQuestionId)
 
         then:
         def error = thrown(TutorException)
         error.errorMessage == errorMessage
 
         where:
-        isStudentQuestion | isAwaitingApproval | isUser | isTeacher | explanation || errorMessage
-        false             | true               | true   | true      | EXPLANATION || STUDENT_QUESTION_NOT_FOUND
-        true              | false              | true   | true      | EXPLANATION || STUDENT_QUESTION_NOT_AWAITING_APPROVAL
-        true              | true               | false  | true      | EXPLANATION || STUDENT_QUESTION_USER_NOT_FOUND
-        true              | true               | true   | false     | EXPLANATION || STUDENT_QUESTION_NOT_A_TEACHER
-        true              | true               | true   | true      | null        || STUDENT_QUESTION_REJECT_NO_EXPLANATION
-        true              | true               | true   | true      | "    "      || STUDENT_QUESTION_REJECT_NO_EXPLANATION
+        isStudentQuestion | isAwaitingApproval | isUser | isTeacher || errorMessage
+        false             | true               | true   | true      || STUDENT_QUESTION_NOT_FOUND
+        true              | false              | true   | true      || STUDENT_QUESTION_NOT_AWAITING_APPROVAL
+        true              | true               | false  | true      || STUDENT_QUESTION_USER_NOT_FOUND
+        true              | true               | true   | false     || STUDENT_QUESTION_NOT_A_TEACHER
     }
 
     private int createStudentQuestion(boolean isStudentQuestion, boolean isAwaitingApproval) {
@@ -120,7 +114,7 @@ class TeacherRejectStudentQuestionSpockTest extends Specification {
         if (isAwaitingApproval)
             return createStudentQuestion(1, QUESTION_TITLE, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name()).getId()
 
-        return createStudentQuestion(1, QUESTION_TITLE, QUESTION_CONTENT, StudentQuestion.Status.REJECTED.name()).getId()
+        return createStudentQuestion(1, QUESTION_TITLE, QUESTION_CONTENT, StudentQuestion.Status.ACCEPTED.name()).getId()
     }
 
     private String createUsername(boolean isUser, boolean isTeacher) {

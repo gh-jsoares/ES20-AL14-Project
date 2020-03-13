@@ -1,4 +1,4 @@
-package pt.ulisboa.tecnico.socialsoftware.tutor.question.service
+package pt.ulisboa.tecnico.socialsoftware.tutor.question.service.studentquestions
 
 import org.junit.Test
 import org.springframework.beans.factory.annotation.Autowired
