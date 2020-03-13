@@ -21,7 +21,6 @@ import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.ST
 @DataJpaTest
 class TeacherListStudentQuestionSpockTest extends Specification {
 
-
     public static final String USER_NAME = "Alfredo Costa"
     public static final String USER_USERNAME = "alcosta"
     public static final String TEACHER_USERNAME = "T_alcosta"
@@ -54,6 +53,7 @@ class TeacherListStudentQuestionSpockTest extends Specification {
         1.upto(5, {
             createStudentQuestion(it.intValue(), QUESTION_TITLE + it, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name(), USER_USERNAME)
         })
+
         when:
         def result = studentQuestionService.listAllStudentQuestions(TEACHER_USERNAME)
 
