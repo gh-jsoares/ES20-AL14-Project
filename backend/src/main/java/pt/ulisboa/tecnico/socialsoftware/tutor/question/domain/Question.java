@@ -2,6 +2,7 @@ package pt.ulisboa.tecnico.socialsoftware.tutor.question.domain;
 
 import pt.ulisboa.tecnico.socialsoftware.tutor.answer.domain.QuestionAnswer;
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.Course;
+import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.domain.Discussion;
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.OptionDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.QuestionDto;
@@ -64,6 +65,9 @@ public class Question {
 
     @ManyToMany(mappedBy = "questions")
     private Set<Topic> topics = new HashSet<>();
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "question", orphanRemoval=true)
+    private Set<Discussion> discussions = new HashSet<>();
 
     @ManyToOne
     @JoinColumn(name = "course_id")
@@ -194,6 +198,14 @@ public class Question {
         options.add(option);
     }
 
+    public Set<Discussion> getDiscussions() {
+        return discussions;
+    }
+
+    public void addDiscussion(Discussion discussion) {
+        discussions.add(discussion);
+    }
+
     public void addQuizQuestion(QuizQuestion quizQuestion) {
         quizQuestions.add(quizQuestion);
     }
@@ -222,6 +234,7 @@ public class Question {
                 ", status=" + status +
                 ", image=" + image +
                 ", options=" + options +
+                ", discussions=" + discussions +
                 ", topics=" + topics +
                 '}';
     }
