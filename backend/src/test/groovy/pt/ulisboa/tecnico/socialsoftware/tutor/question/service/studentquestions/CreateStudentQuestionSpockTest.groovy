@@ -28,6 +28,7 @@ import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.ST
 import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.TOO_FEW_OPTIONS_STUDENT_QUESTION
 import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.TOO_MANY_CORRECT_OPTIONS_STUDENT_QUESTION
 import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.TOO_MANY_OPTIONS_STUDENT_QUESTION
+import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.DUPLICATE_STUDENT_QUESTION
 
 @DataJpaTest
 class CreateStudentQuestionSpockTest extends Specification {
@@ -118,24 +119,6 @@ class CreateStudentQuestionSpockTest extends Specification {
         result.getImage().getWidth() == 20
     }
 
-    def "student already created a question with that title"() {
-        given: "a studentquestion exists in database"
-        createStudentQuestion(QUESTION_TITLE, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name())
-
-        and: "a studentquestiondto with the same title"
-        def studentQuestionDto = createStudentQuestionDto(QUESTION_TITLE, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name())
-
-        and: "a username"
-        USER_USERNAME
-
-        when: "create another student question with the same title"
-        studentQuestionService.createStudentQuestion(USER_USERNAME, studentQuestionDto)
-
-        then: "an error occurs"
-        def exception = thrown(TutorException)
-        exception.errorMessage == ErrorMessage.DUPLICATE_STUDENT_QUESTION
-    }
-
     @Unroll
     def "invalid arguments: title=#title | content=#content | status=#status | optionContent=#optionContent || errorMessage=#errorMessage"() {
         given: "a studentquestiondto"
@@ -167,9 +150,9 @@ class CreateStudentQuestionSpockTest extends Specification {
     }
 
     @Unroll
-    def "invalid data options=#numberOptions | correctOptions=#numberCorrectOptions | user=#isUser | student=#isStudent | errorMessage=#errorMessage"() {
+    def "invalid data: isDuplicate=#isDuplicate | options=#numberOptions | correctOptions=#numberCorrectOptions | user=#isUser | student=#isStudent | errorMessage=#errorMessage"() {
         given: "a studentquestiondto"
-        def studentQuestionDto = createStudentQuestionDto(QUESTION_TITLE, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name())
+        def studentQuestionDto = createStudentQuestionDto(isDuplicate)
 
         and: "options"
         createOptions(studentQuestionDto, OPTION_CONTENT, numberOptions, numberCorrectOptions)
@@ -185,13 +168,14 @@ class CreateStudentQuestionSpockTest extends Specification {
         error.errorMessage == errorMessage
 
         where:
-        numberOptions | numberCorrectOptions | isUser | isStudent || errorMessage
-        0             | 1                    | true   | true      || TOO_FEW_OPTIONS_STUDENT_QUESTION
-        5             | 1                    | true   | true      || TOO_MANY_OPTIONS_STUDENT_QUESTION
-        4             | 0                    | true   | true      || NO_CORRECT_OPTION_STUDENT_QUESTION
-        4             | 2                    | true   | true      || TOO_MANY_CORRECT_OPTIONS_STUDENT_QUESTION
-        4             | 1                    | false  | true      || STUDENT_QUESTION_USER_NOT_FOUND
-        4             | 1                    | true   | false     || STUDENT_QUESTION_NOT_A_STUDENT
+        isDuplicate | numberOptions | numberCorrectOptions | isUser | isStudent || errorMessage
+        true        | 4             | 1                    | true   | true      || DUPLICATE_STUDENT_QUESTION
+        false       | 0             | 1                    | true   | true      || TOO_FEW_OPTIONS_STUDENT_QUESTION
+        false       | 5             | 1                    | true   | true      || TOO_MANY_OPTIONS_STUDENT_QUESTION
+        false       | 4             | 0                    | true   | true      || NO_CORRECT_OPTION_STUDENT_QUESTION
+        false       | 4             | 2                    | true   | true      || TOO_MANY_CORRECT_OPTIONS_STUDENT_QUESTION
+        false       | 4             | 1                    | false  | true      || STUDENT_QUESTION_USER_NOT_FOUND
+        false       | 4             | 1                    | true   | false     || STUDENT_QUESTION_NOT_A_STUDENT
     }
 
     private String createUsername(boolean isUser, boolean isStudent) {
@@ -222,6 +206,13 @@ class CreateStudentQuestionSpockTest extends Specification {
         image.setUrl(url)
         image.setWidth(20)
         studentQuestionDto.setImage(image)
+    }
+
+    private StudentQuestionDto createStudentQuestionDto(boolean isDuplicate) {
+        if (isDuplicate)
+            createStudentQuestion(QUESTION_TITLE, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name())
+
+        return createStudentQuestionDto(QUESTION_TITLE, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name())
     }
 
     private createStudentQuestion(String title, String content, String status) {
