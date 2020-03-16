@@ -25,7 +25,7 @@ public class TournamentController {
     private TournamentService tournamentService;
 
     @PostMapping("/tournaments/{tournamentId}/enroll")
-    @PreAuthorize("hasRole('ROLE_STUDENT') or (hasRole('ROLE_DEMO_STUDENT') and hasPermission(#tournamentId, 'TOURNAMENT.ACCESS'))")
+    @PreAuthorize("(hasRole('ROLE_STUDENT') or hasRole('ROLE_DEMO_STUDENT')) and hasPermission(#tournamentId, 'TOURNAMENT.ACCESS')")
     public TournamentDto createTournamentEnroll(Principal principal, @PathVariable int tournamentId) {
         User user = (User) ((Authentication) principal).getPrincipal();
 
