@@ -1,5 +1,6 @@
 package pt.ulisboa.tecnico.socialsoftware.tutor.discussion;
 
+import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.repository.DiscussionRepository;
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.dto.DiscussionDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.domain.Discussion;
@@ -24,6 +25,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException;
+
+import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.DISCUSSION_NOT_FOUND;
+import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.QUESTION_NOT_FOUND;
 
 @Service
 public class DiscussionService {
@@ -78,11 +82,12 @@ public class DiscussionService {
         value = { SQLException.class },
         backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
-    public void teacherAnswersStudent(Integer discussionId, DiscussionDto discussionDto) {
+    public DiscussionDto teacherAnswersStudent(Integer discussionId, DiscussionDto discussionDto) {
         Discussion discussion = discussionRepository.findById(discussionId).orElseThrow(() -> new TutorException(ErrorMessage.DISCUSSION_NOT_FOUND, discussionId));
         User teacher = checkIfTeacherExists(discussionDto);
 
         discussion.updateTeacherAnswer(teacher, discussionDto);
+        return new DiscussionDto(discussion);
     }
 
     private User checkIfTeacherExists(DiscussionDto discussionDto) {
@@ -107,5 +112,17 @@ public class DiscussionService {
         return discussions.stream()
                 .map(DiscussionDto::new)
                 .collect(Collectors.toList());
+    }
+
+    @Retryable(
+            value = { SQLException.class },
+            backoff = @Backoff(delay = 5000))
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public CourseDto findDiscussionCourse(Integer discussionId) {
+        return discussionRepository.findById(discussionId)
+                .map(Discussion::getQuestion)
+                .map(Question::getCourse)
+                .map(CourseDto::new)
+                .orElseThrow(() -> new TutorException(DISCUSSION_NOT_FOUND, discussionId));
     }
 }
