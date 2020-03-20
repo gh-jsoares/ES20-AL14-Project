@@ -5,7 +5,7 @@ public enum ErrorMessage {
     DISCUSSION_MESSAGE_EMPTY("The message is an empty or blank string."),
     DISCUSSION_NOT_FOUND("Discussion not found with id %d"),
     DISCUSSION_QUESTION_NOT_ANSWERED("Student with id %d tried to create a discussion about a question he didn't answer"),
-    USER_NOT_STUDENT("User %d is not a student"),
+    USER_NOT_STUDENT("User %s is not a student"),
 
     QUIZ_NOT_FOUND("Quiz not found with id %d"),
     QUIZ_QUESTION_NOT_FOUND("Quiz question not found with id %d"),

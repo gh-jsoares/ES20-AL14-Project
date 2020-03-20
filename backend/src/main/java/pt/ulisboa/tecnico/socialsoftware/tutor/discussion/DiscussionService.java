@@ -48,19 +48,28 @@ public class DiscussionService {
         value = { SQLException.class },
         backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
-    public DiscussionDto createDiscussion(Integer studentId, Integer questionId, DiscussionDto discussionDto) {
-        User student = getStudent(studentId);
+    public DiscussionDto createDiscussion(Integer questionId, DiscussionDto discussionDto) {
+        User student = getStudentByUsername(discussionDto.getUserName());
 
         Question question = getQuestion(questionId);
 
-        checkDuplicates(studentId, questionId);
+        checkDuplicates(student.getId(), questionId);
 
         Discussion discussion = new Discussion(student, question, discussionDto);
         this.entityManager.persist(discussion);
         return new DiscussionDto(discussion);
     }
 
-    private User getStudent(Integer studentId) {
+    private User getStudentByUsername(String studentName) {
+        User student = userRepository.findByUsername(studentName);
+        if (student == null) { throw new TutorException(ErrorMessage.USER_NOT_FOUND);}
+        if (student.getRole() != User.Role.STUDENT) {
+            throw new TutorException(ErrorMessage.USER_NOT_STUDENT, studentName);
+        }
+        return student;
+    }
+
+    private User getStudentById(Integer studentId) {
         User student = userRepository.findById(studentId).orElseThrow(() -> new TutorException(ErrorMessage.USER_NOT_FOUND, studentId));
         if (student.getRole() != User.Role.STUDENT) {
             throw new TutorException(ErrorMessage.USER_NOT_STUDENT, studentId);
@@ -106,7 +115,7 @@ public class DiscussionService {
         backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public List<DiscussionDto> getDiscussionStudent(Integer studentId) {
-        User student = getStudent(studentId);
+        User student = getStudentById(studentId);
 
         Set<Discussion> discussions = student.getDiscussions();
         return discussions.stream()

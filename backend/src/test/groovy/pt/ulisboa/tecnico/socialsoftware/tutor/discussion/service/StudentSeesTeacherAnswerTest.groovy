@@ -67,8 +67,6 @@ class StudentSeesTeacherAnswerTest extends Specification {
     QuizQuestion quizQuestion
     QuizAnswer quizAnswer
     QuestionAnswer questionAnswer
-    Discussion firstDiscussion
-    Discussion secondDiscussion
 
     def setup() {
         CourseDto courseDto = new CourseDto()

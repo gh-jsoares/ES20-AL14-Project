@@ -58,6 +58,7 @@ class CreateDiscussionTest extends Specification {
     CourseExecutionRepository courseExecutionRepository
 
     public static final Integer INVALID_ID = -1
+    public static final String INVALID_NAME = "invalid"
     public static final String MESSAGE = "message"
     public static final String STUDENT_NAME = "student_test"
     public static final String COURSE_NAME = "course_test"
@@ -106,10 +107,11 @@ class CreateDiscussionTest extends Specification {
     def "create a discussion"() {
         given: "the definition of the discussion"
         def discussionDto = new DiscussionDto()
+        discussionDto.setUserName(student.getUsername())
         discussionDto.setMessageFromStudent(MESSAGE)
 
         when: "create discussion in the repository"
-        discussionService.createDiscussion(student.getId(), question.getId(), discussionDto)
+        discussionService.createDiscussion(question.getId(), discussionDto)
 
         then: "get discussion from the repository"
         discussionRepository.findAll().size() == 1
@@ -141,10 +143,11 @@ class CreateDiscussionTest extends Specification {
         discussionRepository.save(discussion)
         and: "the creation of the DiscussionDto"
         def discussionDto = new DiscussionDto()
+        discussionDto.setUserName(student.getUsername())
         discussionDto.setMessageFromStudent("TEST")
 
         when: "create another discussion with the same student and question"
-        discussionService.createDiscussion(student.getId(), question.getId(), discussionDto)
+        discussionService.createDiscussion(question.getId(), discussionDto)
 
         then: "an error occurs"
         def exception = thrown(TutorException)
@@ -155,10 +158,11 @@ class CreateDiscussionTest extends Specification {
     def "create a discussion with an empty message is #msg"() {
         given: "the creation of the discussionDto"
         def discussionDto = new DiscussionDto()
+        discussionDto.setUserName(student.getUsername())
         discussionDto.setMessageFromStudent(msg)
 
         when: "create the discussion"
-        discussionService.createDiscussion(student.getId(), question.getId(), discussionDto)
+        discussionService.createDiscussion(question.getId(), discussionDto)
 
         then: "an error occurs"
         def exception = thrown(TutorException)
@@ -171,10 +175,11 @@ class CreateDiscussionTest extends Specification {
     def "create a discussion with invalid user"() {
         given: "the creation of the discussionDto"
         def discussionDto = new DiscussionDto()
+        discussionDto.setUserName(INVALID_NAME)
         discussionDto.setMessageFromStudent(MESSAGE)
 
         when: "creating the discussion"
-        discussionService.createDiscussion(INVALID_ID, question.getId(), discussionDto)
+        discussionService.createDiscussion(question.getId(), discussionDto)
 
         then: "an error occurs"
         def exception = thrown(TutorException)
@@ -184,10 +189,11 @@ class CreateDiscussionTest extends Specification {
     def "create a discussion with invalid question"() {
         given: "the creation of the discussionDto"
         def discussionDto = new DiscussionDto()
+        discussionDto.setUserName(student.getUsername())
         discussionDto.setMessageFromStudent(MESSAGE)
 
         when: "creating the discussion"
-        discussionService.createDiscussion(student.getId(), INVALID_ID, discussionDto)
+        discussionService.createDiscussion(INVALID_ID, discussionDto)
 
         then: "an error occurs"
         def exception = thrown(TutorException)
@@ -197,6 +203,7 @@ class CreateDiscussionTest extends Specification {
     def "create a discussion before student submitting answer"() {
         given: "the definition of the discussion"
         def discussionDto = new DiscussionDto()
+        discussionDto.setUserName("invalid student")
         discussionDto.setMessageFromStudent(MESSAGE)
         and: "the definition of the invalid user"
         User invalidStudent = new User('student2', "invalid student", 2, User.Role.STUDENT)
@@ -205,7 +212,7 @@ class CreateDiscussionTest extends Specification {
         userRepository.save(invalidStudent)
 
         when: "try to create discussion in the repository"
-        discussionService.createDiscussion(invalidStudent.getId(), question.getId(), discussionDto)
+        discussionService.createDiscussion(question.getId(), discussionDto)
 
         then: "discussion question not answered exception"
         def exception = thrown(TutorException)
@@ -215,6 +222,7 @@ class CreateDiscussionTest extends Specification {
     def "create a discussion with invalid user type"() {
         given: "the definition of the discussion"
         def discussionDto = new DiscussionDto()
+        discussionDto.setUserName("invalid student")
         discussionDto.setMessageFromStudent(MESSAGE)
         and: "the definition of the invalid user"
         User invalidUser = new User('student2', "invalid student", 2, User.Role.TEACHER)
@@ -223,7 +231,7 @@ class CreateDiscussionTest extends Specification {
         userRepository.save(invalidUser)
 
         when: "try to create discussion in the repository"
-        discussionService.createDiscussion(invalidUser.getId(), question.getId(), discussionDto)
+        discussionService.createDiscussion(question.getId(), discussionDto)
 
         then: "discussion question not answered exception"
         def exception = thrown(TutorException)

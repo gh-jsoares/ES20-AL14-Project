@@ -26,8 +26,14 @@ public class DiscussionController {
     @Autowired
     private DiscussionService discussionService;
 
-    @PutMapping("/discussion/{discussionId}")
-    @PreAuthorize("hasRole('ROLE_TEACHER') and hasPermission(#discussionId, 'DISCUSSION.ACESS')")
+    @PostMapping("/questions/{questionId}/discussions")
+    @PreAuthorize("hasRole('ROLE_STUDENT') and hasPermission(#questionId, 'QUESTION.ACCESS')")
+    public DiscussionDto createDiscussion(@PathVariable Integer questionId, @Valid @RequestBody DiscussionDto discussionDto) {
+        return discussionService.createDiscussion(questionId, discussionDto);
+    }
+
+    @PutMapping("/discussions/{discussionId}")
+    @PreAuthorize("hasRole('ROLE_TEACHER') and hasPermission(#discussionId, 'DISCUSSION.ACCESS')")
     public DiscussionDto teacherAnswersStudent(@PathVariable Integer discussionId, @Valid @RequestBody DiscussionDto discussionDto) {
         return discussionService.teacherAnswersStudent(discussionId, discussionDto);
     }
