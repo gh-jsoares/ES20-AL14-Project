@@ -93,7 +93,7 @@ INSERT INTO users_course_executions(users_id, course_executions_id) VALUES((SELE
           <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="Data to create course executions" enabled="true">
             <stringProp name="delimiter">,</stringProp>
             <stringProp name="fileEncoding"></stringProp>
-            <stringProp name="filename">/home/dani/tecnico-3ano-2semestre/ES/output.csv</stringProp>
+            <stringProp name="filename">TournamentEnrollLoadTestData.csv</stringProp>
             <boolProp name="ignoreFirstLine">false</boolProp>
             <boolProp name="quotedData">false</boolProp>
             <boolProp name="recycle">true</boolProp>
