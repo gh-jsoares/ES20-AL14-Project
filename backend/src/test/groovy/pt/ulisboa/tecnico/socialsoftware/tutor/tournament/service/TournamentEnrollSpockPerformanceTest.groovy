@@ -42,6 +42,8 @@ class TournamentEnrollSpockPerformanceTest extends Specification{
     UserRepository userRepository
 
     def courseExecution
+    def tournaments
+    def users
 
     def setup() {
 
@@ -55,24 +57,14 @@ class TournamentEnrollSpockPerformanceTest extends Specification{
 
     def "performance testing to get 1000 users enrolled in 10000 tournaments"() {
         given: "10000 users"
-            def users = new User[1000]
+            users = []
             1.upto(1000, {
-                users[it-1] = new User('name2', USERNAME + it, it, User.Role.STUDENT)
-                userRepository.save(users[it-1])
-                users[it-1].addCourse(courseExecution)
-                courseExecution.addUser(users[it-1])
+                createUser(it)
             })
         and: "10000 tournaments"
-            def tournaments = new Tournament[10000]
+            tournaments = []
             1.upto(10000, {
-                tournaments[it-1] = new Tournament()
-                tournaments[it-1].setTitle(TOURNAMENT_NAME)
-                tournaments[it-1].setCreationDate(LocalDateTime.now())
-                tournaments[it-1].setAvailableDate(LocalDateTime.now().plusDays(1))
-                tournaments[it-1].setConclusionDate(LocalDateTime.now().plusDays(2))
-                tournaments[it-1].setCourseExecution(courseExecution)
-                tournaments[it-1].setState(Tournament.State.ENROLL)
-                tournamentRepository.save(tournaments[it-1])
+                createTournament()
             })
 
         when:
@@ -81,8 +73,29 @@ class TournamentEnrollSpockPerformanceTest extends Specification{
                     tournamentService.tournamentEnrollStudent(tournaments[it-1].getId(), user.getId())
                 })
             }
+
         then:
             true
+    }
+
+    def createUser(it){
+        def user = new User('name2', USERNAME + it, it, User.Role.STUDENT)
+        userRepository.save(user)
+        user.addCourse(courseExecution)
+        courseExecution.addUser(user)
+        users.push(user)
+    }
+
+    def createTournament(){
+        def tournament = new Tournament()
+        tournament.setTitle(TOURNAMENT_NAME)
+        tournament.setCreationDate(LocalDateTime.now())
+        tournament.setAvailableDate(LocalDateTime.now().plusDays(1))
+        tournament.setConclusionDate(LocalDateTime.now().plusDays(2))
+        tournament.setCourseExecution(courseExecution)
+        tournament.setState(Tournament.State.ENROLL)
+        tournamentRepository.save(tournament)
+        tournaments.push(tournament)
     }
 
     @TestConfiguration
