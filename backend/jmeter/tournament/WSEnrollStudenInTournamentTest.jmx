@@ -66,7 +66,7 @@
           <stringProp name="dbUrl">jdbc:postgresql://localhost:5432/tutordb?autoReconnect=true</stringProp>
           <stringProp name="driver">org.postgresql.Driver</stringProp>
           <stringProp name="username">${dbUser}</stringProp>
-          <stringProp name="password">123</stringProp>
+          <stringProp name="password"></stringProp>
           <stringProp name="connectionProperties"></stringProp>
         </JDBCDataSource>
         <hashTree/>
@@ -153,7 +153,7 @@ INSERT INTO tournaments(state, title, course_execution_id, creator_id, creation_
           <stringProp name="dbUrl">jdbc:postgresql://localhost:5432/tutordb?autoReconnect=true</stringProp>
           <stringProp name="driver">org.postgresql.Driver</stringProp>
           <stringProp name="username">${dbUser}</stringProp>
-          <stringProp name="password">123</stringProp>
+          <stringProp name="password"></stringProp>
           <stringProp name="connectionProperties"></stringProp>
         </JDBCDataSource>
         <hashTree/>
@@ -360,7 +360,7 @@ INSERT INTO tournaments(state, title, course_execution_id, creator_id, creation_
           <stringProp name="driver">org.postgresql.Driver</stringProp>
           <stringProp name="initQuery"></stringProp>
           <boolProp name="keepAlive">true</boolProp>
-          <stringProp name="password">123</stringProp>
+          <stringProp name="password"></stringProp>
           <stringProp name="poolMax">0</stringProp>
           <boolProp name="preinit">false</boolProp>
           <stringProp name="timeout">10000</stringProp>
