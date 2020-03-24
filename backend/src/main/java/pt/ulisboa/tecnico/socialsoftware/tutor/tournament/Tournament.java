@@ -159,11 +159,10 @@ public class Tournament {
             throw new TutorException(TOURNAMENT_USER_IS_NOT_STUDENT, user.getId());
         if (!user.getCourseExecutions().contains(this.getCourseExecution()))
             throw new TutorException(TOURNAMENT_STUDENT_NOT_ENROLLED_IN_TOURNAMENT_COURSE, user.getId());
-        if (getEnrolledStudents().contains(user))
-            throw new TutorException(DUPLICATE_USER);
         if (this.getState() != State.ENROLL)
             throw new TutorException(TOURNAMENT_NOT_OPEN, getId());
-        this.enrolledStudents.add(user);
+        if (!this.enrolledStudents.add(user))
+            throw new TutorException(DUPLICATE_USER);
     }
 
     public Set<Topic> getTopics() {
