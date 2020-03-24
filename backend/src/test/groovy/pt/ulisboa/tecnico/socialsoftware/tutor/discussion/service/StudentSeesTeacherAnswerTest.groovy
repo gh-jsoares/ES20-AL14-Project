@@ -140,7 +140,6 @@ class StudentSeesTeacherAnswerTest extends Specification {
 
         then: "the returned data is correct"
         result.size() == 1
-        result.get(0).getUserName() == null
         result.get(0).getMessage() == null
     }
 
