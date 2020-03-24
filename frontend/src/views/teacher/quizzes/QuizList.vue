@@ -81,6 +81,14 @@
           </template>
           <span>Show QR Code</span>
         </v-tooltip>
+        <v-tooltip bottom>
+          <template v-slot:activator="{ on }">
+            <v-icon small class="mr-2" v-on="on" @click="exportQuiz(item.id)"
+              >fas fa-download</v-icon
+            >
+          </template>
+          <span>Export</span>
+        </v-tooltip>
       </template>
     </v-data-table>
     <show-quiz-dialog v-if="quiz" v-model="quizDialog" :quiz="quiz" />
@@ -162,9 +170,16 @@ export default class QuizList extends Vue {
       width: '10%'
     },
     { text: 'Scramble', value: 'scramble', align: 'center', width: '10%' },
+    { text: 'QRCode Only', value: 'qrCodeOnly', align: 'center', width: '10%' },
+    {
+      text: 'One Way Quiz',
+      value: 'oneWay',
+      align: 'center',
+      width: '10%'
+    },
     { text: 'Type', value: 'type', align: 'center', width: '10%' },
-    { text: 'Series', value: 'series', align: 'center', width: '10%' },
-    { text: 'Version', value: 'version', align: 'center', width: '10%' },
+    { text: 'Series', value: 'series', align: 'center', width: '5%' },
+    { text: 'Version', value: 'version', align: 'center', width: '5%' },
     {
       text: 'Questions',
       value: 'numberOfQuestions',
@@ -219,6 +234,22 @@ export default class QuizList extends Vue {
   showQrCode(quizId: number) {
     this.qrValue = quizId;
     this.qrcodeDialog = true;
+  }
+
+  async exportQuiz(quizId: number) {
+    let fileName =
+      this.quizzes.filter(quiz => quiz.id == quizId)[0].title + '.tex';
+    try {
+      let result = await RemoteServices.exportQuiz(quizId, 'latex');
+      const url = window.URL.createObjectURL(result);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', fileName);
+      document.body.appendChild(link);
+      link.click();
+    } catch (error) {
+      await this.$store.dispatch('error', error);
+    }
   }
 
   async deleteQuiz(quizId: number) {
