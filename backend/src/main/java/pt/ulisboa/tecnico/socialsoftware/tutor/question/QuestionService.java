@@ -10,17 +10,17 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.course.Course;
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseRepository;
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException;
-import pt.ulisboa.tecnico.socialsoftware.tutor.impexp.domain.QuestionsXmlExport;
+import pt.ulisboa.tecnico.socialsoftware.tutor.impexp.domain.LatexQuestionExportVisitor;
 import pt.ulisboa.tecnico.socialsoftware.tutor.impexp.domain.QuestionsXmlImport;
+import pt.ulisboa.tecnico.socialsoftware.tutor.impexp.domain.XMLQuestionExportVisitor;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Image;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Question;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.QuestionDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.TopicDto;
+import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.ImageRepository;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.QuestionRepository;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.TopicRepository;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -41,8 +41,8 @@ public class QuestionService {
     @Autowired
     private TopicRepository topicRepository;
 
-    @PersistenceContext
-    EntityManager entityManager;
+    @Autowired
+    private ImageRepository imageRepository;
 
     @Retryable(
       value = { SQLException.class },
@@ -93,15 +93,12 @@ public class QuestionService {
     public QuestionDto createQuestion(int courseId, QuestionDto questionDto) {
         Course course = courseRepository.findById(courseId).orElseThrow(() -> new TutorException(COURSE_NOT_FOUND, courseId));
 
-        if (questionDto.getKey() == null) {
-            int maxQuestionNumber = questionRepository.getMaxQuestionNumber() != null ?
-                    questionRepository.getMaxQuestionNumber() : 0;
-            questionDto.setKey(maxQuestionNumber + 1);
+        if (questionDto.getCreationDate() == null) {
+            questionDto.setCreationDate(LocalDateTime.now().format(Course.formatter));
         }
 
         Question question = new Question(course, questionDto);
-        question.setCreationDate(LocalDateTime.now());
-        this.entityManager.persist(question);
+        questionRepository.save(question);
         return new QuestionDto(question);
     }
 
@@ -124,7 +121,7 @@ public class QuestionService {
     public void removeQuestion(Integer questionId) {
         Question question = questionRepository.findById(questionId).orElseThrow(() -> new TutorException(QUESTION_NOT_FOUND, questionId));
         question.remove();
-        entityManager.remove(question);
+        questionRepository.delete(question);
     }
 
     @Retryable(
@@ -151,7 +148,7 @@ public class QuestionService {
 
             question.setImage(image);
 
-            entityManager.persist(image);
+            imageRepository.save(image);
         }
 
         question.getImage().setUrl(question.getKey() + "." + type);
@@ -167,21 +164,27 @@ public class QuestionService {
         question.updateTopics(Arrays.stream(topics).map(topicDto -> topicRepository.findTopicByName(question.getCourse().getId(), topicDto.getName())).collect(Collectors.toSet()));
     }
 
-    public String exportQuestions() {
-        QuestionsXmlExport xmlExporter = new QuestionsXmlExport();
+    public String exportQuestionsToXml() {
+        XMLQuestionExportVisitor xmlExporter = new XMLQuestionExportVisitor();
 
         return xmlExporter.export(questionRepository.findAll());
     }
 
-
     @Retryable(
-      value = { SQLException.class },
-      backoff = @Backoff(delay = 5000))
+            value = { SQLException.class },
+            backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
-    public void importQuestions(String questionsXML) {
+    public void importQuestionsFromXml(String questionsXML) {
         QuestionsXmlImport xmlImporter = new QuestionsXmlImport();
 
         xmlImporter.importQuestions(questionsXML, this, courseRepository);
     }
+
+    public String exportQuestionsToLatex() {
+        LatexQuestionExportVisitor latexExporter = new LatexQuestionExportVisitor();
+
+        return latexExporter.export(questionRepository.findAll());
+    }
+
 }
 
