@@ -5,7 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
-import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage
+import pt.ulisboa.tecnico.socialsoftware.tutor.course.Course
+import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.StudentQuestionService
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.ImageDto
@@ -33,6 +34,7 @@ import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.DU
 @DataJpaTest
 class CreateStudentQuestionSpockTest extends Specification {
 
+    public static final String COURSE_NAME = "Software Architecture"
     public static final String USER_NAME = "Alfredo Costa"
     public static final String USER_USERNAME = "alcosta"
     public static final String QUESTION_TITLE = 'question title'
@@ -47,27 +49,31 @@ class CreateStudentQuestionSpockTest extends Specification {
     UserRepository userRepository
 
     @Autowired
+    CourseRepository courseRepository
+
+    @Autowired
     StudentQuestionRepository studentQuestionRepository
 
-    def user
+    User user
+    Course course
 
     def setup() {
         user = new User(USER_NAME, USER_USERNAME, 1, User.Role.STUDENT)
         userRepository.save(user)
+
+        course = new Course(COURSE_NAME, Course.Type.TECNICO)
+        courseRepository.save(course)
     }
 
     def "create student question with title and 4 options"() {
         given: "a studentQuestionDto"
         def studentQuestionDto = createStudentQuestionDto(QUESTION_TITLE, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name())
 
-        and: "a username"
-        USER_USERNAME
-
         and: "4 optionId"
         createOptions(studentQuestionDto, OPTION_CONTENT, 4, 1)
 
         when:
-        studentQuestionService.createStudentQuestion(USER_USERNAME, studentQuestionDto)
+        studentQuestionService.createStudentQuestion(course.getId(), user.getUsername(), studentQuestionDto)
 
         then: "the correct question is inside the repository"
         studentQuestionRepository.count() == 1L
@@ -78,19 +84,17 @@ class CreateStudentQuestionSpockTest extends Specification {
         result.getTitle() == QUESTION_TITLE
         result.getContent() == QUESTION_CONTENT
         result.getOptions().size() == 4
-        result.getStudent().getUsername() == USER_USERNAME
+        result.getStudent().getUsername() == user.getUsername()
         user.getStudentQuestions().contains(result)
         result.getOptions().stream().allMatch({ o -> o.getContent() == OPTION_CONTENT })
         result.getOptions().stream().filter({ o -> o.getCorrect() }).count() == 1L
         result.getImage() == null
+        result.getCourse().getId() == course.getId()
     }
 
     def "create studentquestion with a valid image"() {
         given: "a studentQuestionDto"
         def studentQuestionDto = createStudentQuestionDto(QUESTION_TITLE, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name())
-
-        and: "a username"
-        USER_USERNAME
 
         and: "4 optionId"
         createOptions(studentQuestionDto, OPTION_CONTENT, 4, 1)
@@ -99,7 +103,7 @@ class CreateStudentQuestionSpockTest extends Specification {
         createImage(studentQuestionDto, URL)
 
         when:
-        studentQuestionService.createStudentQuestion(USER_USERNAME, studentQuestionDto)
+        studentQuestionService.createStudentQuestion(course.getId(), user.getUsername(), studentQuestionDto)
 
         then: "the correct question is inside the repository"
         studentQuestionRepository.count() == 1L
@@ -110,13 +114,14 @@ class CreateStudentQuestionSpockTest extends Specification {
         result.getTitle() == QUESTION_TITLE
         result.getContent() == QUESTION_CONTENT
         result.getOptions().size() == 4
-        result.getStudent().getUsername() == USER_USERNAME
+        result.getStudent().getUsername() == user.getUsername()
         user.getStudentQuestions().contains(result)
         result.getOptions().stream().allMatch({ o -> o.getContent() == OPTION_CONTENT })
         result.getOptions().stream().filter({ o -> o.getCorrect() }).count() == 1L
         result.getImage().getId() != null
         result.getImage().getUrl() == URL
         result.getImage().getWidth() == 20
+        result.getCourse().getId() == course.getId()
     }
 
     @Unroll
@@ -127,11 +132,8 @@ class CreateStudentQuestionSpockTest extends Specification {
         and: "4 optionId"
         createOptions(studentQuestionDto, optionContent, 4, 1)
 
-        and: "a username"
-        USER_USERNAME
-
         when: "create a student question with invalid data"
-        studentQuestionService.createStudentQuestion(USER_USERNAME, studentQuestionDto)
+        studentQuestionService.createStudentQuestion(course.getId(), user.getUsername(), studentQuestionDto)
 
         then:
         def error = thrown(TutorException)
@@ -161,7 +163,7 @@ class CreateStudentQuestionSpockTest extends Specification {
         def username = createUsername(isUser, isStudent)
 
         when: "create a student question with invalid data"
-        studentQuestionService.createStudentQuestion(username, studentQuestionDto)
+        studentQuestionService.createStudentQuestion(course.getId(), username, studentQuestionDto)
 
         then: "an error occurs"
         def error = thrown(TutorException)
@@ -221,7 +223,9 @@ class CreateStudentQuestionSpockTest extends Specification {
         studentQuestion.setTitle(title)
         studentQuestion.setContent(content)
         studentQuestion.setStatus(StudentQuestion.Status.valueOf(status))
-        studentQuestion.setStudent(userRepository.findByUsername(USER_USERNAME))
+        studentQuestion.setStudent(userRepository.findByUsername(user.getUsername()))
+        studentQuestion.setCourse(course)
+        course.addStudentQuestion(studentQuestion)
         studentQuestionRepository.save(studentQuestion)
     }
 
