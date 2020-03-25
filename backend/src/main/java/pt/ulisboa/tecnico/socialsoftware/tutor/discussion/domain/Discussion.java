@@ -1,7 +1,6 @@
 package pt.ulisboa.tecnico.socialsoftware.tutor.discussion.domain;
 
 import pt.ulisboa.tecnico.socialsoftware.tutor.answer.domain.QuestionAnswer;
-import pt.ulisboa.tecnico.socialsoftware.tutor.answer.domain.QuizAnswer;
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException;
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Question;
@@ -11,8 +10,6 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.user.User;
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.dto.DiscussionDto;
 
 import javax.persistence.*;
-
-import java.util.Collection;
 
 @Entity
 @Table(name = "discussions")
@@ -41,9 +38,9 @@ public class Discussion {
     public Discussion() {
     }
 
-    public Discussion(User student, Question question, DiscussionDto dto) {
+    public Discussion(QuestionAnswer questionAnswer, User student, Question question, DiscussionDto dto) {
         checkMessage(dto.getMessageFromStudent());
-        verifyIfAnsweredQuestion(question.getId(), student);
+        verifyIfAnsweredQuestion(questionAnswer, question.getId(), student.getId());
         setStudent(student);
         setQuestion(question);
         setMessageFromStudent(dto.getMessageFromStudent());
@@ -86,16 +83,6 @@ public class Discussion {
 
     public void setTeacher(User teacher) { this.teacher = teacher; }
 
-    private void verifyIfAnsweredQuestion(Integer questionId, User student) {
-        if (!student.getQuizAnswers().stream()
-                .map(QuizAnswer::getQuestionAnswers)
-                .flatMap(Collection::stream)
-                .map(QuestionAnswer::getQuizQuestion)
-                .map(QuizQuestion::getQuestion)
-                .anyMatch(quest -> quest.getId().equals(questionId)))
-            throw new TutorException(ErrorMessage.DISCUSSION_QUESTION_NOT_ANSWERED, student.getId());
-    }
-
     public void updateTeacherAnswer(User teacher, DiscussionDto discussionDto) {
         checkIfDiscussionHasBeenAnswered();
         checkIfTeacherIsEnrolledInQuestionCourseExecution(teacher);
@@ -103,6 +90,12 @@ public class Discussion {
 
         setTeacherAnswer(discussionDto.getTeacherAnswer());
         setTeacher(teacher);
+    }
+
+    private void verifyIfAnsweredQuestion(QuestionAnswer questionAnswer, Integer questionId, Integer studentId) {
+        if (!questionAnswer.getQuizQuestion().getQuestion().getId().equals(questionId) ||
+                !questionAnswer.getQuizAnswer().getUser().getId().equals(studentId))
+            throw new TutorException(ErrorMessage.DISCUSSION_QUESTION_NOT_ANSWERED, studentId);
     }
 
     private void checkMessage(String message) {

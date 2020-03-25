@@ -109,6 +109,7 @@ class CreateDiscussionTest extends Specification {
         def discussionDto = new DiscussionDto()
         discussionDto.setUserName(student.getUsername())
         discussionDto.setMessageFromStudent(MESSAGE)
+        discussionDto.setId(questionAnswer.getId())
 
         when: "create discussion in the repository"
         discussionService.createDiscussion(question.getId(), discussionDto)
@@ -145,6 +146,7 @@ class CreateDiscussionTest extends Specification {
         def discussionDto = new DiscussionDto()
         discussionDto.setUserName(student.getUsername())
         discussionDto.setMessageFromStudent("TEST")
+        discussionDto.setId(questionAnswer.getId())
 
         when: "create another discussion with the same student and question"
         discussionService.createDiscussion(question.getId(), discussionDto)
@@ -160,6 +162,7 @@ class CreateDiscussionTest extends Specification {
         def discussionDto = new DiscussionDto()
         discussionDto.setUserName(student.getUsername())
         discussionDto.setMessageFromStudent(msg)
+        discussionDto.setId(questionAnswer.getId())
 
         when: "create the discussion"
         discussionService.createDiscussion(question.getId(), discussionDto)
@@ -177,6 +180,7 @@ class CreateDiscussionTest extends Specification {
         def discussionDto = new DiscussionDto()
         discussionDto.setUserName(INVALID_NAME)
         discussionDto.setMessageFromStudent(MESSAGE)
+        discussionDto.setId(questionAnswer.getId())
 
         when: "creating the discussion"
         discussionService.createDiscussion(question.getId(), discussionDto)
@@ -191,6 +195,7 @@ class CreateDiscussionTest extends Specification {
         def discussionDto = new DiscussionDto()
         discussionDto.setUserName(student.getUsername())
         discussionDto.setMessageFromStudent(MESSAGE)
+        discussionDto.setId(questionAnswer.getId())
 
         when: "creating the discussion"
         discussionService.createDiscussion(INVALID_ID, discussionDto)
@@ -200,11 +205,27 @@ class CreateDiscussionTest extends Specification {
         exception.errorMessage == ErrorMessage.QUESTION_NOT_FOUND
     }
 
+    def "create a discussion with invalid questionAnswer"() {
+        given: "the creation of the discussionDto"
+        def discussionDto = new DiscussionDto()
+        discussionDto.setUserName(student.getUsername())
+        discussionDto.setMessageFromStudent(MESSAGE)
+        discussionDto.setId(INVALID_ID)
+
+        when: "creating the discussion"
+        discussionService.createDiscussion(question.getId(), discussionDto)
+
+        then: "an error occurs"
+        def exception = thrown(TutorException)
+        exception.errorMessage == ErrorMessage.QUESTION_ANSWER_NOT_FOUND
+    }
+
     def "create a discussion before student submitting answer"() {
         given: "the definition of the discussion"
         def discussionDto = new DiscussionDto()
         discussionDto.setUserName("invalid student")
         discussionDto.setMessageFromStudent(MESSAGE)
+        discussionDto.setId(questionAnswer.getId())
         and: "the definition of the invalid user"
         User invalidStudent = new User('student2', "invalid student", 2, User.Role.STUDENT)
         invalidStudent.addCourse(courseExecution)
@@ -224,6 +245,7 @@ class CreateDiscussionTest extends Specification {
         def discussionDto = new DiscussionDto()
         discussionDto.setUserName("invalid student")
         discussionDto.setMessageFromStudent(MESSAGE)
+        discussionDto.setId(questionAnswer.getId())
         and: "the definition of the invalid user"
         User invalidUser = new User('student2', "invalid student", 2, User.Role.TEACHER)
         invalidUser.addCourse(courseExecution)

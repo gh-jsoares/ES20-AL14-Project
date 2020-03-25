@@ -1,5 +1,7 @@
 package pt.ulisboa.tecnico.socialsoftware.tutor.discussion;
 
+import pt.ulisboa.tecnico.socialsoftware.tutor.answer.domain.QuestionAnswer;
+import pt.ulisboa.tecnico.socialsoftware.tutor.answer.repository.QuestionAnswerRepository;
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.repository.DiscussionRepository;
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.dto.DiscussionDto;
@@ -26,9 +28,6 @@ import java.util.stream.Collectors;
 
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException;
 
-import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.DISCUSSION_NOT_FOUND;
-import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.QUESTION_NOT_FOUND;
-
 @Service
 public class DiscussionService {
 
@@ -40,6 +39,9 @@ public class DiscussionService {
 
     @Autowired
     private QuestionRepository questionRepository;
+
+    @Autowired
+    private QuestionAnswerRepository questionAnswerRepository;
 
     @PersistenceContext
     EntityManager entityManager;
@@ -53,11 +55,18 @@ public class DiscussionService {
 
         Question question = getQuestion(questionId);
 
+        QuestionAnswer questionAnswer = getQuestionAnswer(discussionDto.getId());
+
         checkDuplicates(student.getId(), questionId);
 
-        Discussion discussion = new Discussion(student, question, discussionDto);
+        Discussion discussion = new Discussion(questionAnswer, student, question, discussionDto);
         this.entityManager.persist(discussion);
         return new DiscussionDto(discussion);
+    }
+
+    private QuestionAnswer getQuestionAnswer(Integer questionAnswerId) {
+        return questionAnswerRepository.findById(questionAnswerId)
+                .orElseThrow(() -> new TutorException(ErrorMessage.QUESTION_ANSWER_NOT_FOUND, questionAnswerId));
     }
 
     private User getStudentByUsername(String studentName) {
@@ -132,6 +141,6 @@ public class DiscussionService {
                 .map(Discussion::getQuestion)
                 .map(Question::getCourse)
                 .map(CourseDto::new)
-                .orElseThrow(() -> new TutorException(DISCUSSION_NOT_FOUND, discussionId));
+                .orElseThrow(() -> new TutorException(ErrorMessage.DISCUSSION_NOT_FOUND, discussionId));
     }
 }

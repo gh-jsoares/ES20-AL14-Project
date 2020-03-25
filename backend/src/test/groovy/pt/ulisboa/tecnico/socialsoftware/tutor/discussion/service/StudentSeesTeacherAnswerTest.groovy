@@ -133,7 +133,7 @@ class StudentSeesTeacherAnswerTest extends Specification {
         given: "one unanswered discussion"
         DiscussionDto discussionDto = new DiscussionDto()
         discussionDto.setMessageFromStudent(MESSAGE)
-        new Discussion(student, question, discussionDto)
+        new Discussion(questionAnswer, student, question, discussionDto)
 
         when: "search for student discussions"
         def result = discussionService.getDiscussionStudent(student.getId())
@@ -170,7 +170,7 @@ class StudentSeesTeacherAnswerTest extends Specification {
     }
 
     def createBasicDiscussion(User student, Question question, DiscussionDto discussionDto) {
-        Discussion discussion = new Discussion(student, question, discussionDto)
+        Discussion discussion = new Discussion(questionAnswer, student, question, discussionDto)
         discussion.setTeacherAnswer(TEACHER_ANSWER)
         discussion.setTeacher(teacher)
         discussionRepository.save(discussion)

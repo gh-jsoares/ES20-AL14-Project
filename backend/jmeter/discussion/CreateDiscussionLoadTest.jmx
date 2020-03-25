@@ -156,7 +156,7 @@ insert into question_answers values (&apos;${range}&apos;, 40000, 7663, &apos;${
           <boolProp name="LoopController.continue_forever">false</boolProp>
           <stringProp name="LoopController.loops">1</stringProp>
         </elementProp>
-        <stringProp name="ThreadGroup.num_threads">10</stringProp>
+        <stringProp name="ThreadGroup.num_threads">100</stringProp>
         <stringProp name="ThreadGroup.ramp_time">1</stringProp>
         <boolProp name="ThreadGroup.scheduler">false</boolProp>
         <stringProp name="ThreadGroup.duration"></stringProp>
@@ -229,7 +229,7 @@ insert into question_answers values (&apos;${range}&apos;, 40000, 7663, &apos;${
                   <elementProp name="" elementType="HTTPArgument">
                     <boolProp name="HTTPArgument.always_encode">false</boolProp>
                     <stringProp name="Argument.value">{&#xd;
-	&quot;id&quot;:null,&#xd;
+	&quot;id&quot;:${range},&#xd;
 	&quot;questionId&quot;:${range},&#xd;
 	&quot;messageFromStudent&quot;: &quot;???&quot;,&#xd;
 	&quot;teacherAnswer&quot;: null,&#xd;
