@@ -111,7 +111,7 @@ class TeacherAnswersStudentServiceSpockTest extends Specification {
     def discussionDtoCreation(int id, String message) {
         def discussionDto = new DiscussionDto()
         discussionDto.setId(id)
-        discussionDto.setMessage(message)
+        discussionDto.setTeacherAnswer(message)
         return discussionDto
     }
 

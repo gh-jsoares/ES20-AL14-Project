@@ -47,7 +47,7 @@ public class Discussion {
         setStudent(student);
         setQuestion(question);
         setMessageFromStudent(dto.getMessageFromStudent());
-        setTeacherAnswer(dto.getMessage());
+        setTeacherAnswer(dto.getTeacherAnswer());
         question.addDiscussion(this);
         student.addDiscussion(this);
     }
@@ -87,21 +87,21 @@ public class Discussion {
     public void setTeacher(User teacher) { this.teacher = teacher; }
 
     private void verifyIfAnsweredQuestion(Integer questionId, User student) {
-        if (student.getQuizAnswers().stream()
+        if (!student.getQuizAnswers().stream()
                 .map(QuizAnswer::getQuestionAnswers)
                 .flatMap(Collection::stream)
                 .map(QuestionAnswer::getQuizQuestion)
                 .map(QuizQuestion::getQuestion)
-                .noneMatch(quest -> quest.getId().equals(questionId)))
+                .anyMatch(quest -> quest.getId().equals(questionId)))
             throw new TutorException(ErrorMessage.DISCUSSION_QUESTION_NOT_ANSWERED, student.getId());
     }
 
     public void updateTeacherAnswer(User teacher, DiscussionDto discussionDto) {
         checkIfDiscussionHasBeenAnswered();
         checkIfTeacherIsEnrolledInQuestionCourseExecution(teacher);
-        checkMessage(discussionDto.getMessage());
+        checkMessage(discussionDto.getTeacherAnswer());
 
-        setTeacherAnswer(discussionDto.getMessage());
+        setTeacherAnswer(discussionDto.getTeacherAnswer());
         setTeacher(teacher);
     }
 
