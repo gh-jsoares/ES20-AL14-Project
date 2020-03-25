@@ -9,12 +9,11 @@ import org.springframework.transaction.annotation.Transactional;
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.Course;
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseRepository;
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException;
-import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Question;
+import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Image;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.StudentQuestion;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Topic;
-import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.QuestionDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.StudentQuestionDto;
-import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.TopicDto;
+import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.ImageRepository;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.StudentQuestionRepository;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.TopicRepository;
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.User;
@@ -23,8 +22,9 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.user.UserRepository;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.sql.SQLException;
-import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.*;
@@ -43,6 +43,9 @@ public class StudentQuestionService {
 
     @Autowired
     private CourseRepository courseRepository;
+
+    @Autowired
+    private ImageRepository imageRepository;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -158,7 +161,8 @@ public class StudentQuestionService {
     }
 
     private void checkTeacherInStudentQuestionCourse(User user, StudentQuestion studentQuestion) {
-        // TODO
+        if (studentQuestion.canTeacherAccess(user))
+            throw new TutorException(TEACHER_NOT_IN_COURSE_EXECUTION);
     }
 
     @Retryable(
@@ -187,8 +191,34 @@ public class StudentQuestionService {
         return new StudentQuestionDto(studentQuestion);
     }
 
+    @Retryable(
+            value = {SQLException.class},
+            backoff = @Backoff(delay = 5000))
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public void uploadImage(Integer studentQuestionId, String type) {
+        StudentQuestion studentQuestion = getStudentQuestionIfExists(studentQuestionId);
+
+        Image image = studentQuestion.getImage();
+
+        if (image == null) {
+            image = new Image();
+
+            studentQuestion.setImage(image);
+
+            imageRepository.save(image);
+        }
+
+        studentQuestion.getImage().setUrl(studentQuestion.getKey() + "." + type);
+    }
+
+    public boolean canAccessStudentQuestion(String username, int studentQuestionId) {
+        User user = getUserIfExists(username);
+        StudentQuestion studentQuestion = getStudentQuestionIfExists(studentQuestionId);
+        return !(user.getRole() != User.Role.STUDENT && !studentQuestion.isCreator(user)) && (user.getRole() == User.Role.TEACHER || studentQuestion.canTeacherAccess(user));
+    }
+
     private void checkStudentIsCreatorOfQuestion(User user, StudentQuestion studentQuestion) {
-        if (!studentQuestion.getStudent().getUsername().equals(user.getUsername()))
+        if (!studentQuestion.isCreator(user))
             throw new TutorException(STUDENT_QUESTION_STUDENT_NOT_CREATOR, studentQuestion.getTitle());
     }
 
@@ -237,4 +267,5 @@ public class StudentQuestionService {
 
         return studentQuestion.get();
     }
+
 }

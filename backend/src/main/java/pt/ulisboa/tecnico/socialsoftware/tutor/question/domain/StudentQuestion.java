@@ -254,6 +254,14 @@ public class StudentQuestion {
             throw new TutorException(STUDENT_QUESTION_NOT_A_TEACHER);
     }
 
+    public boolean isCreator(User student) {
+        return this.getStudent().getUsername().equals(student.getUsername());
+    }
+
+    public boolean canTeacherAccess(User teacher) {
+        return teacher.getCourseExecutions().stream()
+                .anyMatch(c -> c.getCourse().getId().equals(getCourse().getId()));
+    }
 
     private void checkRejectedExplanation(String rejectedExplanation) {
         if (rejectedExplanation == null || rejectedExplanation.trim().length() == 0)
