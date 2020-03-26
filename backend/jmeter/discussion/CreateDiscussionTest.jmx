@@ -73,7 +73,7 @@
         <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="JDBC Request" enabled="true">
           <stringProp name="dataSource">sampleReq</stringProp>
           <stringProp name="query">update users set enrolled_courses_acronyms=&apos;DemoCourse&apos; where username=&apos;Demo-Student&apos;;
-insert into quiz_answers values (15000,&apos;1000-01-01 00:00:00&apos;, false, 5370, 676, false, &apos;1000-01-01 00:00:00&apos;);
+insert into quiz_answers values (15000,&apos;1000-01-01 00:00:00&apos;, false, 5370, 676, false);
 insert into quiz_questions values (40000, 4, 1800, 5370);
 insert into question_answers values (61000, 40000, 7663, 15000, 40000);</stringProp>
           <stringProp name="queryArguments"></stringProp>
@@ -187,6 +187,7 @@ insert into question_answers values (61000, 40000, 7663, 15000, 40000);</stringP
                   <boolProp name="HTTPArgument.always_encode">false</boolProp>
                   <stringProp name="Argument.value">{ &#xd;
 	&quot;id&quot;:61000,&#xd;
+	&quot;userId&quot;:676,&#xd;
 	&quot;questionId&quot;:1800,&#xd;
 	&quot;messageFromStudent&quot;: &quot;???&quot;,&#xd;
 	&quot;teacherAnswer&quot;: null,&#xd;

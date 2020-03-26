@@ -98,7 +98,7 @@
           <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="JDBC Request" enabled="true">
             <stringProp name="dataSource">sampleReq</stringProp>
             <stringProp name="query">insert into questions values (&apos;${range}&apos;,&apos;content&apos;, 1, 1, &apos;title&apos;, &apos;AVAILABLE&apos;, &apos;1000-01-01 00:00:00&apos;, 2, &apos;${range}&apos;);
-insert into quiz_answers values (&apos;${range}&apos;,&apos;1000-01-01 00:00:00&apos;, false, 5370, 676, false, &apos;1000-01-01 00:00:00&apos;);
+insert into quiz_answers values (&apos;${range}&apos;,&apos;1000-01-01 00:00:00&apos;, false, 5370, 676, false);
 insert into quiz_questions values (&apos;${range}&apos;, 4, &apos;${range}&apos;, 5370);
 insert into question_answers values (&apos;${range}&apos;, 40000, 7663, &apos;${range}&apos;, &apos;${range}&apos;);</stringProp>
             <stringProp name="queryArguments"></stringProp>
@@ -230,6 +230,7 @@ insert into question_answers values (&apos;${range}&apos;, 40000, 7663, &apos;${
                     <boolProp name="HTTPArgument.always_encode">false</boolProp>
                     <stringProp name="Argument.value">{&#xd;
 	&quot;id&quot;:${range},&#xd;
+	&quot;userId&quot;: 676,&#xd;
 	&quot;questionId&quot;:${range},&#xd;
 	&quot;messageFromStudent&quot;: &quot;???&quot;,&#xd;
 	&quot;teacherAnswer&quot;: null,&#xd;

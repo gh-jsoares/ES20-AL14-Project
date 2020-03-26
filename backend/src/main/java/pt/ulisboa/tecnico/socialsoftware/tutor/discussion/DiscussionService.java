@@ -51,7 +51,7 @@ public class DiscussionService {
         backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public DiscussionDto createDiscussion(Integer questionId, DiscussionDto discussionDto) {
-        User student = getStudentByUsername(discussionDto.getUserName());
+        User student = getStudentById(discussionDto.getUserId());
 
         Question question = getQuestion(questionId);
 
@@ -67,15 +67,6 @@ public class DiscussionService {
     private QuestionAnswer getQuestionAnswer(Integer questionAnswerId) {
         return questionAnswerRepository.findById(questionAnswerId)
                 .orElseThrow(() -> new TutorException(ErrorMessage.QUESTION_ANSWER_NOT_FOUND, questionAnswerId));
-    }
-
-    private User getStudentByUsername(String studentName) {
-        User student = userRepository.findByUsername(studentName);
-        if (student == null) { throw new TutorException(ErrorMessage.USER_NOT_FOUND);}
-        if (student.getRole() != User.Role.STUDENT) {
-            throw new TutorException(ErrorMessage.USER_NOT_STUDENT, studentName);
-        }
-        return student;
     }
 
     private User getStudentById(Integer studentId) {

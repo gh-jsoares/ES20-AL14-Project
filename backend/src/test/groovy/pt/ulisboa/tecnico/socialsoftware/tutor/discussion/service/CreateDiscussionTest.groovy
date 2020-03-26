@@ -107,7 +107,7 @@ class CreateDiscussionTest extends Specification {
     def "create a discussion"() {
         given: "the definition of the discussion"
         def discussionDto = new DiscussionDto()
-        discussionDto.setUserName(student.getUsername())
+        discussionDto.setUserId(student.getId())
         discussionDto.setMessageFromStudent(MESSAGE)
         discussionDto.setId(questionAnswer.getId())
 
@@ -144,7 +144,7 @@ class CreateDiscussionTest extends Specification {
         discussionRepository.save(discussion)
         and: "the creation of the DiscussionDto"
         def discussionDto = new DiscussionDto()
-        discussionDto.setUserName(student.getUsername())
+        discussionDto.setUserId(student.getId())
         discussionDto.setMessageFromStudent("TEST")
         discussionDto.setId(questionAnswer.getId())
 
@@ -160,7 +160,7 @@ class CreateDiscussionTest extends Specification {
     def "create a discussion with an empty message is #msg"() {
         given: "the creation of the discussionDto"
         def discussionDto = new DiscussionDto()
-        discussionDto.setUserName(student.getUsername())
+        discussionDto.setUserId(student.getId())
         discussionDto.setMessageFromStudent(msg)
         discussionDto.setId(questionAnswer.getId())
 
@@ -178,7 +178,7 @@ class CreateDiscussionTest extends Specification {
     def "create a discussion with invalid user"() {
         given: "the creation of the discussionDto"
         def discussionDto = new DiscussionDto()
-        discussionDto.setUserName(INVALID_NAME)
+        discussionDto.setUserId(INVALID_ID)
         discussionDto.setMessageFromStudent(MESSAGE)
         discussionDto.setId(questionAnswer.getId())
 
@@ -193,7 +193,7 @@ class CreateDiscussionTest extends Specification {
     def "create a discussion with invalid question"() {
         given: "the creation of the discussionDto"
         def discussionDto = new DiscussionDto()
-        discussionDto.setUserName(student.getUsername())
+        discussionDto.setUserId(student.getId())
         discussionDto.setMessageFromStudent(MESSAGE)
         discussionDto.setId(questionAnswer.getId())
 
@@ -208,7 +208,7 @@ class CreateDiscussionTest extends Specification {
     def "create a discussion with invalid questionAnswer"() {
         given: "the creation of the discussionDto"
         def discussionDto = new DiscussionDto()
-        discussionDto.setUserName(student.getUsername())
+        discussionDto.setUserId(student.getId())
         discussionDto.setMessageFromStudent(MESSAGE)
         discussionDto.setId(INVALID_ID)
 
@@ -223,7 +223,6 @@ class CreateDiscussionTest extends Specification {
     def "create a discussion before student submitting answer"() {
         given: "the definition of the discussion"
         def discussionDto = new DiscussionDto()
-        discussionDto.setUserName("invalid student")
         discussionDto.setMessageFromStudent(MESSAGE)
         discussionDto.setId(questionAnswer.getId())
         and: "the definition of the invalid user"
@@ -231,6 +230,7 @@ class CreateDiscussionTest extends Specification {
         invalidStudent.addCourse(courseExecution)
         courseExecution.addUser(invalidStudent)
         userRepository.save(invalidStudent)
+        discussionDto.setUserId(invalidStudent.getId())
 
         when: "try to create discussion in the repository"
         discussionService.createDiscussion(question.getId(), discussionDto)
@@ -243,14 +243,14 @@ class CreateDiscussionTest extends Specification {
     def "create a discussion with invalid user type"() {
         given: "the definition of the discussion"
         def discussionDto = new DiscussionDto()
-        discussionDto.setUserName("invalid student")
         discussionDto.setMessageFromStudent(MESSAGE)
         discussionDto.setId(questionAnswer.getId())
         and: "the definition of the invalid user"
-        User invalidUser = new User('student2', "invalid student", 2, User.Role.TEACHER)
+        User invalidUser = new User('user2', "invalid student", 2, User.Role.TEACHER)
         invalidUser.addCourse(courseExecution)
         courseExecution.addUser(invalidUser)
         userRepository.save(invalidUser)
+        discussionDto.setUserId(invalidUser.getId())
 
         when: "try to create discussion in the repository"
         discussionService.createDiscussion(question.getId(), discussionDto)
