@@ -105,8 +105,8 @@ class GetOpenTournamentsSpockTest extends Specification{
         tourn.setConclusionDate(days[1])
         tourn.setSeries(1)
         tourn.setVersion(VERSION)
-        tourn.addTopic(topic)
         tourn.setCourseExecution(courseExecution)
+        tourn.addTopic(topic)
         tourn.setCreator(user)
         tournRepository.save(tourn)
 

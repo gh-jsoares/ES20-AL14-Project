@@ -47,7 +47,9 @@ public class TournamentDto implements Serializable {
         setConclusionDate(tournament.getConclusionDate().format(formatter));
         setSeries(tournament.getSeries());
         setVersion(tournament.getVersion());
-        setCreator(new UserDto(tournament.getCreator()));
+        if (tournament.getCreator() != null) {
+            setCreator(new UserDto(tournament.getCreator()));
+        }
         for (Topic t : tournament.getTopics()) {
             addTopic(new TopicDto(t));
         }
