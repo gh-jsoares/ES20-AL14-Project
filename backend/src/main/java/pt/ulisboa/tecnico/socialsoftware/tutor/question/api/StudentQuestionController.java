@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.StudentQuestionService;
+import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Question;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.StudentQuestion;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.QuestionDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.StudentQuestionDto;
@@ -87,6 +88,13 @@ public class StudentQuestionController {
     @PreAuthorize("hasRole('ROLE_TEACHER') and hasPermission(#studentQuestionId, 'STUDENTQUESTION.ACCESS')")
     public StudentQuestionDto getStudentQuestion(Principal principal, @PathVariable Integer studentQuestionId) {
         return this.studentQuestionService.getStudentQuestionAsTeacher(getAuthUser(principal).getId(), studentQuestionId);
+    }
+
+    @PutMapping("/questions/student/all/{studentQuestionId}/approve")
+    @PreAuthorize("hasRole('ROLE_TEACHER') and hasPermission(#studentQuestionId, 'STUDENTQUESTION.ACCESS')")
+    public ResponseEntity studentQuestionApprove(Principal principal, @PathVariable Integer studentQuestionId) {
+        this.studentQuestionService.approveStudentQuestion(getAuthUser(principal).getId(), studentQuestionId);
+        return ResponseEntity.ok().build();
     }
 
     private Path getTargetLocation(String url) {
