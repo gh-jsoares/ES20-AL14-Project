@@ -1,5 +1,8 @@
 package pt.ulisboa.tecnico.socialsoftware.tutor.discussion;
 
+import pt.ulisboa.tecnico.socialsoftware.tutor.answer.domain.QuestionAnswer;
+import pt.ulisboa.tecnico.socialsoftware.tutor.answer.repository.QuestionAnswerRepository;
+import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.repository.DiscussionRepository;
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.dto.DiscussionDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.domain.Discussion;
@@ -37,6 +40,9 @@ public class DiscussionService {
     @Autowired
     private QuestionRepository questionRepository;
 
+    @Autowired
+    private QuestionAnswerRepository questionAnswerRepository;
+
     @PersistenceContext
     EntityManager entityManager;
 
@@ -44,19 +50,26 @@ public class DiscussionService {
         value = { SQLException.class },
         backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
-    public DiscussionDto createDiscussion(Integer studentId, Integer questionId, DiscussionDto discussionDto) {
-        User student = getStudent(studentId);
+    public DiscussionDto createDiscussion(Integer questionId, DiscussionDto discussionDto) {
+        User student = getStudentById(discussionDto.getUserId());
 
         Question question = getQuestion(questionId);
 
-        checkDuplicates(studentId, questionId);
+        QuestionAnswer questionAnswer = getQuestionAnswer(discussionDto.getId());
 
-        Discussion discussion = new Discussion(student, question, discussionDto);
+        checkDuplicates(student.getId(), questionId);
+
+        Discussion discussion = new Discussion(questionAnswer, student, question, discussionDto);
         this.entityManager.persist(discussion);
         return new DiscussionDto(discussion);
     }
 
-    private User getStudent(Integer studentId) {
+    private QuestionAnswer getQuestionAnswer(Integer questionAnswerId) {
+        return questionAnswerRepository.findById(questionAnswerId)
+                .orElseThrow(() -> new TutorException(ErrorMessage.QUESTION_ANSWER_NOT_FOUND, questionAnswerId));
+    }
+
+    private User getStudentById(Integer studentId) {
         User student = userRepository.findById(studentId).orElseThrow(() -> new TutorException(ErrorMessage.USER_NOT_FOUND, studentId));
         if (student.getRole() != User.Role.STUDENT) {
             throw new TutorException(ErrorMessage.USER_NOT_STUDENT, studentId);
@@ -78,11 +91,12 @@ public class DiscussionService {
         value = { SQLException.class },
         backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
-    public void teacherAnswersStudent(Integer discussionId, DiscussionDto discussionDto) {
+    public DiscussionDto teacherAnswersStudent(Integer discussionId, DiscussionDto discussionDto) {
         Discussion discussion = discussionRepository.findById(discussionId).orElseThrow(() -> new TutorException(ErrorMessage.DISCUSSION_NOT_FOUND, discussionId));
         User teacher = checkIfTeacherExists(discussionDto);
 
         discussion.updateTeacherAnswer(teacher, discussionDto);
+        return new DiscussionDto(discussion);
     }
 
     private User checkIfTeacherExists(DiscussionDto discussionDto) {
@@ -101,11 +115,23 @@ public class DiscussionService {
         backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public List<DiscussionDto> getDiscussionStudent(Integer studentId) {
-        User student = getStudent(studentId);
+        User student = getStudentById(studentId);
 
         Set<Discussion> discussions = student.getDiscussions();
         return discussions.stream()
                 .map(DiscussionDto::new)
                 .collect(Collectors.toList());
+    }
+
+    @Retryable(
+            value = { SQLException.class },
+            backoff = @Backoff(delay = 5000))
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public CourseDto findDiscussionCourse(Integer discussionId) {
+        return discussionRepository.findById(discussionId)
+                .map(Discussion::getQuestion)
+                .map(Question::getCourse)
+                .map(CourseDto::new)
+                .orElseThrow(() -> new TutorException(ErrorMessage.DISCUSSION_NOT_FOUND, discussionId));
     }
 }

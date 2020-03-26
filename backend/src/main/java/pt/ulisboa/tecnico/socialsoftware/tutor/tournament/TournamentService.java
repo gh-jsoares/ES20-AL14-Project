@@ -6,11 +6,11 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
+import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecution;
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecutionRepository;
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage;
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException;
-import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Topic;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.TopicDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.TopicRepository;
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.User;
@@ -45,28 +45,30 @@ public class TournamentService {
     @PersistenceContext
     EntityManager entityManager;
 
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public CourseDto findTournamentCourseExecution(int tournamentId) {
+        return this.tournamentRepository.findById(tournamentId)
+                .map(Tournament::getCourseExecution)
+                .map(CourseDto::new)
+                .orElseThrow(() -> new TutorException(ErrorMessage.TOURNAMENT_NOT_FOUND, tournamentId));
+    }
+
     @Retryable(
             value = { SQLException.class },
             backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
-    public TournamentDto  tournamentEnrollStudent(TournamentDto tournamentDto, int userId) {
+    public TournamentDto  tournamentEnrollStudent(int tournamentId, int userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new TutorException(ErrorMessage.USER_NOT_FOUND, userId));
 
-        Tournament tournament = getTournament(tournamentDto);
+        Tournament tournament = getTournament(tournamentId);
         tournament.addEnrolledStudent(user);
         user.addEnrolledTournament(tournament);
         return new TournamentDto(tournament);
     }
 
-    private Tournament getTournament(TournamentDto tournamentDto) {
-        checkNotNullTournament(tournamentDto);
-        return tournamentRepository.findById(tournamentDto.getId())
-                .orElseThrow(() -> new TutorException(ErrorMessage.TOURNAMENT_NOT_FOUND, tournamentDto.getId()));
-    }
-
-    private void checkNotNullTournament(TournamentDto tournamentDto) {
-        if (tournamentDto.getId() == null)
-            throw new TutorException(ErrorMessage.TOURNAMENT_IS_NULL);
+    private Tournament getTournament(int tournamentId) {
+        return tournamentRepository.findById(tournamentId)
+                .orElseThrow(() -> new TutorException(ErrorMessage.TOURNAMENT_NOT_FOUND, tournamentId));
     }
 
     @Retryable(
@@ -75,12 +77,11 @@ public class TournamentService {
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public TournamentDto createTournament(int executionId, TournamentDto tournDto, int userId) {
         CourseExecution courseExecution = getCourseExecution(executionId);
-
-        checkTournamentDto(tournDto);
         User user = getUser(userId);
-        checkTopics(tournDto, courseExecution);
+        checkTournamentDto(tournDto);
 
-        Tournament tourn = createTournament(tournDto, user, courseExecution);
+        Tournament tourn = buildTournament(tournDto, user, courseExecution);
+        entityManager.persist(tourn);
 
         return new TournamentDto(tourn);
     }
@@ -97,44 +98,35 @@ public class TournamentService {
     }
 
     private User getUser(int userId) {
-        User user = userRepository.findById(userId)
+        return userRepository.findById(userId)
                 .orElseThrow(() -> new TutorException(ErrorMessage.USER_NOT_FOUND, userId));
-
-        if (user.getRole() != User.Role.STUDENT) {
-            throw new TutorException(ErrorMessage.TOURNAMENT_USER_IS_NOT_STUDENT, user.getId());
-        }
-
-        return user;
     }
 
-    private void checkTopics(TournamentDto tournDto, CourseExecution courseExecution) {
-        if (tournDto.getTopics() == null || tournDto.getTopics().isEmpty()) {
+    private void setTopics(Tournament tourn, List<TopicDto> topics) {
+        if (topics == null || topics.isEmpty()) {
             throw new TutorException(ErrorMessage.TOURNAMENT_NOT_CONSISTENT, "Topics");
         }
 
-        int courseId = courseExecution.getCourse().getId();
-        for (TopicDto topicDto : tournDto.getTopics()) {
-            Topic topic = topicRepository.findById(topicDto.getId())
-                    .orElseThrow(() -> new TutorException(ErrorMessage.TOPIC_NOT_FOUND, topicDto.getId()));
-            if (topic.getCourse().getId() != courseId) {
-                throw new TutorException(ErrorMessage.TOURNAMENT_TOPIC_WRONG_COURSE, topicDto.getId());
-            }
-        }
+        topics.forEach(topicDto -> tourn.addTopic(topicRepository.findById(topicDto.getId())
+                .orElseThrow(() -> new TutorException(ErrorMessage.TOPIC_NOT_FOUND, topicDto.getId()))));
     }
 
-    private Tournament createTournament(TournamentDto tournDto, User user, CourseExecution courseExecution) {
+    private Tournament buildTournament(TournamentDto tournDto, User user, CourseExecution courseExecution) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         tournDto.setCreationDate(LocalDateTime.now().format(formatter));
 
         Tournament tourn = new Tournament(tournDto);
         tourn.setState(Tournament.State.ENROLL);
         tourn.setCourseExecution(courseExecution);
-        tourn.setCreationDate(LocalDateTime.now());
-        tourn.setCreator(user);
 
-        tournDto.getTopics().forEach(topicDto -> topicRepository.findById(topicDto.getId()).ifPresent(tourn::addTopic));
+        try {
+            tourn.setCreator(user);
+            setTopics(tourn, tournDto.getTopics());
+        } catch (TutorException e) {
+            tourn.remove();
+            throw e;
+        }
 
-        entityManager.persist(tourn);
         return tourn;
     }
 
