@@ -90,7 +90,7 @@ public class StudentQuestionController {
         return this.studentQuestionService.getStudentQuestionAsTeacher(getAuthUser(principal).getId(), studentQuestionId);
     }
 
-    @PutMapping("/questions/student/{studentQuestionId}/approve")
+    @PutMapping("/questions/student/all/{studentQuestionId}/approve")
     @PreAuthorize("hasRole('ROLE_TEACHER') and hasPermission(#studentQuestionId, 'STUDENTQUESTION.ACCESS')")
     public ResponseEntity studentQuestionApprove(Principal principal, @PathVariable Integer studentQuestionId) {
         this.studentQuestionService.approveStudentQuestion(getAuthUser(principal).getId(), studentQuestionId);
