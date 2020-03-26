@@ -101,17 +101,16 @@ class TeacherAnswersStudentServiceSpockTest extends Specification {
         discussionDto.setMessageFromStudent(MESSAGE)
 
         questionRepository.save(question)
-        discussion = new Discussion(student, question, discussionDto)
-
         userRepository.save(student)
-        discussionRepository.save(discussion)
 
+        discussion = new Discussion(questionAnswer, student, question, discussionDto)
+        discussionRepository.save(discussion)
     }
 
     def discussionDtoCreation(int id, String message) {
         def discussionDto = new DiscussionDto()
         discussionDto.setId(id)
-        discussionDto.setMessage(message)
+        discussionDto.setTeacherAnswer(message)
         return discussionDto
     }
 

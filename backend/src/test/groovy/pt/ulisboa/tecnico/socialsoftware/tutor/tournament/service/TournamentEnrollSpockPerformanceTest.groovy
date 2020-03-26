@@ -42,8 +42,12 @@ class TournamentEnrollSpockPerformanceTest extends Specification{
     UserRepository userRepository
 
     def courseExecution
-    def tournaments
-    def users
+    def tournaments = []
+    def users = []
+
+    public static final int NUM_USERS = 1   // 1000
+    public static final int NUM_TOURNS = 1  // 10000
+    public static final int NUM_CALLS = 1   // 10000
 
     def setup() {
 
@@ -56,26 +60,18 @@ class TournamentEnrollSpockPerformanceTest extends Specification{
     }
 
     def "performance testing to get 1000 users enrolled in 10000 tournaments"() {
-        given: "10000 users"
-            users = []
-            1.upto(1000, {
-                createUser(it)
-            })
-        and: "10000 tournaments"
-            tournaments = []
-            1.upto(10000, {
-                createTournament()
-            })
+        given: "<NUM_USERS> users"
+        1.upto(NUM_USERS, {createUser(it)})
 
-        when:
-            for (User user: users) {
-                1.upto(10000, {
-                    tournamentService.tournamentEnrollStudent(tournaments[it-1].getId(), user.getId())
-                })
-            }
+        and: "<NUM_TOURNS> tournaments"
+        1.upto(NUM_TOURNS, {createTournament()})
 
-        then:
-            true
+        when: "<NUM_CALLS> calls to enroll"
+        for (User user : users) {
+            1.upto(NUM_CALLS, {tournamentService.tournamentEnrollStudent(tournaments[it-1].getId(), user.getId())})
+        }
+
+        then: true
     }
 
     def createUser(it){
