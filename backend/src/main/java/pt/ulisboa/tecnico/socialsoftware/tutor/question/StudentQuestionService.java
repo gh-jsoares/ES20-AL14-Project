@@ -201,6 +201,7 @@ public class StudentQuestionService {
     @Retryable(
             value = { SQLException.class },
             backoff = @Backoff(delay = 5000))
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
     public boolean canAccessStudentQuestion(int userId, int studentQuestionId) {
         User user = getUserIfExists(userId);
         StudentQuestion studentQuestion = getStudentQuestionIfExists(studentQuestionId);
