@@ -20,7 +20,6 @@ import spock.lang.Unroll
 import java.util.stream.Collectors
 
 import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_NOT_FOUND
-import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_TOPIC_NOT_FOUND
 
 @DataJpaTest
 class RemoveTopicFromStudentQuestionSpockTest extends Specification {
@@ -136,6 +135,7 @@ class RemoveTopicFromStudentQuestionSpockTest extends Specification {
         topic.setName(name)
         topic.setCourse(course)
         topicRepository.save(topic)
+        topic
     }
 
     @TestConfiguration

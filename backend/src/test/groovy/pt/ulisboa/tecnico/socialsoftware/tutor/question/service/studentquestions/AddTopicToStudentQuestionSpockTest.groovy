@@ -136,6 +136,7 @@ class AddTopicToStudentQuestionSpockTest extends Specification {
         topic.setName(name)
         topic.setCourse(course)
         topicRepository.save(topic)
+        topic
     }
 
     @TestConfiguration
