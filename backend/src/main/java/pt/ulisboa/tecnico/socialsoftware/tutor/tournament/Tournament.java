@@ -1,6 +1,7 @@
 package pt.ulisboa.tecnico.socialsoftware.tutor.tournament;
 
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecution;
+import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage;
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Topic;
 import pt.ulisboa.tecnico.socialsoftware.tutor.quiz.domain.Quiz;
@@ -144,6 +145,9 @@ public class Tournament {
     }
 
     public void setCreator(User creator) {
+        if (creator.getRole() != User.Role.STUDENT) {
+            throw new TutorException(ErrorMessage.TOURNAMENT_USER_IS_NOT_STUDENT, creator.getId());
+        }
         creator.addCreatedTournament(this);
         this.creator = creator;
     }
@@ -170,6 +174,9 @@ public class Tournament {
     }
 
     public void addTopic(Topic topic) {
+        if (this.courseExecution == null || !topic.getCourse().getId().equals(this.courseExecution.getCourse().getId())) {
+            throw new TutorException(ErrorMessage.TOURNAMENT_TOPIC_WRONG_COURSE, topic.getId());
+        }
         topic.addTournament(this);
         this.topics.add(topic);
     }
@@ -241,5 +248,29 @@ public class Tournament {
                 creationDate != null && conclusionDate.isBefore(creationDate)) {
             throw new TutorException(TOURNAMENT_NOT_CONSISTENT, "Conclusion date");
         }
+    }
+
+    public void remove() {
+        if (this.quiz != null) {
+            this.quiz.remove();
+            this.quiz = null;
+        }
+
+        if (this.creator != null) {
+            this.creator.getCreatedTournaments().remove(this);
+            this.creator = null;
+        }
+
+        if (this.courseExecution != null) {
+            this.courseExecution.getTournaments().remove(this);
+            this.courseExecution = null;
+        }
+
+        this.enrolledStudents.forEach(student -> student.getEnrolledTournaments().remove(this));
+        this.enrolledStudents.clear();
+
+        this.topics.forEach(topic -> topic.getTournaments().remove(this));
+        this.topics.clear();
+
     }
 }
