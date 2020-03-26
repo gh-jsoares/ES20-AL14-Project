@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jmeterTestPlan version="1.2" properties="5.0" jmeter="5.2.1">
   <hashTree>
-    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Load Test Web Service createDiscussion" enabled="true">
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Feature Test Web Service TeacherAnswersStudent" enabled="true">
       <stringProp name="TestPlan.comments"></stringProp>
       <boolProp name="TestPlan.functional_mode">false</boolProp>
       <boolProp name="TestPlan.tearDown_on_shutdown">true</boolProp>
@@ -29,9 +29,9 @@
             <stringProp name="Argument.value">8080</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
-          <elementProp name="question" elementType="Argument">
-            <stringProp name="Argument.name">question</stringProp>
-            <stringProp name="Argument.value">1800</stringProp>
+          <elementProp name="dbUser" elementType="Argument">
+            <stringProp name="Argument.name">dbUser</stringProp>
+            <stringProp name="Argument.value">jm</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
         </collectionProp>
@@ -52,38 +52,40 @@
       </SetupThreadGroup>
       <hashTree>
         <JDBCDataSource guiclass="TestBeanGUI" testclass="JDBCDataSource" testname="JDBC Connection Configuration" enabled="true">
-          <boolProp name="autocommit">true</boolProp>
-          <stringProp name="checkQuery"></stringProp>
-          <stringProp name="connectionAge">5000</stringProp>
-          <stringProp name="connectionProperties"></stringProp>
           <stringProp name="dataSource">sampleReq</stringProp>
-          <stringProp name="dbUrl">jdbc:postgresql://localhost:5432/tutordb?autoReconnect=true</stringProp>
-          <stringProp name="driver">org.postgresql.Driver</stringProp>
+          <stringProp name="poolMax">0</stringProp>
+          <stringProp name="timeout">10000</stringProp>
+          <stringProp name="trimInterval">60000</stringProp>
+          <boolProp name="autocommit">true</boolProp>
+          <stringProp name="transactionIsolation">DEFAULT</stringProp>
+          <boolProp name="preinit">false</boolProp>
           <stringProp name="initQuery"></stringProp>
           <boolProp name="keepAlive">true</boolProp>
+          <stringProp name="connectionAge">5000</stringProp>
+          <stringProp name="checkQuery"></stringProp>
+          <stringProp name="dbUrl">jdbc:postgresql://localhost:5432/tutordb?autoReconnect=true</stringProp>
+          <stringProp name="driver">org.postgresql.Driver</stringProp>
+          <stringProp name="username">${dbUser}</stringProp>
           <stringProp name="password">123</stringProp>
-          <stringProp name="poolMax">0</stringProp>
-          <boolProp name="preinit">false</boolProp>
-          <stringProp name="timeout">10000</stringProp>
-          <stringProp name="transactionIsolation">DEFAULT</stringProp>
-          <stringProp name="trimInterval">60000</stringProp>
-          <stringProp name="username">jm</stringProp>
+          <stringProp name="connectionProperties"></stringProp>
         </JDBCDataSource>
         <hashTree/>
-        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="JDBC Request" enabled="true">
+        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="JDBC Request - Create discussion dependencies" enabled="true">
           <stringProp name="dataSource">sampleReq</stringProp>
+          <stringProp name="queryType">Callable Statement</stringProp>
           <stringProp name="query">update users set enrolled_courses_acronyms=&apos;DemoCourse&apos; where username=&apos;Demo-Student&apos;;
-insert into quiz_answers values (15000,&apos;1000-01-01 00:00:00&apos;, false, 5370, 676, false);
-insert into quiz_questions values (40000, 4, 1800, 5370);
-insert into question_answers values (61000, 40000, 7663, 15000, 40000);</stringProp>
+update users set enrolled_courses_acronyms=&apos;DemoCourse&apos; where username=&apos;Demo-Teacher&apos;;
+insert into quiz_answers values (100000,&apos;1000-01-01 00:00:00&apos;, false, 5370, 676, false);
+insert into quiz_questions values (100000, 4, 1800, 5370);
+insert into question_answers values (100000, 100000, 7663, 100000, 100000);
+insert into discussions values (1, &apos;???&apos;, null, 1800, 676, null);</stringProp>
           <stringProp name="queryArguments"></stringProp>
           <stringProp name="queryArgumentsTypes"></stringProp>
-          <stringProp name="queryTimeout"></stringProp>
-          <stringProp name="queryType">Callable Statement</stringProp>
-          <stringProp name="resultSetHandler">Store as String</stringProp>
-          <stringProp name="resultSetMaxRows"></stringProp>
-          <stringProp name="resultVariable"></stringProp>
           <stringProp name="variableNames"></stringProp>
+          <stringProp name="resultVariable"></stringProp>
+          <stringProp name="queryTimeout"></stringProp>
+          <stringProp name="resultSetMaxRows"></stringProp>
+          <stringProp name="resultSetHandler">Store as String</stringProp>
         </JDBCSampler>
         <hashTree/>
         <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
@@ -124,7 +126,7 @@ insert into question_answers values (61000, 40000, 7663, 15000, 40000);</stringP
         </ResultCollector>
         <hashTree/>
       </hashTree>
-      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Users Thread Group" enabled="true">
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Users Thread Group - 1 user" enabled="true">
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
           <boolProp name="LoopController.continue_forever">false</boolProp>
@@ -134,11 +136,11 @@ insert into question_answers values (61000, 40000, 7663, 15000, 40000);</stringP
         <stringProp name="ThreadGroup.ramp_time">1</stringProp>
         <boolProp name="ThreadGroup.scheduler">false</boolProp>
         <stringProp name="ThreadGroup.duration"></stringProp>
-        <stringProp name="ThreadGroup.delay"></stringProp>
+        <stringProp name="ThreadGroup.delay">1</stringProp>
         <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
       </ThreadGroup>
       <hashTree>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Login as Demo Student" enabled="true">
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Login as Demo Teacher" enabled="true">
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
             <collectionProp name="Arguments.arguments"/>
           </elementProp>
@@ -146,7 +148,7 @@ insert into question_answers values (61000, 40000, 7663, 15000, 40000);</stringP
           <stringProp name="HTTPSampler.port">${port}</stringProp>
           <stringProp name="HTTPSampler.protocol"></stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
-          <stringProp name="HTTPSampler.path">/auth/demo/student</stringProp>
+          <stringProp name="HTTPSampler.path">/auth/demo/teacher</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
@@ -179,19 +181,18 @@ insert into question_answers values (61000, 40000, 7663, 15000, 40000);</stringP
             </collectionProp>
           </HeaderManager>
           <hashTree/>
-          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="HTTP Request to create a discussion" enabled="true">
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="HTTP Request to answer discussion" enabled="true">
             <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
             <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
               <collectionProp name="Arguments.arguments">
                 <elementProp name="" elementType="HTTPArgument">
                   <boolProp name="HTTPArgument.always_encode">false</boolProp>
                   <stringProp name="Argument.value">{ &#xd;
-	&quot;id&quot;:61000,&#xd;
-	&quot;userId&quot;:676,&#xd;
+	&quot;id&quot;:1,&#xd;
 	&quot;questionId&quot;:1800,&#xd;
 	&quot;messageFromStudent&quot;: &quot;???&quot;,&#xd;
-	&quot;teacherAnswer&quot;: null,&#xd;
-	&quot;userName&quot;:&quot;Demo-Student&quot;&#xd;
+	&quot;teacherAnswer&quot;: &quot;yes&quot;,&#xd;
+	&quot;userName&quot;:&quot;Demo-Teacher&quot;&#xd;
 }&#xd;
 </stringProp>
                   <stringProp name="Argument.metadata">=</stringProp>
@@ -202,7 +203,7 @@ insert into question_answers values (61000, 40000, 7663, 15000, 40000);</stringP
             <stringProp name="HTTPSampler.port">${port}</stringProp>
             <stringProp name="HTTPSampler.protocol"></stringProp>
             <stringProp name="HTTPSampler.contentEncoding"></stringProp>
-            <stringProp name="HTTPSampler.path">/questions/${question}/discussions</stringProp>
+            <stringProp name="HTTPSampler.path">/discussions/1/</stringProp>
             <stringProp name="HTTPSampler.method">POST</stringProp>
             <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
             <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
@@ -233,7 +234,16 @@ insert into question_answers values (61000, 40000, 7663, 15000, 40000);</stringP
             <hashTree/>
             <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="Assert username" enabled="true">
               <stringProp name="JSON_PATH">$.userName</stringProp>
-              <stringProp name="EXPECTED_VALUE">Demo-Student</stringProp>
+              <stringProp name="EXPECTED_VALUE">Demo-Teacher</stringProp>
+              <boolProp name="JSONVALIDATION">true</boolProp>
+              <boolProp name="EXPECT_NULL">false</boolProp>
+              <boolProp name="INVERT">false</boolProp>
+              <boolProp name="ISREGEX">false</boolProp>
+            </JSONPathAssertion>
+            <hashTree/>
+            <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="Assert teacher answer" enabled="true">
+              <stringProp name="JSON_PATH">$.teacherAnswer</stringProp>
+              <stringProp name="EXPECTED_VALUE">yes</stringProp>
               <boolProp name="JSONVALIDATION">true</boolProp>
               <boolProp name="EXPECT_NULL">false</boolProp>
               <boolProp name="INVERT">false</boolProp>
@@ -347,16 +357,17 @@ insert into question_answers values (61000, 40000, 7663, 15000, 40000);</stringP
           <stringProp name="timeout">10000</stringProp>
           <stringProp name="transactionIsolation">DEFAULT</stringProp>
           <stringProp name="trimInterval">60000</stringProp>
-          <stringProp name="username">jm</stringProp>
+          <stringProp name="username">${dbUser}</stringProp>
         </JDBCDataSource>
         <hashTree/>
         <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="JDBC Request" enabled="true">
           <stringProp name="dataSource">sampleReq</stringProp>
           <stringProp name="query">update users set enrolled_courses_acronyms=&apos;&apos; where username=&apos;Demo-Student&apos;;
-delete from question_answers where id=61000;
-delete from quiz_answers where id=15000;
-delete from quiz_questions where id=40000;
-delete from discussions where student_id=676;</stringProp>
+update users set enrolled_courses_acronyms=&apos;&apos; where username=&apos;Demo-Teacher&apos;;
+delete from question_answers where id=100000;
+delete from quiz_answers where id=100000;
+delete from quiz_questions where id=100000;
+delete from discussions where id = 1;</stringProp>
           <stringProp name="queryArguments"></stringProp>
           <stringProp name="queryArgumentsTypes"></stringProp>
           <stringProp name="queryTimeout"></stringProp>
