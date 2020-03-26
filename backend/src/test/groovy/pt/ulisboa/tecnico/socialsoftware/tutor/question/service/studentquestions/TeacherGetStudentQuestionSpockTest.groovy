@@ -43,8 +43,8 @@ class TeacherGetStudentQuestionSpockTest extends Specification {
     @Autowired
     OptionRepository optionRepository
 
-    def student
-    def teacher
+    User student
+    User teacher
 
     def setup() {
         student = createUser(1, USER_NAME, USER_USERNAME, User.Role.STUDENT)
@@ -58,11 +58,8 @@ class TeacherGetStudentQuestionSpockTest extends Specification {
         and: "it has 4 options"
         createOptions(studentQuestion, OPTION_CONTENT)
 
-        and: "a username of a teacher"
-        TEACHER_USERNAME
-
         when:
-        def result = studentQuestionService.getStudentQuestionAsTeacher(TEACHER_USERNAME, studentQuestion.getId())
+        def result = studentQuestionService.getStudentQuestionAsTeacher(teacher.getId(), studentQuestion.getId())
 
         then: "data is correct"
         result != null
@@ -82,11 +79,11 @@ class TeacherGetStudentQuestionSpockTest extends Specification {
         given: "a student question"
         def studentQuestionId = createStudentQuestion(isStudentQuestion)
 
-        and: "a username"
-        def username = createUsername(isUser, isTeacher)
+        and: "a userId"
+        def userId = createUserId(isUser, isTeacher)
 
         when:
-        studentQuestionService.getStudentQuestionAsTeacher(username, studentQuestionId)
+        studentQuestionService.getStudentQuestionAsTeacher(userId, studentQuestionId)
 
         then:
         def error = thrown(TutorException)
@@ -105,13 +102,13 @@ class TeacherGetStudentQuestionSpockTest extends Specification {
         return -1
     }
 
-    private String createUsername(boolean isUser, boolean isTeacher) {
+    private int createUserId(boolean isUser, boolean isTeacher) {
         if (!isUser)
-            return null
+            return -1
         if (!isTeacher)
-            return student.getUsername()
+            return student.getId()
 
-        return teacher.getUsername()
+        return teacher.getId()
     }
 
     private StudentQuestion createStudentQuestion(int key, String title, String content, String status) {

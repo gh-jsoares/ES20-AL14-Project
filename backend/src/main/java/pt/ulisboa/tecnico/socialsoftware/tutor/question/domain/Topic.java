@@ -8,8 +8,6 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.tournament.Tournament;
 import javax.persistence.*;
 import java.util.*;
 
-import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_TOPIC_ALREADY_ADDED;
-import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_TOPIC_NOT_PRESENT;
 
 @Entity
 @Table(name = "topics")
@@ -96,23 +94,10 @@ public class Topic {
     }
 
     public void addStudentQuestion(StudentQuestion studentQuestion) {
-        checkDuplicateStudentQuestion(studentQuestion);
-
         this.studentQuestions.add(studentQuestion);
     }
     public void removeStudentQuestion(StudentQuestion studentQuestion) {
-        checkStudentQuestionPresent(studentQuestion);
         this.studentQuestions.remove(studentQuestion);
-    }
-
-    private void checkStudentQuestionPresent(StudentQuestion studentQuestion) {
-        if(getStudentQuestions().stream().noneMatch(sq -> sq.getKey().equals(studentQuestion.getKey())))
-            throw new TutorException(STUDENT_QUESTION_TOPIC_NOT_PRESENT);
-    }
-
-    private void checkDuplicateStudentQuestion(StudentQuestion studentQuestion) {
-        if (getStudentQuestions().stream().anyMatch(sq -> sq.getKey().equals(studentQuestion.getKey())))
-            throw new TutorException(STUDENT_QUESTION_TOPIC_ALREADY_ADDED);
     }
 
     public Set<Tournament> getTournaments() {
