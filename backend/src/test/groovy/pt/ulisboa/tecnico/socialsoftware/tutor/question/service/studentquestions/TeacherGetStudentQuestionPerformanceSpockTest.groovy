@@ -20,7 +20,7 @@ import java.time.LocalDateTime
 @DataJpaTest
 class TeacherGetStudentQuestionPerformanceSpockTest extends Specification {
 
-    public static final int AMOUNT_OF_QUESTIONS = 10000 // 10000
+    public static final int AMOUNT_OF_QUESTIONS = 1 // 10000
 
     public static final String COURSE_NAME = "Software Architecture"
     public static final String COURSE_ACRONYM = "SA"
