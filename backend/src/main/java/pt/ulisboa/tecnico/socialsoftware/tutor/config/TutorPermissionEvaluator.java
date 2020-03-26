@@ -12,6 +12,7 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.question.AssessmentService;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.QuestionService;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.TopicService;
 import pt.ulisboa.tecnico.socialsoftware.tutor.quiz.QuizService;
+import pt.ulisboa.tecnico.socialsoftware.tutor.tournament.TournamentService;
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.User;
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.UserService;
 
@@ -39,6 +40,9 @@ public class TutorPermissionEvaluator implements PermissionEvaluator {
 
     @Autowired
     private DiscussionService discussionService;
+
+    @Autowired
+    private TournamentService tournamentService;
 
     @Override
     public boolean hasPermission(Authentication authentication, Object targetDomainObject, Object permission) {
@@ -78,6 +82,8 @@ public class TutorPermissionEvaluator implements PermissionEvaluator {
                     return userHasThisExecution(username, assessmentService.findAssessmentCourseExecution(id).getCourseExecutionId());
                 case "QUIZ.ACCESS":
                     return userHasThisExecution(username, quizService.findQuizCourseExecution(id).getCourseExecutionId());
+                case "TOURNAMENT.ACCESS":
+                    return userHasThisExecution(username, tournamentService.findTournamentCourseExecution(id).getCourseExecutionId());
                 default: return false;
             }
         }
