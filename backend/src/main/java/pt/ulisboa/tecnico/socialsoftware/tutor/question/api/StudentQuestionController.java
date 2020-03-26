@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.StudentQuestionService;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.StudentQuestion;
+import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.QuestionDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.StudentQuestionDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.TopicDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.User;
@@ -22,6 +23,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.security.Principal;
+import java.util.List;
 import java.util.Objects;
 
 import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.AUTHENTICATION_ERROR;
@@ -73,6 +75,12 @@ public class StudentQuestionController {
     public ResponseEntity updateQuestionTopics(@PathVariable Integer studentQuestionId, @RequestBody Integer[] topics) {
         studentQuestionService.updateStudentQuestionTopics(studentQuestionId, topics);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/courses/{courseId}/questions/student/all")
+    @PreAuthorize("hasRole('ROLE_TEACHER') and hasPermission(#courseId, 'COURSE.ACCESS')")
+    public List<StudentQuestionDto> getCourseQuestions(Principal principal, @PathVariable int courseId){
+        return this.studentQuestionService.listAllStudentQuestions(courseId, getAuthUser(principal).getId());
     }
 
     private Path getTargetLocation(String url) {
