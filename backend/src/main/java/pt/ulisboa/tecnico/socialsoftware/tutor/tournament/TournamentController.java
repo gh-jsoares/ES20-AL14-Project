@@ -9,6 +9,7 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.user.User;
 
 import javax.validation.Valid;
 import java.security.Principal;
+import java.util.List;
 
 import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.AUTHENTICATION_ERROR;
 
@@ -42,4 +43,12 @@ public class TournamentController {
 
         return tournamentService.createTournament(executionId, tournDto, user.getId());
     }
+
+
+    @GetMapping("/executions/{executionId}/tournaments")
+    @PreAuthorize("hasAnyRole('ROLE_STUDENT', 'ROLE_TEACHER') and hasPermission(#executionId, 'EXECUTION.ACCESS')")
+    public List<TournamentDto> getOpenTournaments(@PathVariable int executionId) {
+        return tournamentService.getOpenTournaments(executionId);
+    }
+
 }
