@@ -23,8 +23,8 @@ import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.ST
 @DataJpaTest
 class TeacherListStudentQuestionPerformanceSpockTest extends Specification {
 
-    public static final int AMOUNT_OF_QUESTIONS = 10000 // 1000
-    public static final int AMOUNT_OF_TESTS = 1000 // 100
+    public static final int AMOUNT_OF_QUESTIONS = 1 // 10000
+    public static final int AMOUNT_OF_TESTS = 1 // 1000
 
     public static final String COURSE_NAME = "Software Architecture"
     public static final String USER_NAME = "Alfredo Costa"
