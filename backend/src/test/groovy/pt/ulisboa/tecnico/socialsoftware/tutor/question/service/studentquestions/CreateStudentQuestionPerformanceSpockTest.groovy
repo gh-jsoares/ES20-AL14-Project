@@ -18,6 +18,8 @@ import spock.lang.Specification
 @DataJpaTest
 class CreateStudentQuestionPerformanceSpockTest extends Specification {
 
+    public static final int AMOUNT_OF_TESTS = 1
+
     public static final String COURSE_NAME = "Software Architecture"
     public static final String USER_NAME = "Alfredo Costa"
     public static final String USER_USERNAME = "alcosta"
@@ -48,18 +50,18 @@ class CreateStudentQuestionPerformanceSpockTest extends Specification {
         courseRepository.save(course)
     }
 
-    def "create 10000 student question"() {
-        given: "10000 studentquestionDTO"
+    def "create AMOUNT_OF_TESTS student question"() {
+        given: "$AMOUNT_OF_TESTS studentquestionDTO"
         StudentQuestionDto[] studentQuestionDto = []
 
-        0.upto(10000, {
+        0.upto(AMOUNT_OF_TESTS, {
             def sq = createStudentQuestionDto(QUESTION_TITLE + it, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name())
             createOptions(sq, OPTION_CONTENT, 4, 1)
             studentQuestionDto += sq
         })
 
         when:
-        0.upto(10000, { studentQuestionService.createStudentQuestion(course.getId(), user.getId(), studentQuestionDto[it.intValue()]) })
+        0.upto(AMOUNT_OF_TESTS, { studentQuestionService.createStudentQuestion(course.getId(), user.getId(), studentQuestionDto[it.intValue()]) })
 
         then:
         true
