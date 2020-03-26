@@ -32,7 +32,7 @@ public class DiscussionController {
         return this.discussionService.createDiscussion(questionId, discussionDto);
     }
 
-    @PutMapping("/discussions/{discussionId}")
+    @PostMapping("/discussions/{discussionId}")
     @PreAuthorize("hasRole('ROLE_TEACHER') and hasPermission(#discussionId, 'DISCUSSION.ACCESS')")
     public DiscussionDto teacherAnswersStudent(@PathVariable Integer discussionId, @Valid @RequestBody DiscussionDto discussionDto) {
         return discussionService.teacherAnswersStudent(discussionId, discussionDto);
