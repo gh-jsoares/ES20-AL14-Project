@@ -57,7 +57,7 @@ class UpdateStudentQuestionTopicsPerformanceSpockTest extends Specification {
         courseRepository.save(course)
     }
 
-    def "create AMOUNT_OF_TESTS student question"() {
+    def "update AMOUNT_OF_QUESTIONS student question with AMOUNT_OF_TOPICS_PER_QUESTION topics"() {
         given: "$AMOUNT_OF_QUESTIONS student questions in db"
         StudentQuestion[] studentQuestions = []
 
