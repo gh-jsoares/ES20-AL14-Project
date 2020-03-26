@@ -205,7 +205,6 @@ public class StudentQuestionService {
     public boolean canAccessStudentQuestion(int userId, int studentQuestionId) {
         User user = getUserIfExists(userId);
         StudentQuestion studentQuestion = getStudentQuestionIfExists(studentQuestionId);
-        System.out.println((user.getRole() == User.Role.STUDENT && studentQuestion.isCreator(user)) || (user.getRole() == User.Role.TEACHER && studentQuestion.canTeacherAccess(user)));
         return (user.getRole() == User.Role.STUDENT && studentQuestion.isCreator(user)) || (user.getRole() == User.Role.TEACHER && studentQuestion.canTeacherAccess(user));
     }
 
