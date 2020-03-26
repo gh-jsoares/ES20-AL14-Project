@@ -1,6 +1,5 @@
 package pt.ulisboa.tecnico.socialsoftware.tutor.question.service.studentquestions
 
-
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.boot.test.context.TestConfiguration
@@ -11,8 +10,6 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.StudentQuestionService
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.StudentQuestion
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Topic
-import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.StudentQuestionDto
-import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.TopicDto
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.StudentQuestionRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.TopicRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.User
@@ -20,7 +17,8 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.user.UserRepository
 import spock.lang.Specification
 import spock.lang.Unroll
 
-import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.*
+import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_NOT_FOUND
+import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_TOPIC_NOT_FOUND
 
 @DataJpaTest
 class AddTopicToStudentQuestionSpockTest extends Specification {
@@ -72,7 +70,7 @@ class AddTopicToStudentQuestionSpockTest extends Specification {
         def topicId = topic.getId()
 
         when:
-        studentQuestionService.addTopicToStudentQuestion(studentQuestionId, topicId)
+        studentQuestionService.updateStudentQuestionTopics(studentQuestionId, [topicId] as Integer[])
 
         then: "the topic is added"
         studentQuestionRepository.count() == 1L
@@ -87,33 +85,29 @@ class AddTopicToStudentQuestionSpockTest extends Specification {
     }
 
     @Unroll
-    def "invalid data: studentQuestion=#isStudentQuestion | topic=#isTopic | duplicateTopic=#isDuplicateTopic || errorMessage=#errorMessage"() {
+    def "invalid data: studentQuestion=#isStudentQuestion | topic=#isTopic || errorMessage=#errorMessage"() {
         given: "an existing student question"
         def studentQuestionId = createStudentQuestion(isStudentQuestion)
 
         and: "a topic"
-        def topicId = createTopic(isTopic, isDuplicateTopic)
+        def topicId = createTopic(isTopic)
 
         when:
-        studentQuestionService.addTopicToStudentQuestion(studentQuestionId, topicId)
+        studentQuestionService.updateStudentQuestionTopics(studentQuestionId, [topicId] as Integer[])
 
         then:
         def error = thrown(TutorException)
         error.errorMessage == errorMessage
 
         where:
-        isStudentQuestion | isTopic | isDuplicateTopic || errorMessage
-        false             | true    | false            || STUDENT_QUESTION_NOT_FOUND
-        true              | false   | false            || STUDENT_QUESTION_TOPIC_NOT_FOUND
-        true              | true    | true             || STUDENT_QUESTION_TOPIC_ALREADY_ADDED
+        isStudentQuestion | isTopic || errorMessage
+        false             | true    || STUDENT_QUESTION_NOT_FOUND
+        true              | false   || STUDENT_QUESTION_TOPIC_NOT_FOUND
     }
 
-    private int createTopic(boolean isTopic, boolean isDuplicateTopic) {
+    private int createTopic(boolean isTopic) {
         if (!isTopic)
             return -1
-
-        if (isDuplicateTopic)
-            studentQuestion.addTopic(topic)
 
         return topic.getId()
     }
@@ -132,6 +126,8 @@ class AddTopicToStudentQuestionSpockTest extends Specification {
         studentQuestion.setStatus(StudentQuestion.Status.valueOf(status))
         studentQuestion.setStudent(user)
         studentQuestionRepository.save(studentQuestion)
+        studentQuestion.setCourse(course)
+        course.addStudentQuestion(studentQuestion)
         studentQuestion
     }
 
@@ -140,6 +136,7 @@ class AddTopicToStudentQuestionSpockTest extends Specification {
         topic.setName(name)
         topic.setCourse(course)
         topicRepository.save(topic)
+        topic
     }
 
     @TestConfiguration

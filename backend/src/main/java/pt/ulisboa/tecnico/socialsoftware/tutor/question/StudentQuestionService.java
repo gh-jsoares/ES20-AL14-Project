@@ -21,10 +21,14 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.user.UserRepository;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.*;
@@ -61,36 +65,6 @@ public class StudentQuestionService {
         checkDuplicateQuestion(courseId, studentQuestionDto);
 
         StudentQuestion studentQuestion = new StudentQuestion(course, user, studentQuestionDto);
-        this.entityManager.persist(studentQuestion);
-
-        return new StudentQuestionDto(studentQuestion);
-    }
-
-    @Retryable(
-            value = {SQLException.class},
-            backoff = @Backoff(delay = 5000))
-    @Transactional(isolation = Isolation.REPEATABLE_READ)
-    public StudentQuestionDto addTopicToStudentQuestion(int studentQuestionId, int topicId) {
-        Topic topic = getTopicIfExists(topicId);
-        StudentQuestion studentQuestion = getStudentQuestionIfExists(studentQuestionId);
-
-        studentQuestion.addTopic(topic);
-        topic.addStudentQuestion(studentQuestion);
-        this.entityManager.persist(studentQuestion);
-
-        return new StudentQuestionDto(studentQuestion);
-    }
-
-    @Retryable(
-            value = {SQLException.class},
-            backoff = @Backoff(delay = 5000))
-    @Transactional(isolation = Isolation.REPEATABLE_READ)
-    public StudentQuestionDto removeTopicFromStudentQuestion(int studentQuestionId, int topicId) {
-        Topic topic = getTopicIfExists(topicId);
-        StudentQuestion studentQuestion = getStudentQuestionIfExists(studentQuestionId);
-
-        studentQuestion.removeTopic(topic);
-        topic.removeStudentQuestion(studentQuestion);
         this.entityManager.persist(studentQuestion);
 
         return new StudentQuestionDto(studentQuestion);
@@ -211,6 +185,23 @@ public class StudentQuestionService {
         studentQuestion.getImage().setUrl(studentQuestion.getKey() + "." + type);
     }
 
+    @Retryable(
+            value = { SQLException.class },
+            backoff = @Backoff(delay = 5000))
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public void updateStudentQuestionTopics(Integer studentQuestionId, Integer[] topicIds) {
+        StudentQuestion studentQuestion = getStudentQuestionIfExists(studentQuestionId);
+
+        studentQuestion.updateTopics(
+                Arrays.stream(topicIds)
+                    .map(topicId -> getTopicIfExists(studentQuestion.getCourse().getId(), topicId))
+                        .collect(Collectors.toSet()));
+    }
+
+    @Retryable(
+            value = { SQLException.class },
+            backoff = @Backoff(delay = 5000))
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
     public boolean canAccessStudentQuestion(int userId, int studentQuestionId) {
         User user = getUserIfExists(userId);
         StudentQuestion studentQuestion = getStudentQuestionIfExists(studentQuestionId);
@@ -245,19 +236,12 @@ public class StudentQuestionService {
             throw new TutorException(DUPLICATE_STUDENT_QUESTION, studentQuestionDto.getTitle());
     }
 
-    private Topic getTopicIfExists(int topicId) {
-        Optional<Topic> topic = topicRepository.findById(topicId);
-        if (topic.isEmpty())
-            throw new TutorException(STUDENT_QUESTION_TOPIC_NOT_FOUND);
-        return topic.get();
+    private Topic getTopicIfExists(int courseId, int topicId) {
+        return topicRepository.findTopicById(courseId, topicId).orElseThrow(() -> new TutorException(STUDENT_QUESTION_TOPIC_NOT_FOUND));
     }
 
     private StudentQuestion getStudentQuestionIfExists(int studentQuestionId) {
-        Optional<StudentQuestion> studentQuestion = studentQuestionRepository.findById(studentQuestionId);
-        if (studentQuestion.isEmpty())
-            throw new TutorException(STUDENT_QUESTION_NOT_FOUND);
-
-        return studentQuestion.get();
+        return studentQuestionRepository.findById(studentQuestionId).orElseThrow(() -> new TutorException(STUDENT_QUESTION_NOT_FOUND));
     }
 
 }

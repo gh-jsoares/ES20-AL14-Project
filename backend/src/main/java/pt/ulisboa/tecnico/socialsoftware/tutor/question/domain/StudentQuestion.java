@@ -190,17 +190,24 @@ public class StudentQuestion {
     }
 
     public void addTopic(Topic topic) {
-        checkDuplicateTopic(topic);
         this.topics.add(topic);
+        topic.addStudentQuestion(this);
     }
 
     public void removeTopic(Topic topic) {
-        checkTopicPresent(topic);
+        topic.removeStudentQuestion(this);
         this.topics.remove(topic);
     }
 
     public void addOption(Option option) {
         this.options.add(option);
+    }
+
+    public void updateTopics(Set<Topic> newTopics) {
+        Set<Topic> toRemove = this.topics.stream().filter(topic -> !newTopics.contains(topic)).collect(Collectors.toSet());
+        toRemove.forEach(this::removeTopic);
+        Set<Topic> toAdd = newTopics.stream().filter(topic -> !this.topics.contains(topic)).collect(Collectors.toSet());
+        toAdd.forEach(this::addTopic);
     }
 
     public LocalDateTime getReviewedDate() {
@@ -301,16 +308,6 @@ public class StudentQuestion {
             throw new TutorException(TOO_MANY_CORRECT_OPTIONS_STUDENT_QUESTION);
     }
 
-    private void checkDuplicateTopic(Topic topic) {
-        if(getTopics().stream().anyMatch(t -> t.getId().equals(topic.getId())))
-            throw new TutorException(STUDENT_QUESTION_TOPIC_ALREADY_ADDED);
-    }
-
-    private void checkTopicPresent(Topic topic) {
-        if(getTopics().stream().noneMatch(t -> t.getId().equals(topic.getId())))
-            throw new TutorException(STUDENT_QUESTION_TOPIC_NOT_PRESENT);
-    }
-
     private void populateCreationDate(StudentQuestionDto studentQuestionDto) {
         if (studentQuestionDto.getCreationDate() != null)
             this.creationDate = LocalDateTime.parse(studentQuestionDto.getCreationDate(), Course.formatter);
@@ -339,7 +336,7 @@ public class StudentQuestion {
     public void remove() {
         getCourse().getStudentQuestions().remove(this);
         course = null;
-        getTopics().forEach(topic -> topic.getQuestions().remove(this));
+        getTopics().forEach(topic -> topic.removeStudentQuestion(this));
         getTopics().clear();
     }
 }
