@@ -97,6 +97,13 @@ public class StudentQuestionController {
         return ResponseEntity.ok().build();
     }
 
+    @PutMapping("/questions/student/all/{studentQuestionId}/reject")
+    @PreAuthorize("hasRole('ROLE_TEACHER') and hasPermission(#studentQuestionId, 'STUDENTQUESTION.ACCESS')")
+    public ResponseEntity studentQuestionReject(Principal principal, @PathVariable Integer studentQuestionId, @RequestBody String explanation) {
+        this.studentQuestionService.rejectStudentQuestion(getAuthUser(principal).getId(), studentQuestionId, explanation);
+        return ResponseEntity.ok().build();
+    }
+
     private Path getTargetLocation(String url) {
         String fileLocation = figuresDir + url;
         return Paths.get(fileLocation);
