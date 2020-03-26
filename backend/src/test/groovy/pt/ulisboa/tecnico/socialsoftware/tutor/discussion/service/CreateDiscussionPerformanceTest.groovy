@@ -59,7 +59,7 @@ class CreateDiscussionPerformanceTest extends Specification {
     public static final String COURSE_ACRONYM = "acronym_test"
     public static final String COURSE_ACADEMIC_TERM = "academic_term_test"
 
-    Integer discNum = 400
+    Integer discNum = 1
     User[] students = new User[discNum + 1]
     Question[] questions = new Question[discNum + 1]
     QuestionAnswer[] questionAnswers = new QuestionAnswer[discNum + 1]
