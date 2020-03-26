@@ -142,7 +142,7 @@ public class StudentQuestionService {
     @Retryable(
             value = {SQLException.class},
             backoff = @Backoff(delay = 5000))
-    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public StudentQuestionDto approveStudentQuestion(int userId, int studentQuestionId) {
         User user = getUserIfExists(userId);
         StudentQuestion studentQuestion = getStudentQuestionIfExists(studentQuestionId);
@@ -201,7 +201,7 @@ public class StudentQuestionService {
     @Retryable(
             value = { SQLException.class },
             backoff = @Backoff(delay = 5000))
-    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    @Transactional(isolation = Isolation.READ_UNCOMMITTED)
     public boolean canAccessStudentQuestion(int userId, int studentQuestionId) {
         User user = getUserIfExists(userId);
         StudentQuestion studentQuestion = getStudentQuestionIfExists(studentQuestionId);
