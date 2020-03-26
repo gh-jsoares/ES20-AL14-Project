@@ -38,11 +38,10 @@ public class TutorPermissionEvaluator implements PermissionEvaluator {
     private QuizService quizService;
 
     @Autowired
-<<<<<<< HEAD
     private StudentQuestionService studentQuestionService;
-=======
+
+    @Autowired
     private TournamentService tournamentService;
->>>>>>> PpA
 
     @Override
     public boolean hasPermission(Authentication authentication, Object targetDomainObject, Object permission) {
