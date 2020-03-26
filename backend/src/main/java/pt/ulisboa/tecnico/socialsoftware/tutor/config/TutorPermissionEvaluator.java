@@ -41,7 +41,7 @@ public class TutorPermissionEvaluator implements PermissionEvaluator {
 
     @Autowired
     private StudentQuestionService studentQuestionService;
-    
+
     @Autowired
     private DiscussionService discussionService;
 
