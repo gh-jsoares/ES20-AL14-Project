@@ -60,7 +60,7 @@ class TeacherAnswersStudentServiceSpockPerformanceTest extends Specification {
     public static final String COURSE_NAME = "course_test"
     public static final String COURSE_ACRONYM = "acronym_test"
     public static final String COURSE_ACADEMIC_TERM = "academic_term_test"
-    public static final Integer COUNT = 1000;
+    public static final Integer COUNT = 1;
 
     User[] students = new User[COUNT+1]
     User teacher
