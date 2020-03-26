@@ -44,7 +44,7 @@ class TeacherListStudentQuestionSpockTest extends Specification {
     StudentQuestionRepository studentQuestionRepository
 
     Course course
-    def student
+    User student
     User teacher
 
     def setup() {
@@ -58,11 +58,11 @@ class TeacherListStudentQuestionSpockTest extends Specification {
     def "N student questions exist and are listed"() {
         given: "a list of 5 student questions made by a student"
         1.upto(5, {
-            createStudentQuestion(it.intValue(), QUESTION_TITLE + it, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name(), USER_USERNAME)
+            createStudentQuestion(it.intValue(), QUESTION_TITLE + it, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name(), student)
         })
 
         when:
-        def result = studentQuestionService.listAllStudentQuestions(course.getId(), teacher.getUsername())
+        def result = studentQuestionService.listAllStudentQuestions(course.getId(), teacher.getId())
 
         then: "the list returned has all the questions made by the students"
         result.size() == 5
@@ -77,11 +77,11 @@ class TeacherListStudentQuestionSpockTest extends Specification {
 
     @Unroll
     def "invalid data user=#isUser | teacher=#isTeacher | errorMessage=#errorMessage"() {
-        given: "a username"
-        def username = createUsername(isUser, isTeacher)
+        given: "a userId"
+        def userId = createUserId(isUser, isTeacher)
 
         when:
-        studentQuestionService.listAllStudentQuestions(course.getId(), username)
+        studentQuestionService.listAllStudentQuestions(course.getId(), userId)
 
         then:
         def error = thrown(TutorException)
@@ -93,22 +93,22 @@ class TeacherListStudentQuestionSpockTest extends Specification {
         true   | false     || STUDENT_QUESTION_NOT_A_TEACHER
     }
 
-    private String createUsername(boolean isUser, boolean isTeacher) {
+    private int createUserId(boolean isUser, boolean isTeacher) {
         if (!isUser)
-            return null
+            return -1
         if (!isTeacher)
-            return student.getUsername()
+            return student.getId()
 
-        return teacher.getUsername()
+        return teacher.getId()
     }
 
-    private createStudentQuestion(int key, String title, String content, String status, String username) {
+    private createStudentQuestion(int key, String title, String content, String status, User user) {
         def studentQuestion = new StudentQuestion()
         studentQuestion.setKey(key)
         studentQuestion.setTitle(title)
         studentQuestion.setContent(content)
         studentQuestion.setStatus(StudentQuestion.Status.valueOf(status))
-        studentQuestion.setStudent(userRepository.findByUsername(username))
+        studentQuestion.setStudent(user)
         studentQuestion.setCreationDate(generateRandomCreationDate())
         studentQuestion.setCourse(course)
         course.addStudentQuestion(studentQuestion)

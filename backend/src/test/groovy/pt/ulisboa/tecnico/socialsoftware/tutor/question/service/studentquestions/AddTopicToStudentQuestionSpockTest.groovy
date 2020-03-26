@@ -48,7 +48,7 @@ class AddTopicToStudentQuestionSpockTest extends Specification {
     @Autowired
     CourseRepository courseRepository
 
-    def user
+    User user
     StudentQuestion studentQuestion
     Course course
     Topic topic
@@ -130,7 +130,7 @@ class AddTopicToStudentQuestionSpockTest extends Specification {
         studentQuestion.setTitle(title)
         studentQuestion.setContent(content)
         studentQuestion.setStatus(StudentQuestion.Status.valueOf(status))
-        studentQuestion.setStudent(userRepository.findByUsername(USER_USERNAME))
+        studentQuestion.setStudent(user)
         studentQuestionRepository.save(studentQuestion)
         studentQuestion
     }

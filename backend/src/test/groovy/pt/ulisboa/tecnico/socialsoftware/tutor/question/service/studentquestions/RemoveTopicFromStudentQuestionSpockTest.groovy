@@ -1,6 +1,5 @@
 package pt.ulisboa.tecnico.socialsoftware.tutor.question.service.studentquestions
 
-
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.boot.test.context.TestConfiguration
@@ -11,8 +10,6 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.StudentQuestionService
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.StudentQuestion
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Topic
-import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.StudentQuestionDto
-import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.TopicDto
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.StudentQuestionRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.TopicRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.User
@@ -48,7 +45,7 @@ class RemoveTopicFromStudentQuestionSpockTest extends Specification {
     @Autowired
     CourseRepository courseRepository
 
-    def user
+    User user
     StudentQuestion studentQuestion
     Course course
     Topic topic
@@ -133,7 +130,7 @@ class RemoveTopicFromStudentQuestionSpockTest extends Specification {
         studentQuestion.setTitle(title)
         studentQuestion.setContent(content)
         studentQuestion.setStatus(StudentQuestion.Status.valueOf(status))
-        studentQuestion.setStudent(userRepository.findByUsername(USER_USERNAME))
+        studentQuestion.setStudent(user)
         studentQuestionRepository.save(studentQuestion)
         studentQuestion
     }

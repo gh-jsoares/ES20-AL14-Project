@@ -42,8 +42,8 @@ class StudentListStudentQuestionSpockTest extends Specification {
     @Autowired
     StudentQuestionRepository studentQuestionRepository
 
-    def user
-    def user_2
+    User user
+    User user_2
     Course course
 
     def setup() {
@@ -60,16 +60,16 @@ class StudentListStudentQuestionSpockTest extends Specification {
 
         and: "and a list of 5 student questions made by the student"
         1.upto(5, {
-            createStudentQuestion(it.intValue(), QUESTION_TITLE + it, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name(), USER_USERNAME)
+            createStudentQuestion(it.intValue(), QUESTION_TITLE + it, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name(), user)
         })
 
         and: "and a list of 5 student questions made by another student"
         1.upto(5, {
-            createStudentQuestion(it.intValue() + 5, QUESTION_TITLE + it + 5, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name(), USER_USERNAME + "_2")
+            createStudentQuestion(it.intValue() + 5, QUESTION_TITLE + it + 5, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name(), user_2)
         })
 
         when:
-        def result = studentQuestionService.listStudentQuestions(course.getId(), USER_USERNAME)
+        def result = studentQuestionService.listStudentQuestions(course.getId(), user.getId())
 
         then: "the list returned has only questions made by the student"
         result.size() == 5
@@ -84,11 +84,11 @@ class StudentListStudentQuestionSpockTest extends Specification {
 
     @Unroll
     def "invalid data user=#isUser | student=#isStudent | errorMessage=#errorMessage"() {
-        given: "a username"
-        def username = createUsername(isUser, isStudent)
+        given: "a userId"
+        def userId = createUserId(isUser, isStudent)
 
         when:
-        studentQuestionService.listStudentQuestions(course.getId(), username)
+        studentQuestionService.listStudentQuestions(course.getId(), userId)
 
         then:
         def error = thrown(TutorException)
@@ -100,22 +100,22 @@ class StudentListStudentQuestionSpockTest extends Specification {
         true   | false     || STUDENT_QUESTION_NOT_A_STUDENT
     }
 
-    private String createUsername(boolean isUser, boolean isStudent) {
+    private int createUserId(boolean isUser, boolean isStudent) {
         if (!isUser)
-            return null
+            return -1
         if (!isStudent)
             user.setRole(User.Role.TEACHER)
 
-        return user.getUsername()
+        return user.getId()
     }
 
-    private createStudentQuestion(int key, String title, String content, String status, String username) {
+    private createStudentQuestion(int key, String title, String content, String status, User user) {
         def studentQuestion = new StudentQuestion()
         studentQuestion.setKey(key)
         studentQuestion.setTitle(title)
         studentQuestion.setContent(content)
         studentQuestion.setStatus(StudentQuestion.Status.valueOf(status))
-        studentQuestion.setStudent(userRepository.findByUsername(username))
+        studentQuestion.setStudent(user)
         studentQuestion.setCreationDate(generateRandomCreationDate())
         studentQuestion.setCourse(course)
         course.addStudentQuestion(studentQuestion)

@@ -1,6 +1,6 @@
 package pt.ulisboa.tecnico.socialsoftware.tutor.question.service.studentquestions
 
-import org.junit.Test
+
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.boot.test.context.TestConfiguration
@@ -9,27 +9,17 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.course.Course
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.StudentQuestionService
-import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.ImageDto
-import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.StudentQuestionRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.StudentQuestion
+import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.ImageDto
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.OptionDto
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.StudentQuestionDto
+import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.StudentQuestionRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.User
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.UserRepository
 import spock.lang.Specification
 import spock.lang.Unroll
 
-import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_NOT_A_STUDENT
-import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_OPTION_CONTENT_IS_EMPTY
-import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_TITLE_IS_EMPTY
-import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_CONTENT_IS_EMPTY
-import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_STATUS_IS_EMPTY
-import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.NO_CORRECT_OPTION_STUDENT_QUESTION
-import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_USER_NOT_FOUND
-import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.TOO_FEW_OPTIONS_STUDENT_QUESTION
-import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.TOO_MANY_CORRECT_OPTIONS_STUDENT_QUESTION
-import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.TOO_MANY_OPTIONS_STUDENT_QUESTION
-import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.DUPLICATE_STUDENT_QUESTION
+import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.*
 
 @DataJpaTest
 class CreateStudentQuestionSpockTest extends Specification {
@@ -73,7 +63,7 @@ class CreateStudentQuestionSpockTest extends Specification {
         createOptions(studentQuestionDto, OPTION_CONTENT, 4, 1)
 
         when:
-        studentQuestionService.createStudentQuestion(course.getId(), user.getUsername(), studentQuestionDto)
+        studentQuestionService.createStudentQuestion(course.getId(), user.getId(), studentQuestionDto)
 
         then: "the correct question is inside the repository"
         studentQuestionRepository.count() == 1L
@@ -84,7 +74,7 @@ class CreateStudentQuestionSpockTest extends Specification {
         result.getTitle() == QUESTION_TITLE
         result.getContent() == QUESTION_CONTENT
         result.getOptions().size() == 4
-        result.getStudent().getUsername() == user.getUsername()
+        result.getStudent().getId() == user.getId()
         user.getStudentQuestions().contains(result)
         result.getOptions().stream().allMatch({ o -> o.getContent() == OPTION_CONTENT })
         result.getOptions().stream().filter({ o -> o.getCorrect() }).count() == 1L
@@ -103,7 +93,7 @@ class CreateStudentQuestionSpockTest extends Specification {
         createImage(studentQuestionDto, URL)
 
         when:
-        studentQuestionService.createStudentQuestion(course.getId(), user.getUsername(), studentQuestionDto)
+        studentQuestionService.createStudentQuestion(course.getId(), user.getId(), studentQuestionDto)
 
         then: "the correct question is inside the repository"
         studentQuestionRepository.count() == 1L
@@ -114,7 +104,7 @@ class CreateStudentQuestionSpockTest extends Specification {
         result.getTitle() == QUESTION_TITLE
         result.getContent() == QUESTION_CONTENT
         result.getOptions().size() == 4
-        result.getStudent().getUsername() == user.getUsername()
+        result.getStudent().getId() == user.getId()
         user.getStudentQuestions().contains(result)
         result.getOptions().stream().allMatch({ o -> o.getContent() == OPTION_CONTENT })
         result.getOptions().stream().filter({ o -> o.getCorrect() }).count() == 1L
@@ -133,7 +123,7 @@ class CreateStudentQuestionSpockTest extends Specification {
         createOptions(studentQuestionDto, optionContent, 4, 1)
 
         when: "create a student question with invalid data"
-        studentQuestionService.createStudentQuestion(course.getId(), user.getUsername(), studentQuestionDto)
+        studentQuestionService.createStudentQuestion(course.getId(), user.getId(), studentQuestionDto)
 
         then:
         def error = thrown(TutorException)
@@ -160,10 +150,10 @@ class CreateStudentQuestionSpockTest extends Specification {
         createOptions(studentQuestionDto, OPTION_CONTENT, numberOptions, numberCorrectOptions)
 
         and: "a username"
-        def username = createUsername(isUser, isStudent)
+        def userId = createUserId(isUser, isStudent)
 
         when: "create a student question with invalid data"
-        studentQuestionService.createStudentQuestion(course.getId(), username, studentQuestionDto)
+        studentQuestionService.createStudentQuestion(course.getId(), userId, studentQuestionDto)
 
         then: "an error occurs"
         def error = thrown(TutorException)
@@ -180,13 +170,13 @@ class CreateStudentQuestionSpockTest extends Specification {
         false       | 4             | 1                    | true   | false     || STUDENT_QUESTION_NOT_A_STUDENT
     }
 
-    private String createUsername(boolean isUser, boolean isStudent) {
+    private int createUserId(boolean isUser, boolean isStudent) {
         if (!isUser)
-            return null
+            return -1
         if (!isStudent)
             user.setRole(User.Role.TEACHER)
 
-        return user.getUsername()
+        return user.getId()
     }
 
     private static createOptions(StudentQuestionDto studentQuestionDto, String content, int number_of_options, int number_of_correct) {
@@ -223,7 +213,7 @@ class CreateStudentQuestionSpockTest extends Specification {
         studentQuestion.setTitle(title)
         studentQuestion.setContent(content)
         studentQuestion.setStatus(StudentQuestion.Status.valueOf(status))
-        studentQuestion.setStudent(userRepository.findByUsername(user.getUsername()))
+        studentQuestion.setStudent(user)
         studentQuestion.setCourse(course)
         course.addStudentQuestion(studentQuestion)
         studentQuestionRepository.save(studentQuestion)

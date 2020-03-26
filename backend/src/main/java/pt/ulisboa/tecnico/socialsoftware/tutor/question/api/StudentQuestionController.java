@@ -41,7 +41,7 @@ public class StudentQuestionController {
     @PreAuthorize("hasRole('ROLE_STUDENT') and hasPermission(#courseId, 'COURSE.ACCESS')")
     public StudentQuestionDto createStudentQuestion(Principal principal, @PathVariable int courseId, @Valid @RequestBody StudentQuestionDto studentQuestion) {
         studentQuestion.setStatus(StudentQuestion.Status.AWAITING_APPROVAL.name());
-        return this.studentQuestionService.createStudentQuestion(courseId, getAuthUser(principal).getUsername(), studentQuestion);
+        return this.studentQuestionService.createStudentQuestion(courseId, getAuthUser(principal).getId(), studentQuestion);
     }
 
     @PutMapping("/questions/student/{studentQuestionId}/image")
@@ -49,7 +49,7 @@ public class StudentQuestionController {
     public String uploadImage(Principal principal, @PathVariable Integer studentQuestionId, @RequestParam("file") MultipartFile file) throws IOException {
         logger.debug("uploadImage  studentQuestionId: {}: , filename: {}", studentQuestionId, file.getContentType());
 
-        StudentQuestionDto studentQuestionDto = studentQuestionService.getStudentQuestion(getAuthUser(principal).getUsername(), studentQuestionId);
+        StudentQuestionDto studentQuestionDto = studentQuestionService.getStudentQuestion(getAuthUser(principal).getId(), studentQuestionId);
         String url = studentQuestionDto.getImage() != null ? studentQuestionDto.getImage().getUrl() : null;
         if (url != null && Files.exists(getTargetLocation(url))) {
             Files.delete(getTargetLocation(url));
@@ -60,7 +60,7 @@ public class StudentQuestionController {
 
         studentQuestionService.uploadImage(studentQuestionId, type);
 
-        url = studentQuestionService.getStudentQuestion(getAuthUser(principal).getUsername(), studentQuestionId).getImage().getUrl();
+        url = studentQuestionService.getStudentQuestion(getAuthUser(principal).getId(), studentQuestionId).getImage().getUrl();
         Files.copy(file.getInputStream(), getTargetLocation(url), StandardCopyOption.REPLACE_EXISTING);
 
         return url;
