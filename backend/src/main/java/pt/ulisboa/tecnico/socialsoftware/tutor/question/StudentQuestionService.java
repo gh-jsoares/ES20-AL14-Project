@@ -135,7 +135,7 @@ public class StudentQuestionService {
     }
 
     private void checkTeacherInStudentQuestionCourse(User user, StudentQuestion studentQuestion) {
-        if (studentQuestion.canTeacherAccess(user))
+        if (!studentQuestion.canTeacherAccess(user))
             throw new TutorException(TEACHER_NOT_IN_COURSE_EXECUTION);
     }
 
@@ -205,7 +205,7 @@ public class StudentQuestionService {
     public boolean canAccessStudentQuestion(int userId, int studentQuestionId) {
         User user = getUserIfExists(userId);
         StudentQuestion studentQuestion = getStudentQuestionIfExists(studentQuestionId);
-        return !(user.getRole() != User.Role.STUDENT && !studentQuestion.isCreator(user)) && (user.getRole() == User.Role.TEACHER || studentQuestion.canTeacherAccess(user));
+        return (user.getRole() == User.Role.STUDENT && studentQuestion.isCreator(user)) || (user.getRole() == User.Role.TEACHER && studentQuestion.canTeacherAccess(user));
     }
 
     private void checkStudentIsCreatorOfQuestion(User user, StudentQuestion studentQuestion) {
