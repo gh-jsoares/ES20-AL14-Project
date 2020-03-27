@@ -86,7 +86,7 @@ public class StudentQuestionController {
 
     @GetMapping("/questions/student/all/{studentQuestionId}")
     @PreAuthorize("hasRole('ROLE_TEACHER') and hasPermission(#studentQuestionId, 'STUDENTQUESTION.ACCESS')")
-    public StudentQuestionDto getStudentQuestion(Principal principal, @PathVariable Integer studentQuestionId) {
+    public StudentQuestionDto getStudentQuestionAsTeacher(Principal principal, @PathVariable Integer studentQuestionId) {
         return this.studentQuestionService.getStudentQuestionAsTeacher(getAuthUser(principal).getId(), studentQuestionId);
     }
 
