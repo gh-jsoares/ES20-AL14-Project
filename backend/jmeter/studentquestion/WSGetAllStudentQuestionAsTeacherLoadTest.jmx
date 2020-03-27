@@ -36,7 +36,7 @@
           </elementProp>
           <elementProp name="totalQuestions" elementType="Argument">
             <stringProp name="Argument.name">totalQuestions</stringProp>
-            <stringProp name="Argument.value">100</stringProp>
+            <stringProp name="Argument.value">1000</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
         </collectionProp>
@@ -95,7 +95,7 @@
           <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="JDBC Request" enabled="true">
             <stringProp name="dataSource">creation requests</stringProp>
             <stringProp name="queryType">Update Statement</stringProp>
-            <stringProp name="query">INSERT INTO student_questions (id, title, course_id, student_id, status, creation_date) VALUES (&apos;${studentQuestionId}&apos;, &apos;${studentQuestionTitle}&apos;, &apos;2&apos;, &apos;676&apos;, &apos;AWAITING_APPROVAL&apos;, NOW());</stringProp>
+            <stringProp name="query">INSERT INTO student_questions (id, key, title, course_id, student_id, status, creation_date) VALUES (&apos;${studentQuestionId}&apos;,&apos;${studentQuestionId}&apos;, &apos;${studentQuestionTitle}&apos;, &apos;2&apos;, &apos;676&apos;, &apos;AWAITING_APPROVAL&apos;, NOW());</stringProp>
             <stringProp name="queryArguments"></stringProp>
             <stringProp name="queryArgumentsTypes"></stringProp>
             <stringProp name="variableNames"></stringProp>
@@ -254,15 +254,8 @@
             </CSVDataSet>
             <hashTree/>
             <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="HTTP Request" enabled="true">
-              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
-              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
-                <collectionProp name="Arguments.arguments">
-                  <elementProp name="" elementType="HTTPArgument">
-                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                    <stringProp name="Argument.value">{}</stringProp>
-                    <stringProp name="Argument.metadata">=</stringProp>
-                  </elementProp>
-                </collectionProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+                <collectionProp name="Arguments.arguments"/>
               </elementProp>
               <stringProp name="HTTPSampler.domain">${server}</stringProp>
               <stringProp name="HTTPSampler.port">${port}</stringProp>
