@@ -100,11 +100,8 @@ public class DiscussionService {
     }
 
     private User checkIfTeacherExists(DiscussionDto discussionDto) {
-        User teacher = userRepository.findByUsername(discussionDto.getUserName());
-        if (teacher == null) {
-            throw new TutorException(ErrorMessage.USER_NOT_FOUND);
-        }
-        else if (teacher.getRole() != User.Role.TEACHER) {
+        User teacher = userRepository.findById(discussionDto.getUserId()).orElseThrow(() -> new TutorException(ErrorMessage.USER_NOT_FOUND));
+        if (teacher.getRole() != User.Role.TEACHER) {
             throw new TutorException(ErrorMessage.USER_IS_NOT_TEACHER, discussionDto.getUserName());
         }
         return teacher;
