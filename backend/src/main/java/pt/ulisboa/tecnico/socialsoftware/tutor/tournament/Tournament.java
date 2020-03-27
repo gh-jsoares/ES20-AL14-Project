@@ -177,8 +177,10 @@ public class Tournament {
         if (this.courseExecution == null || !topic.getCourse().getId().equals(this.courseExecution.getCourse().getId())) {
             throw new TutorException(ErrorMessage.TOURNAMENT_TOPIC_WRONG_COURSE, topic.getId());
         }
+        if (!this.topics.add(topic)) {
+            throw new TutorException(ErrorMessage.DUPLICATE_TOPIC, topic.getName());
+        }
         topic.addTournament(this);
-        this.topics.add(topic);
     }
 
     public Quiz getQuiz() {
