@@ -110,6 +110,12 @@ public class StudentQuestionController {
         return this.studentQuestionService.listStudentQuestions(courseId, getAuthUser(principal).getId());
     }
 
+    @GetMapping("/questions/student/{studentQuestionId}")
+    @PreAuthorize("hasRole('ROLE_STUDENT') and hasPermission(#studentQuestionId, 'STUDENTQUESTION.ACCESS')")
+    public StudentQuestionDto getStudentQuestionAsStudent(Principal principal, @PathVariable Integer studentQuestionId) {
+        return this.studentQuestionService.getStudentQuestion(getAuthUser(principal).getId(), studentQuestionId);
+    }
+
     private Path getTargetLocation(String url) {
         String fileLocation = figuresDir + url;
         return Paths.get(fileLocation);
