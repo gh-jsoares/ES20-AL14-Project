@@ -16,6 +16,7 @@ import javax.validation.Valid;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.security.Principal;
+import java.util.List;
 
 import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.AUTHENTICATION_ERROR;
 
@@ -36,6 +37,18 @@ public class DiscussionController {
     @PreAuthorize("hasRole('ROLE_TEACHER') and hasPermission(#discussionId, 'DISCUSSION.ACCESS')")
     public DiscussionDto teacherAnswersStudent(@PathVariable Integer discussionId, @Valid @RequestBody DiscussionDto discussionDto) {
         return discussionService.teacherAnswersStudent(discussionId, discussionDto);
+    }
+
+    @GetMapping("/student/discussions/")
+    @PreAuthorize("hasRole('ROLE_STUDENT')")
+    public List<DiscussionDto> getDiscussionsStudent(Principal principal) {
+        User user = (User) ((Authentication) principal).getPrincipal();
+
+        if(user == null){
+            throw new TutorException(AUTHENTICATION_ERROR);
+        }
+
+        return discussionService.getDiscussionStudent(user.getId());
     }
 
 }
