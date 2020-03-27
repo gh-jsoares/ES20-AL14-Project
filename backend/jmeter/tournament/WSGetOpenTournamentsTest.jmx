@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jmeterTestPlan version="1.2" properties="5.0" jmeter="5.2.1">
   <hashTree>
-    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Test Web Service createTournament" enabled="true">
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Test Web Service getOpenTournaments" enabled="true">
       <stringProp name="TestPlan.comments"></stringProp>
       <boolProp name="TestPlan.functional_mode">false</boolProp>
       <boolProp name="TestPlan.tearDown_on_shutdown">true</boolProp>
@@ -65,6 +65,23 @@
           <stringProp name="username">ars</stringProp>
         </JDBCDataSource>
         <hashTree/>
+        <BeanShellSampler guiclass="BeanShellSamplerGui" testclass="BeanShellSampler" testname="BeanShell Sampler store dates" enabled="true">
+          <stringProp name="BeanShellSampler.query">import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
+DateTimeFormatter formatter = DateTimeFormatter.ofPattern(&quot;yyyy-MM-dd HH:mm&quot;);
+String yesterday = LocalDateTime.now().minusDays(1).format(formatter);
+String dayOne = LocalDateTime.now().plusDays(1).format(formatter);
+String dayTwo = LocalDateTime.now().plusDays(2).format(formatter);
+
+props.put(&quot;creationDate&quot;, yesterday);
+props.put(&quot;availableDate&quot;, dayOne);
+props.put(&quot;conclusionDate&quot;, dayTwo);</stringProp>
+          <stringProp name="BeanShellSampler.filename"></stringProp>
+          <stringProp name="BeanShellSampler.parameters"></stringProp>
+          <boolProp name="BeanShellSampler.resetInterpreter">false</boolProp>
+        </BeanShellSampler>
+        <hashTree/>
         <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="JDBC Request create data" enabled="true">
           <stringProp name="dataSource">sampleReq</stringProp>
           <stringProp name="query">INSERT INTO courses(name, type) VALUES (&apos;Jmeter Course&apos;, &apos;TECNICO&apos;);
@@ -76,7 +93,31 @@ INSERT INTO topics(name, course_id) VALUES(&apos;Jmeter Topic&apos;, (SELECT id 
 
 INSERT INTO users_course_executions VALUES(
 	(SELECT id FROM users WHERE name=&apos;Demo Student&apos;), 
-	(SELECT id FROM course_executions WHERE acronym=&apos;JMC1&apos;));</stringProp>
+	(SELECT id FROM course_executions WHERE acronym=&apos;JMC1&apos;));
+	
+	
+
+INSERT INTO tournaments(creation_date, available_date, conclusion_date, number_of_questions, state, title, course_execution_id, creator_id) VALUES 
+	(&apos;${__property(creationDate)}&apos;, &apos;${__property(availableDate)}&apos;, &apos;${__property(conclusionDate)}&apos;, 
+	15, &apos;ENROLL&apos;, &apos;Jmeter Tournament&apos;, 
+	(SELECT id FROM course_executions WHERE acronym=&apos;JMC1&apos;), 
+	(SELECT id FROM users WHERE name=&apos;Demo Student&apos;));
+
+INSERT INTO topics_tournaments VALUES(
+	(SELECT id FROM topics WHERE name=&apos;Jmeter Topic&apos;), 
+	(SELECT id FROM tournaments WHERE title=&apos;Jmeter Tournament&apos;));
+
+	
+
+INSERT INTO tournaments(available_date, conclusion_date, creation_date, number_of_questions, state, title, course_execution_id, creator_id) VALUES 
+	(&apos;2020-02-15 11:23&apos;, &apos;2020-02-20 16:23&apos;, &apos;2020-02-21 16:23&apos;, 
+	10, &apos;CLOSED&apos;, &apos;Jmeter Tournament2&apos;, 
+	(SELECT id FROM course_executions WHERE acronym=&apos;JMC1&apos;), 
+	(SELECT id FROM users WHERE name=&apos;Demo Student&apos;));
+
+INSERT INTO topics_tournaments VALUES(
+	(SELECT id FROM topics WHERE name=&apos;Jmeter Topic&apos;), 
+	(SELECT id FROM tournaments WHERE title=&apos;Jmeter Tournament2&apos;));</stringProp>
           <stringProp name="queryArguments"></stringProp>
           <stringProp name="queryArgumentsTypes"></stringProp>
           <stringProp name="queryTimeout"></stringProp>
@@ -115,18 +156,8 @@ INSERT INTO users_course_executions VALUES(
             <stringProp name="variableNames">topicId</stringProp>
           </JDBCSampler>
           <hashTree/>
-          <BeanShellSampler guiclass="BeanShellSamplerGui" testclass="BeanShellSampler" testname="BeanShell Sampler store properties" enabled="true">
-            <stringProp name="BeanShellSampler.query">import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-
-DateTimeFormatter formatter = DateTimeFormatter.ofPattern(&quot;yyyy-MM-dd HH:mm&quot;);
-String dayOne = LocalDateTime.now().plusDays(1).format(formatter);
-String dayTwo = LocalDateTime.now().plusDays(2).format(formatter);
-
-props.put(&quot;availableDate&quot;, dayOne);
-props.put(&quot;conclusionDate&quot;, dayTwo);
-
-props.put(&quot;executionId&quot;, &quot;${executionId_1}&quot;);
+          <BeanShellSampler guiclass="BeanShellSamplerGui" testclass="BeanShellSampler" testname="BeanShell Sampler store ids" enabled="true">
+            <stringProp name="BeanShellSampler.query">props.put(&quot;executionId&quot;, &quot;${executionId_1}&quot;);
 props.put(&quot;topicId&quot;, &quot;${topicId_1}&quot;);</stringProp>
             <stringProp name="BeanShellSampler.filename"></stringProp>
             <stringProp name="BeanShellSampler.parameters"></stringProp>
@@ -212,7 +243,7 @@ props.put(&quot;topicId&quot;, &quot;${topicId_1}&quot;);</stringProp>
           </JSONPostProcessor>
           <hashTree/>
         </hashTree>
-        <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="Student create tournament" enabled="true"/>
+        <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="Student get open tournaments" enabled="true"/>
         <hashTree>
           <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
             <collectionProp name="HeaderManager.headers">
@@ -228,42 +259,15 @@ props.put(&quot;topicId&quot;, &quot;${topicId_1}&quot;);</stringProp>
           </HeaderManager>
           <hashTree/>
           <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="HTTP Request to create tournament" enabled="true">
-            <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
-            <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
-              <collectionProp name="Arguments.arguments">
-                <elementProp name="" elementType="HTTPArgument">
-                  <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                  <stringProp name="Argument.value">{&#xd;
-	&quot;id&quot;: null,&#xd;
-	&quot;state&quot;: null,&#xd;
-	&quot;title&quot;: &quot;Jmeter Tournament&quot;,&#xd;
-	&quot;creationDate&quot;: null,&#xd;
-	&quot;availableDate&quot;: &quot;${__property(availableDate)}&quot;,&#xd;
-	&quot;conclusionDate&quot;: &quot;${__property(conclusionDate)}&quot;,&#xd;
-	&quot;scramble&quot;: true,&#xd;
-	&quot;creator&quot;: null,&#xd;
-	&quot;numberOfEnrolls&quot;: null,&#xd;
-	&quot;topics&quot;: [{&#xd;
-		&quot;id&quot;: ${__property(topicId)},&#xd;
-		&quot;name&quot;: null,&#xd;
-		&quot;parentTopic&quot;: null,&#xd;
-		&quot;numberOfQuestions&quot;: null&#xd;
-	}],&#xd;
-	&quot;quiz&quot;: null,&#xd;
-	&quot;numberOfQuestions&quot;: 15,&#xd;
-	&quot;series&quot;: null,&#xd;
-	&quot;version&quot;: null&#xd;
-}</stringProp>
-                  <stringProp name="Argument.metadata">=</stringProp>
-                </elementProp>
-              </collectionProp>
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+              <collectionProp name="Arguments.arguments"/>
             </elementProp>
             <stringProp name="HTTPSampler.domain">${server}</stringProp>
             <stringProp name="HTTPSampler.port">${port}</stringProp>
             <stringProp name="HTTPSampler.protocol"></stringProp>
             <stringProp name="HTTPSampler.contentEncoding"></stringProp>
             <stringProp name="HTTPSampler.path">/executions/${__property(executionId)}/tournaments</stringProp>
-            <stringProp name="HTTPSampler.method">POST</stringProp>
+            <stringProp name="HTTPSampler.method">GET</stringProp>
             <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
             <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
             <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
@@ -273,8 +277,17 @@ props.put(&quot;topicId&quot;, &quot;${topicId_1}&quot;);</stringProp>
             <stringProp name="HTTPSampler.response_timeout"></stringProp>
           </HTTPSamplerProxy>
           <hashTree>
+            <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="Assert number of tournaments" enabled="true">
+              <stringProp name="JSON_PATH">$.size()</stringProp>
+              <stringProp name="EXPECTED_VALUE">1</stringProp>
+              <boolProp name="JSONVALIDATION">true</boolProp>
+              <boolProp name="EXPECT_NULL">false</boolProp>
+              <boolProp name="INVERT">false</boolProp>
+              <boolProp name="ISREGEX">false</boolProp>
+            </JSONPathAssertion>
+            <hashTree/>
             <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="Assert title" enabled="true">
-              <stringProp name="JSON_PATH">$.title</stringProp>
+              <stringProp name="JSON_PATH">$[0].title</stringProp>
               <stringProp name="EXPECTED_VALUE">Jmeter Tournament</stringProp>
               <boolProp name="JSONVALIDATION">true</boolProp>
               <boolProp name="EXPECT_NULL">false</boolProp>
@@ -283,8 +296,8 @@ props.put(&quot;topicId&quot;, &quot;${topicId_1}&quot;);</stringProp>
             </JSONPathAssertion>
             <hashTree/>
             <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="Assert creation date" enabled="true">
-              <stringProp name="JSON_PATH">$.creationDate</stringProp>
-              <stringProp name="EXPECTED_VALUE">${__time(yyyy-MM-dd HH:mm,)}</stringProp>
+              <stringProp name="JSON_PATH">$[0].creationDate</stringProp>
+              <stringProp name="EXPECTED_VALUE">${__property(creationDate)}</stringProp>
               <boolProp name="JSONVALIDATION">true</boolProp>
               <boolProp name="EXPECT_NULL">false</boolProp>
               <boolProp name="INVERT">false</boolProp>
@@ -292,7 +305,7 @@ props.put(&quot;topicId&quot;, &quot;${topicId_1}&quot;);</stringProp>
             </JSONPathAssertion>
             <hashTree/>
             <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="Assert availble date" enabled="true">
-              <stringProp name="JSON_PATH">$.availableDate</stringProp>
+              <stringProp name="JSON_PATH">$[0].availableDate</stringProp>
               <stringProp name="EXPECTED_VALUE">${__property(availableDate)}</stringProp>
               <boolProp name="JSONVALIDATION">true</boolProp>
               <boolProp name="EXPECT_NULL">false</boolProp>
@@ -301,7 +314,7 @@ props.put(&quot;topicId&quot;, &quot;${topicId_1}&quot;);</stringProp>
             </JSONPathAssertion>
             <hashTree/>
             <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="Assert conclusion date" enabled="true">
-              <stringProp name="JSON_PATH">$.conclusionDate</stringProp>
+              <stringProp name="JSON_PATH">$[0].conclusionDate</stringProp>
               <stringProp name="EXPECTED_VALUE">${__property(conclusionDate)}</stringProp>
               <boolProp name="JSONVALIDATION">true</boolProp>
               <boolProp name="EXPECT_NULL">false</boolProp>
@@ -310,7 +323,7 @@ props.put(&quot;topicId&quot;, &quot;${topicId_1}&quot;);</stringProp>
             </JSONPathAssertion>
             <hashTree/>
             <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="Assert number of questions" enabled="true">
-              <stringProp name="JSON_PATH">$.numberOfQuestions</stringProp>
+              <stringProp name="JSON_PATH">$[0].numberOfQuestions</stringProp>
               <stringProp name="EXPECTED_VALUE">15</stringProp>
               <boolProp name="JSONVALIDATION">true</boolProp>
               <boolProp name="EXPECT_NULL">false</boolProp>
@@ -319,7 +332,7 @@ props.put(&quot;topicId&quot;, &quot;${topicId_1}&quot;);</stringProp>
             </JSONPathAssertion>
             <hashTree/>
             <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="Assert number of enrolls" enabled="true">
-              <stringProp name="JSON_PATH">$.numberOfEnrolls</stringProp>
+              <stringProp name="JSON_PATH">$[0].numberOfEnrolls</stringProp>
               <stringProp name="EXPECTED_VALUE">0</stringProp>
               <boolProp name="JSONVALIDATION">true</boolProp>
               <boolProp name="EXPECT_NULL">false</boolProp>
@@ -328,7 +341,7 @@ props.put(&quot;topicId&quot;, &quot;${topicId_1}&quot;);</stringProp>
             </JSONPathAssertion>
             <hashTree/>
             <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="Assert state" enabled="true">
-              <stringProp name="JSON_PATH">$.state</stringProp>
+              <stringProp name="JSON_PATH">$[0].state</stringProp>
               <stringProp name="EXPECTED_VALUE">ENROLL</stringProp>
               <boolProp name="JSONVALIDATION">true</boolProp>
               <boolProp name="EXPECT_NULL">false</boolProp>
@@ -337,7 +350,7 @@ props.put(&quot;topicId&quot;, &quot;${topicId_1}&quot;);</stringProp>
             </JSONPathAssertion>
             <hashTree/>
             <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="Assert number of topics" enabled="true">
-              <stringProp name="JSON_PATH">$.topics.size()</stringProp>
+              <stringProp name="JSON_PATH">$[0].topics.size()</stringProp>
               <stringProp name="EXPECTED_VALUE">1</stringProp>
               <boolProp name="JSONVALIDATION">true</boolProp>
               <boolProp name="EXPECT_NULL">false</boolProp>
@@ -346,7 +359,7 @@ props.put(&quot;topicId&quot;, &quot;${topicId_1}&quot;);</stringProp>
             </JSONPathAssertion>
             <hashTree/>
             <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="Assert topic name" enabled="true">
-              <stringProp name="JSON_PATH">$.topics[0].name</stringProp>
+              <stringProp name="JSON_PATH">$[0].topics[0].name</stringProp>
               <stringProp name="EXPECTED_VALUE">Jmeter Topic</stringProp>
               <boolProp name="JSONVALIDATION">true</boolProp>
               <boolProp name="EXPECT_NULL">false</boolProp>
@@ -355,7 +368,7 @@ props.put(&quot;topicId&quot;, &quot;${topicId_1}&quot;);</stringProp>
             </JSONPathAssertion>
             <hashTree/>
             <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="Assert topic id" enabled="true">
-              <stringProp name="JSON_PATH">$.topics[0].id</stringProp>
+              <stringProp name="JSON_PATH">$[0].topics[0].id</stringProp>
               <stringProp name="EXPECTED_VALUE">${__property(topicId)}</stringProp>
               <boolProp name="JSONVALIDATION">true</boolProp>
               <boolProp name="EXPECT_NULL">false</boolProp>
@@ -364,7 +377,7 @@ props.put(&quot;topicId&quot;, &quot;${topicId_1}&quot;);</stringProp>
             </JSONPathAssertion>
             <hashTree/>
             <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="Assert creator" enabled="true">
-              <stringProp name="JSON_PATH">$.creator.name</stringProp>
+              <stringProp name="JSON_PATH">$[0].creator.name</stringProp>
               <stringProp name="EXPECTED_VALUE">Demo Student</stringProp>
               <boolProp name="JSONVALIDATION">true</boolProp>
               <boolProp name="EXPECT_NULL">false</boolProp>
@@ -485,7 +498,7 @@ props.put(&quot;topicId&quot;, &quot;${topicId_1}&quot;);</stringProp>
         <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="JDBC Request delete data" enabled="true">
           <stringProp name="dataSource">sampleReq</stringProp>
           <stringProp name="query">DELETE FROM topics_tournaments WHERE topics_id=${__property(topicId)};
-DELETE FROM tournaments WHERE title=&apos;Jmeter Tournament&apos;;
+DELETE FROM tournaments WHERE title LIKE &apos;Jmeter Tournament%&apos;;
 DELETE FROM topics WHERE name=&apos;Jmeter Topic&apos;;
 DELETE FROM users_course_executions WHERE course_executions_id=${__property(executionId)};
 DELETE FROM course_executions WHERE acronym=&apos;JMC1&apos;;

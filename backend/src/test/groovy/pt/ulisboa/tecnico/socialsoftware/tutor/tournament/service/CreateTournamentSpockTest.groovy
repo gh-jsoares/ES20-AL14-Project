@@ -143,6 +143,24 @@ class CreateTournamentSpockTest extends Specification{
         tournRepository.count() == 0L
     }
 
+    def "create a tournament duplicate topic"() {
+        given: "tournament without topics"
+        def tournDto = createTournamentDto(TOURN_TITLE, QUEST_NUM, days["+1"], days["+2"])
+        tournDto.addTopic(new TopicDto(topic))
+        and: "a student as creator"
+        def userId = createUser(User.Role.STUDENT)
+
+        when: "service call to create tournament"
+        tournService.createTournament(courseExecution.getId(), tournDto, userId)
+
+        then: "tournament not created, exception thrown"
+        def exception = thrown(TutorException)
+        exception.getErrorMessage() == ErrorMessage.DUPLICATE_TOPIC
+
+        and: "tournament not in repository"
+        tournRepository.count() == 0L
+    }
+
     def "create a tournament invalid topic"() {
         given: "tournament with invalid topic"
         def tournDto = createTournamentDto(TOURN_TITLE, QUEST_NUM, days["+1"], days["+2"])
