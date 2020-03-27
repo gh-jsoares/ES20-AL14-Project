@@ -10,6 +10,7 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.DiscussionService;
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.dto.DiscussionDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.AssessmentService;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.QuestionService;
+import pt.ulisboa.tecnico.socialsoftware.tutor.question.StudentQuestionService;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.TopicService;
 import pt.ulisboa.tecnico.socialsoftware.tutor.quiz.QuizService;
 import pt.ulisboa.tecnico.socialsoftware.tutor.tournament.TournamentService;
@@ -39,6 +40,9 @@ public class TutorPermissionEvaluator implements PermissionEvaluator {
     private QuizService quizService;
 
     @Autowired
+    private StudentQuestionService studentQuestionService;
+
+    @Autowired
     private DiscussionService discussionService;
 
     @Autowired
@@ -46,7 +50,8 @@ public class TutorPermissionEvaluator implements PermissionEvaluator {
 
     @Override
     public boolean hasPermission(Authentication authentication, Object targetDomainObject, Object permission) {
-        String username = ((User) authentication.getPrincipal()).getUsername();
+        User user = ((User) authentication.getPrincipal());
+        String username = user.getUsername();
 
         if (targetDomainObject instanceof CourseDto) {
             CourseDto courseDto = (CourseDto) targetDomainObject;
@@ -82,6 +87,8 @@ public class TutorPermissionEvaluator implements PermissionEvaluator {
                     return userHasThisExecution(username, assessmentService.findAssessmentCourseExecution(id).getCourseExecutionId());
                 case "QUIZ.ACCESS":
                     return userHasThisExecution(username, quizService.findQuizCourseExecution(id).getCourseExecutionId());
+                case "STUDENTQUESTION.ACCESS":
+                    return studentQuestionService.canAccessStudentQuestion(user.getId(), id);
                 case "TOURNAMENT.ACCESS":
                     return userHasThisExecution(username, tournamentService.findTournamentCourseExecution(id).getCourseExecutionId());
                 default: return false;
