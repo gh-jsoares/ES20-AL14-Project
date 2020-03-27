@@ -190,6 +190,7 @@ insert into discussions values (1, &apos;???&apos;, null, 1800, 676, null);</str
                   <stringProp name="Argument.value">{ &#xd;
 	&quot;id&quot;:1,&#xd;
 	&quot;questionId&quot;:1800,&#xd;
+	&quot;userId&quot;: 677,&#xd;
 	&quot;messageFromStudent&quot;: &quot;???&quot;,&#xd;
 	&quot;teacherAnswer&quot;: &quot;yes&quot;,&#xd;
 	&quot;userName&quot;:&quot;Demo-Teacher&quot;&#xd;

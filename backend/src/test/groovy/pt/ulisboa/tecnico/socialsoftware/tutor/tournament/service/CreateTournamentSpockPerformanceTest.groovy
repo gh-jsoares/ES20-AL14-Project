@@ -121,10 +121,10 @@ class CreateTournamentSpockPerformanceTest extends Specification {
     }
 
     def customTournDto(it) {
-        def size = it%20+1
+        def size = Math.min(it%20+1, NUM_TOPICS)
         tournDto.getTopics().clear()
         for (int i = 0; i < size; i++) {
-            tournDto.addTopic(topics[it*i%NUM_TOPICS])
+            tournDto.addTopic(topics[(it+i)%NUM_TOPICS])
         }
         return tournDto
     }

@@ -1,5 +1,6 @@
 package pt.ulisboa.tecnico.socialsoftware.tutor.question.domain;
 
+import pt.ulisboa.tecnico.socialsoftware.tutor.course.Course;
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.OptionDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.StudentQuestionDto;
@@ -8,6 +9,7 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.user.User;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.*;
 
@@ -28,13 +30,12 @@ public class StudentQuestion {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(unique=true, nullable = false)
     private Integer key;
 
     @Column(columnDefinition = "TEXT")
     private String content;
 
-    @Column(unique=true)
+    @Column(nullable = false)
     private String title;
 
     @Enumerated(EnumType.STRING)
@@ -66,11 +67,15 @@ public class StudentQuestion {
     @Column(columnDefinition = "TEXT")
     private String rejectedExplanation;
 
+    @ManyToOne
+    @JoinColumn(name = "course_id")
+    private Course course;
+
     public StudentQuestion() {
 
     }
 
-    public StudentQuestion(User user, StudentQuestionDto studentQuestionDto) {
+    public StudentQuestion(Course course, User user, StudentQuestionDto studentQuestionDto) {
         checkConsistentStudentQuestion(user, studentQuestionDto);
 
         this.id = studentQuestionDto.getId();
@@ -78,6 +83,9 @@ public class StudentQuestion {
         this.content = studentQuestionDto.getContent();
         this.title = studentQuestionDto.getTitle();
         this.status = StudentQuestion.Status.valueOf(studentQuestionDto.getStatus());
+
+        this.course = course;
+        course.addStudentQuestion(this);
 
         this.student = user;
         user.addStudentQuestion(this);
@@ -87,11 +95,37 @@ public class StudentQuestion {
         populateOptions(studentQuestionDto);
     }
 
+    private void generateKeys() {
+        int max = this.course.getStudentQuestions().stream()
+                .filter(studentQuestion -> studentQuestion.key != null)
+                .map(StudentQuestion::getKey)
+                .max(Comparator.comparing(Integer::valueOf))
+                .orElse(0);
+
+        List<StudentQuestion> nullKeyQuestions = this.course.getStudentQuestions().stream()
+                .filter(studentQuestion -> studentQuestion.key == null).collect(Collectors.toList());
+
+        for (StudentQuestion studentQuestion: nullKeyQuestions) {
+            max = max + 1;
+            studentQuestion.key = max;
+        }
+    }
+    public Course getCourse() {
+        return course;
+    }
+
+    public void setCourse(Course course) {
+        this.course = course;
+    }
+
     public Integer getId() {
         return id;
     }
 
     public Integer getKey() {
+        if (this.key == null)
+            generateKeys();
+
         return key;
     }
 
@@ -156,17 +190,24 @@ public class StudentQuestion {
     }
 
     public void addTopic(Topic topic) {
-        checkDuplicateTopic(topic);
         this.topics.add(topic);
+        topic.addStudentQuestion(this);
     }
 
     public void removeTopic(Topic topic) {
-        checkTopicPresent(topic);
+        topic.removeStudentQuestion(this);
         this.topics.remove(topic);
     }
 
     public void addOption(Option option) {
         this.options.add(option);
+    }
+
+    public void updateTopics(Set<Topic> newTopics) {
+        Set<Topic> toRemove = this.topics.stream().filter(topic -> !newTopics.contains(topic)).collect(Collectors.toSet());
+        toRemove.forEach(this::removeTopic);
+        Set<Topic> toAdd = newTopics.stream().filter(topic -> !this.topics.contains(topic)).collect(Collectors.toSet());
+        toAdd.forEach(this::addTopic);
     }
 
     public LocalDateTime getReviewedDate() {
@@ -219,6 +260,14 @@ public class StudentQuestion {
             throw new TutorException(STUDENT_QUESTION_NOT_A_TEACHER);
     }
 
+    public boolean isCreator(User student) {
+        return this.getStudent().getUsername().equals(student.getUsername());
+    }
+
+    public boolean canTeacherAccess(User teacher) {
+        return teacher.getCourseExecutions().stream()
+                .anyMatch(c -> c.getCourse().getId().equals(getCourse().getId()));
+    }
 
     private void checkRejectedExplanation(String rejectedExplanation) {
         if (rejectedExplanation == null || rejectedExplanation.trim().length() == 0)
@@ -259,19 +308,9 @@ public class StudentQuestion {
             throw new TutorException(TOO_MANY_CORRECT_OPTIONS_STUDENT_QUESTION);
     }
 
-    private void checkDuplicateTopic(Topic topic) {
-        if(getTopics().stream().anyMatch(t -> t.getId().equals(topic.getId())))
-            throw new TutorException(STUDENT_QUESTION_TOPIC_ALREADY_ADDED);
-    }
-
-    private void checkTopicPresent(Topic topic) {
-        if(getTopics().stream().noneMatch(t -> t.getId().equals(topic.getId())))
-            throw new TutorException(STUDENT_QUESTION_TOPIC_NOT_PRESENT);
-    }
-
     private void populateCreationDate(StudentQuestionDto studentQuestionDto) {
         if (studentQuestionDto.getCreationDate() != null)
-            this.creationDate = LocalDateTime.parse(studentQuestionDto.getCreationDate());
+            this.creationDate = LocalDateTime.parse(studentQuestionDto.getCreationDate(), Course.formatter);
         else
             this.creationDate = LocalDateTime.now();
     }
@@ -295,7 +334,9 @@ public class StudentQuestion {
     }
 
     public void remove() {
-        getTopics().forEach(topic -> topic.getStudentQuestions().remove(this));
+        getCourse().getStudentQuestions().remove(this);
+        course = null;
+        getTopics().forEach(topic -> topic.removeStudentQuestion(this));
         getTopics().clear();
     }
 }

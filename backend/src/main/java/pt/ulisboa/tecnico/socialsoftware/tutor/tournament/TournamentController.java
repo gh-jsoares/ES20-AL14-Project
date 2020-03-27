@@ -1,6 +1,5 @@
 package pt.ulisboa.tecnico.socialsoftware.tutor.tournament;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -9,14 +8,18 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.user.User;
 
 import javax.validation.Valid;
 import java.security.Principal;
+import java.util.List;
 
 import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.AUTHENTICATION_ERROR;
 
 @RestController
 public class TournamentController {
 
-    @Autowired
-    private TournamentService tournamentService;
+    private final TournamentService tournamentService;
+
+    public TournamentController(TournamentService tournamentService) {
+        this.tournamentService = tournamentService;
+    }
 
     @PostMapping("/tournaments/{tournamentId}/enroll")
     @PreAuthorize("(hasRole('ROLE_STUDENT') or hasRole('ROLE_DEMO_STUDENT')) and hasPermission(#tournamentId, 'TOURNAMENT.ACCESS')")
@@ -42,4 +45,12 @@ public class TournamentController {
 
         return tournamentService.createTournament(executionId, tournDto, user.getId());
     }
+
+
+    @GetMapping("/executions/{executionId}/tournaments")
+    @PreAuthorize("hasAnyRole('ROLE_STUDENT', 'ROLE_TEACHER') and hasPermission(#executionId, 'EXECUTION.ACCESS')")
+    public List<TournamentDto> getOpenTournaments(@PathVariable int executionId) {
+        return tournamentService.getOpenTournaments(executionId);
+    }
+
 }

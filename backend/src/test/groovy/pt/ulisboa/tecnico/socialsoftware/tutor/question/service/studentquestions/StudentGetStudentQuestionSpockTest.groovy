@@ -43,7 +43,7 @@ class StudentGetStudentQuestionSpockTest extends Specification {
     @Autowired
     OptionRepository optionRepository
 
-    def user
+    User user
 
     def setup() {
         user = createUser(1, USER_NAME, USER_USERNAME, User.Role.STUDENT)
@@ -56,11 +56,8 @@ class StudentGetStudentQuestionSpockTest extends Specification {
         and: "it has 4 options"
         createOptions(studentQuestion, OPTION_CONTENT)
 
-        and: "a username of a student"
-        def user = USER_USERNAME
-
         when:
-        def result = studentQuestionService.getStudentQuestion(user, studentQuestion.getId())
+        def result = studentQuestionService.getStudentQuestion(user.getId(), studentQuestion.getId())
 
         then: "data is correct"
         result != null
@@ -81,10 +78,10 @@ class StudentGetStudentQuestionSpockTest extends Specification {
         def studentQuestionId = createStudentQuestion(isStudentQuestion)
 
         and: "a username"
-        def username = createUsername(isUser, isStudent, isCreator)
+        def userId = createUserId(isUser, isStudent, isCreator)
 
         when:
-        studentQuestionService.getStudentQuestion(username, studentQuestionId)
+        studentQuestionService.getStudentQuestion(userId, studentQuestionId)
 
         then:
         def error = thrown(TutorException)
@@ -104,15 +101,15 @@ class StudentGetStudentQuestionSpockTest extends Specification {
         return -1
     }
 
-    private String createUsername(boolean isUser, boolean isStudent, boolean isCreator) {
+    private int createUserId(boolean isUser, boolean isStudent, boolean isCreator) {
         if (!isUser)
-            return null
+            return -1
         if(!isCreator)
-            return createUser(2, USER_NAME, USER_USERNAME + "_2", User.Role.STUDENT).getUsername()
+            return createUser(2, USER_NAME, USER_USERNAME + "_2", User.Role.STUDENT).getId()
         if (!isStudent)
             user.setRole(User.Role.TEACHER)
 
-        return user.getUsername()
+        return user.getId()
     }
 
 
