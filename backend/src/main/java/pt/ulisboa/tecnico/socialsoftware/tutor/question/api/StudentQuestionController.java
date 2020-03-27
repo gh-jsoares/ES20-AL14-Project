@@ -10,11 +10,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.StudentQuestionService;
-import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Question;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.StudentQuestion;
-import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.QuestionDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.StudentQuestionDto;
-import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.TopicDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.User;
 
 import javax.validation.Valid;
@@ -102,6 +99,18 @@ public class StudentQuestionController {
     public ResponseEntity studentQuestionReject(Principal principal, @PathVariable Integer studentQuestionId, @RequestBody String explanation) {
         this.studentQuestionService.rejectStudentQuestion(getAuthUser(principal).getId(), studentQuestionId, explanation);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/courses/{courseId}/questions/student/")
+    @PreAuthorize("hasRole('ROLE_STUDENT') and hasPermission(#courseId, 'COURSE.ACCESS')")
+    public List<StudentQuestionDto> getAllStudentQuestionAsStudent(Principal principal, @PathVariable int courseId){
+        return this.studentQuestionService.listStudentQuestions(courseId, getAuthUser(principal).getId());
+    }
+
+    @GetMapping("/questions/student/{studentQuestionId}")
+    @PreAuthorize("hasRole('ROLE_STUDENT') and hasPermission(#studentQuestionId, 'STUDENTQUESTION.ACCESS')")
+    public StudentQuestionDto getStudentQuestionAsStudent(Principal principal, @PathVariable Integer studentQuestionId) {
+        return this.studentQuestionService.getStudentQuestion(getAuthUser(principal).getId(), studentQuestionId);
     }
 
     private Path getTargetLocation(String url) {
