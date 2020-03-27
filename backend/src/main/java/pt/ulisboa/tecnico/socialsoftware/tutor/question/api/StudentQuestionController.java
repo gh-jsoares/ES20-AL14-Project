@@ -104,6 +104,12 @@ public class StudentQuestionController {
         return ResponseEntity.ok().build();
     }
 
+    @GetMapping("/courses/{courseId}/questions/student/")
+    @PreAuthorize("hasRole('ROLE_STUDENT') and hasPermission(#courseId, 'COURSE.ACCESS')")
+    public List<StudentQuestionDto> getAllStudentQuestionAsStudent(Principal principal, @PathVariable int courseId){
+        return this.studentQuestionService.listStudentQuestions(courseId, getAuthUser(principal).getId());
+    }
+
     private Path getTargetLocation(String url) {
         String fileLocation = figuresDir + url;
         return Paths.get(fileLocation);
