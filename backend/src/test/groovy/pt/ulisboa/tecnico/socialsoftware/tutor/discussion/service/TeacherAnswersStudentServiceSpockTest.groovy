@@ -60,6 +60,7 @@ class TeacherAnswersStudentServiceSpockTest extends Specification {
     public static final String COURSE_ACADEMIC_TERM = "academic_term_test"
     public static final String TEACHER_ANSWER = "teacher_answer_test"
     public static final String NON_EXISTING_TEACHER = "non_existing_teacher_test"
+    public static final Integer NON_EXISTING_ID = 100;
 
     Question question
     User student
@@ -101,17 +102,16 @@ class TeacherAnswersStudentServiceSpockTest extends Specification {
         discussionDto.setMessageFromStudent(MESSAGE)
 
         questionRepository.save(question)
-        discussion = new Discussion(student, question, discussionDto)
-
         userRepository.save(student)
-        discussionRepository.save(discussion)
 
+        discussion = new Discussion(questionAnswer, student, question, discussionDto)
+        discussionRepository.save(discussion)
     }
 
     def discussionDtoCreation(int id, String message) {
         def discussionDto = new DiscussionDto()
         discussionDto.setId(id)
-        discussionDto.setMessage(message)
+        discussionDto.setTeacherAnswer(message)
         return discussionDto
     }
 
@@ -124,6 +124,7 @@ class TeacherAnswersStudentServiceSpockTest extends Specification {
         courseExecution.addUser(teacher)
         discussionDto.setUserName(teacher.getUsername())
         userRepository.save(teacher)
+        discussionDto.setUserId(teacher.getId())
 
         when: "adding the answer from the teacher to the discussion"
         discussionService.teacherAnswersStudent(discussionDto.getId(), discussionDto)
@@ -145,6 +146,7 @@ class TeacherAnswersStudentServiceSpockTest extends Specification {
         def teacher = new User('teacher', TEACHER_NAME, 2, User.Role.TEACHER)
         discussionDto.setUserName(teacher.getUsername())
         userRepository.save(teacher)
+        discussionDto.setUserId(teacher.getId())
 
         when: "adding the answer from the teacher"
         discussionService.teacherAnswersStudent(discussionDto.getId(), discussionDto)
@@ -162,6 +164,7 @@ class TeacherAnswersStudentServiceSpockTest extends Specification {
         teacher.getCourseExecutions().add(courseExecution)
         discussionDto.setUserName(teacher.getUsername())
         userRepository.save(teacher)
+        discussionDto.setUserId(teacher.getId())
 
         and: "the discussion was already answered"
         discussion.setTeacherAnswer(TEACHER_ANSWER)
@@ -179,9 +182,10 @@ class TeacherAnswersStudentServiceSpockTest extends Specification {
         given: "a discussionDto with an answer from a teacher"
         def discussionDto = discussionDtoCreation(discussion.getId(), TEACHER_ANSWER)
 
-        def student = new User('admin', TEACHER_NAME, 2, User.Role.STUDENT)
+        def teacher = new User('admin', TEACHER_NAME, 2, User.Role.STUDENT)
         discussionDto.setUserName(student.getUsername())
-        userRepository.save(student)
+        userRepository.save(teacher)
+        discussionDto.setUserId(teacher.getId())
 
         when: "adding the answer from the teacher"
         discussionService.teacherAnswersStudent(discussionDto.getId(), discussionDto)
@@ -199,6 +203,7 @@ class TeacherAnswersStudentServiceSpockTest extends Specification {
         teacher.getCourseExecutions().add(courseExecution)
         discussionDto.setUserName(teacher.getUsername())
         userRepository.save(teacher)
+        discussionDto.setUserId(teacher.getId())
 
         when: "adding the answer from the teacher"
         discussionService.teacherAnswersStudent(discussionDto.getId(), discussionDto)
@@ -206,6 +211,19 @@ class TeacherAnswersStudentServiceSpockTest extends Specification {
         then: "an exception is thrown"
         def exception = thrown(TutorException)
         exception.errorMessage == ErrorMessage.DISCUSSION_NOT_FOUND
+    }
+
+    def "non-existent teacher tries to answer"() {
+        given: "a discussionDto"
+        def discussionDto = discussionDtoCreation(discussion.getId(), TEACHER_ANSWER)
+        discussionDto.setUserId(NON_EXISTING_ID)
+
+        when: "adding the answer from the teacher"
+        discussionService.teacherAnswersStudent(discussionDto.getId(), discussionDto)
+
+        then: "an exception is thrown"
+        def exception = thrown(TutorException)
+        exception.errorMessage == ErrorMessage.USER_NOT_FOUND
     }
 
     @Unroll
@@ -217,6 +235,7 @@ class TeacherAnswersStudentServiceSpockTest extends Specification {
         teacher.getCourseExecutions().add(courseExecution)
         discussionDto.setUserName(username)
         userRepository.save(teacher)
+        discussionDto.setUserId(teacher.getId())
 
         when: "adding the answer from the teacher"
         discussionService.teacherAnswersStudent(discussionDto.getId(), discussionDto)
@@ -230,7 +249,6 @@ class TeacherAnswersStudentServiceSpockTest extends Specification {
         null           | TEACHER_NAME          || ErrorMessage.DISCUSSION_MESSAGE_EMPTY
         ""             | TEACHER_NAME          || ErrorMessage.DISCUSSION_MESSAGE_EMPTY
         "   "          | TEACHER_NAME          || ErrorMessage.DISCUSSION_MESSAGE_EMPTY
-        TEACHER_ANSWER | NON_EXISTING_TEACHER  || ErrorMessage.USER_NOT_FOUND
     }
 
     @TestConfiguration

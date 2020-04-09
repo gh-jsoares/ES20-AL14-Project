@@ -44,8 +44,8 @@ class TeacherApproveStudentQuestionSpockTest extends Specification {
     @Autowired
     OptionRepository optionRepository
 
-    def student
-    def teacher
+    User student
+    User teacher
 
     def setup() {
         student = createUser(1, USER_NAME, USER_USERNAME, User.Role.STUDENT)
@@ -59,11 +59,8 @@ class TeacherApproveStudentQuestionSpockTest extends Specification {
         and: "it has 4 options"
         createOptions(studentQuestion, OPTION_CONTENT)
 
-        and: "a username of a teacher"
-        TEACHER_USERNAME
-
         when:
-        def result = studentQuestionService.approveStudentQuestion(TEACHER_USERNAME, studentQuestion.getId())
+        def result = studentQuestionService.approveStudentQuestion(teacher.getId(), studentQuestion.getId())
 
         then: "data is correct"
         result != null
@@ -89,11 +86,11 @@ class TeacherApproveStudentQuestionSpockTest extends Specification {
         given: "a student question"
         def studentQuestionId = createStudentQuestion(isStudentQuestion, isAwaitingApproval)
 
-        and: "a username"
-        def username = createUsername(isUser, isTeacher)
+        and: "a userId"
+        def userId = createUserId(isUser, isTeacher)
 
         when:
-        studentQuestionService.approveStudentQuestion(username, studentQuestionId)
+        studentQuestionService.approveStudentQuestion(userId, studentQuestionId)
 
         then:
         def error = thrown(TutorException)
@@ -117,13 +114,13 @@ class TeacherApproveStudentQuestionSpockTest extends Specification {
         return createStudentQuestion(1, QUESTION_TITLE, QUESTION_CONTENT, StudentQuestion.Status.ACCEPTED.name()).getId()
     }
 
-    private String createUsername(boolean isUser, boolean isTeacher) {
+    private int createUserId(boolean isUser, boolean isTeacher) {
         if (!isUser)
-            return null
+            return -1
         if (!isTeacher)
-            return student.getUsername()
+            return student.getId()
 
-        return teacher.getUsername()
+        return teacher.getId()
     }
 
     private StudentQuestion createStudentQuestion(int key, String title, String content, String status) {

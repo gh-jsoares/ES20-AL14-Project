@@ -8,9 +8,13 @@ public class DiscussionDto implements Serializable {
 
     private Integer id;
 
+    private Integer userId;
+
+    private Integer questionId;
+
     private String messageFromStudent = null;
 
-    private String message = null;
+    private String teacherAnswer = null;
 
     private String userName = null;
 
@@ -18,8 +22,10 @@ public class DiscussionDto implements Serializable {
 
     public DiscussionDto(Discussion discussion) {
         setId(discussion.getId());
+        setQuestionId(discussion.getQuestion().getId());
         setMessageFromStudent(discussion.getMessageFromStudent());
-        setMessage(discussion.getTeacherAnswer());
+        setTeacherAnswer(discussion.getTeacherAnswer());
+        setUserName(discussion.getStudent().getUsername());
         if (discussion.getTeacher() != null)
             setUserName(discussion.getTeacher().getUsername());
     }
@@ -30,13 +36,21 @@ public class DiscussionDto implements Serializable {
 
     public void setId(Integer id) { this.id = id; }
 
+    public Integer getUserId() { return userId; }
+
+    public void setUserId(Integer userId) { this.userId = userId; }
+
+    public void setQuestionId(Integer questionId) { this.questionId = questionId;}
+
+    public Integer getQuestionId() { return questionId;}
+
     public String getMessageFromStudent() { return messageFromStudent; }
 
     public void setMessageFromStudent(String messageFromStudent) { this.messageFromStudent = messageFromStudent; }
 
-    public String getMessage() { return message; }
+    public String getTeacherAnswer() { return teacherAnswer; }
 
-    public void setMessage(String message) { this.message = message; }
+    public void setTeacherAnswer(String teacherAnswer) { this.teacherAnswer = teacherAnswer; }
 
     public String getUserName() {
         return userName;

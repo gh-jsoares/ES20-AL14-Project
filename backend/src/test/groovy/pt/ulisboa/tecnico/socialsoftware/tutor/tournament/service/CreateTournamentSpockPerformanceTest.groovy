@@ -53,16 +53,20 @@ class CreateTournamentSpockPerformanceTest extends Specification {
     def tournDto
     def user
 
-    def "performance testing to create 100000 tournaments"() {
+    public static final int NUM_EXECS = 1   // 10000
+    public static final int NUM_TOPICS = 1  // 10000
+    public static final int NUM_CALLS = 1   // 100000
+
+    def "performance testing to create <NUM_CALLS> tournaments"() {
         given: "a course"
         course = new Course(COURSE_NAME, Course.Type.TECNICO)
         courseRepository.save(course)
 
-        and: "10000 course executions available in DB"
-        1.upto(10000, {createExecution(it)})
+        and: "<NUM_EXECS> course executions available in DB"
+        1.upto(NUM_EXECS, {createExecution(it)})
 
-        and: "10000 topics available in DB"
-        1.upto(10000, {createTopic(it)})
+        and: "<NUM_TOPICS> topics available in DB"
+        1.upto(NUM_TOPICS, {createTopic(it)})
 
         and: "a tournamentDto as template"
         createTournamentTemplate()
@@ -70,8 +74,8 @@ class CreateTournamentSpockPerformanceTest extends Specification {
         and: "a student to create tournament"
         createStudent()
 
-        when: "service call to create 100000 tournaments"
-        1.upto(100000, {tournService.createTournament(execs[it%10000].getId(), customTournDto(it), user.getId())})
+        when: "service call to create <NUM_CALLS> tournaments"
+        1.upto(NUM_CALLS, {tournService.createTournament(execs[it%NUM_EXECS].getId(), customTournDto(it), user.getId())})
 
         then: true
     }
@@ -109,7 +113,7 @@ class CreateTournamentSpockPerformanceTest extends Specification {
 
     def createStudent() {
         user = new User(USER_NAME, USER_USERNAME, 1, User.Role.STUDENT)
-        1.upto(10000, {
+        1.upto(NUM_EXECS, {
             user.addCourse(execs[it-1])
             execs[it-1].addUser(user)
         })
@@ -117,10 +121,10 @@ class CreateTournamentSpockPerformanceTest extends Specification {
     }
 
     def customTournDto(it) {
-        def size = it%20+1
+        def size = Math.min(it%20+1, NUM_TOPICS)
         tournDto.getTopics().clear()
         for (int i = 0; i < size; i++) {
-            tournDto.addTopic(topics[it*i%10000])
+            tournDto.addTopic(topics[(it+i)%NUM_TOPICS])
         }
         return tournDto
     }
