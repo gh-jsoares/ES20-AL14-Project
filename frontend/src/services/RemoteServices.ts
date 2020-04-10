@@ -14,6 +14,7 @@ import AuthDto from '@/models/user/AuthDto';
 import StatementAnswer from '@/models/statement/StatementAnswer';
 import { QuizAnswer } from '@/models/management/QuizAnswer';
 import { QuizAnswers } from '@/models/management/QuizAnswers';
+import { Discussion} from '@/models/management/Discussion';
 
 const httpClient = axios.create();
 httpClient.defaults.timeout = 10000;
@@ -552,6 +553,19 @@ export default class RemoteServices {
       .catch(async error => {
         throw Error(await this.errorMessage(error));
       });
+  }
+
+  static async getDiscussions(): Promise<Discussion[]> {
+    return httpClient
+        .get('/teacher/discussions/')
+        .then(response => {
+          return response.data.map((discussion: any) => {
+            return new Discussion(discussion);
+          });
+        })
+        .catch(async error => {
+          throw Error(await this.errorMessage(error));
+        });
   }
 
   static async exportAll() {

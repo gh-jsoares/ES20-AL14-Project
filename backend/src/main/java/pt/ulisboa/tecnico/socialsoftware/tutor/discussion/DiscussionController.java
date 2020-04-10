@@ -44,4 +44,16 @@ public class DiscussionController {
         return discussionService.getDiscussionStudent(user.getId());
     }
 
+    @GetMapping("/teacher/discussions/")
+    @PreAuthorize("hasRole('ROLE_TEACHER')")
+    public List<DiscussionDto> getDiscussionsTeacher(Principal principal) {
+        User user = (User) ((Authentication) principal).getPrincipal();
+
+        if(user == null){
+            throw new TutorException(AUTHENTICATION_ERROR);
+        }
+
+        return discussionService.getDiscussionTeacher(user.getId());
+    }
+
 }
