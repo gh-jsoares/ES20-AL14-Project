@@ -1,7 +1,6 @@
 <template>
     <div class="container">
         <h2>Available Tournaments</h2>
-
     </div>
 </template>
 
@@ -18,11 +17,23 @@
   @Component
   export default class OpenTournamentsView extends Vue {
     tournaments: Tournament[] = [];
+    tournamentsEnrolledId: number[] = [];
 
     async created() {
       await this.$store.dispatch('loading');
       try {
         this.tournaments = (await RemoteServices.getOpenTournaments()).reverse();
+      } catch (error) {
+        await this.$store.dispatch('error', error);
+      }
+      await this.$store.dispatch('clearLoading');
+    }
+
+    async enrollTournament(tournament: Tournament) {
+      let response;
+      try {
+        response = (await RemoteServices.enrollTournament(tournament.id));
+        this.tournamentsEnrolledId.push(response.id);
       } catch (error) {
         await this.$store.dispatch('error', error);
       }

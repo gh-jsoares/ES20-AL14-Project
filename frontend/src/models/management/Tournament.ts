@@ -9,15 +9,15 @@ export class Tournament {
   creationDate!: string | undefined;
   availableDate!: string | undefined;
   conclusionDate!: string | undefined;
-  state: string;
+  state!: string;
   series!: number;
   version!: string;
   numberOfQuestions!: number;
   numberOfEnrolls!: number;
 
   topics: Topic[] = [];
-  creator: User;
-  quiz: Quiz;
+  creator!: User;
+  quiz: Quiz | undefined;
 
   constructor(jsonObj?: Tournament) {
     if (jsonObj) {
@@ -28,7 +28,7 @@ export class Tournament {
       this.series = jsonObj.series;
       this.version = jsonObj.version;
       this.numberOfQuestions = jsonObj.numberOfQuestions;
-      this.numberOfEnrolls= jsonObj.numberOfEnrolls;
+      this.numberOfEnrolls = jsonObj.numberOfEnrolls;
       this.creationDate = jsonObj.creationDate;
       this.availableDate = jsonObj.availableDate;
       this.conclusionDate = jsonObj.conclusionDate;
