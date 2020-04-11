@@ -1,6 +1,5 @@
 package pt.ulisboa.tecnico.socialsoftware.tutor.question.service.studentquestions
 
-
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.boot.test.context.TestConfiguration
@@ -11,8 +10,6 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.StudentQuestionService
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.StudentQuestion
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Topic
-import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.StudentQuestionDto
-import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.TopicDto
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.StudentQuestionRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.TopicRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.User
@@ -20,7 +17,9 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.user.UserRepository
 import spock.lang.Specification
 import spock.lang.Unroll
 
-import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.*
+import java.util.stream.Collectors
+
+import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_NOT_FOUND
 
 @DataJpaTest
 class RemoveTopicFromStudentQuestionSpockTest extends Specification {
@@ -48,7 +47,7 @@ class RemoveTopicFromStudentQuestionSpockTest extends Specification {
     @Autowired
     CourseRepository courseRepository
 
-    def user
+    User user
     StudentQuestion studentQuestion
     Course course
     Topic topic
@@ -73,10 +72,14 @@ class RemoveTopicFromStudentQuestionSpockTest extends Specification {
 
         and: "the student question belongs to the topic"
         studentQuestion.addTopic(topic)
-        topic.addStudentQuestion(studentQuestion)
+
+        and: "the list of topics not containing topicId"
+        def topics = studentQuestion.topics.stream().map({ t -> t.id }).filter({ id -> id != topicId }).collect(Collectors.toList())
+        def topicIds = new int[topics.size()]
+        topicIds = topics.toArray(topicIds)
 
         when:
-        studentQuestionService.removeTopicFromStudentQuestion(studentQuestionId, topicId)
+        studentQuestionService.updateStudentQuestionTopics(studentQuestionId, topicIds as Integer[])
 
         then: "the topic is removed"
         studentQuestionRepository.count() == 1L
@@ -90,35 +93,24 @@ class RemoveTopicFromStudentQuestionSpockTest extends Specification {
     }
 
     @Unroll
-    def "invalid data: studentQuestion=#isStudentQuestion | topic=#isTopic | presentTopic=#isPresentTopic || errorMessage=#errorMessage"() {
+    def "student question does not exist"() {
         given: "an existing student question"
-        def studentQuestionId = createStudentQuestion(isStudentQuestion)
+        def studentQuestionId = createStudentQuestion(false)
 
-        and: "a topic"
-        def topicId = createTopic(isTopic, isPresentTopic)
+        and: "an existing topic"
+        def topicId = topic.getId()
+
+        and: "the list of topics not containing topicId"
+        def topics = studentQuestion.topics.stream().map({ t -> t.id }).filter({ id -> id != topicId }).collect(Collectors.toList())
+        def topicIds = new int[topics.size()]
+        topicIds = topics.toArray(topicIds)
 
         when:
-        studentQuestionService.removeTopicFromStudentQuestion(studentQuestionId, topicId)
+        studentQuestionService.updateStudentQuestionTopics(studentQuestionId, topicIds as Integer[])
 
         then:
         def error = thrown(TutorException)
-        error.errorMessage == errorMessage
-
-        where:
-        isStudentQuestion | isTopic | isPresentTopic || errorMessage
-        false             | true    | true            || STUDENT_QUESTION_NOT_FOUND
-        true              | false   | true            || STUDENT_QUESTION_TOPIC_NOT_FOUND
-        true              | true    | false             || STUDENT_QUESTION_TOPIC_NOT_PRESENT
-    }
-
-    private int createTopic(boolean isTopic, boolean isPresentTopic) {
-        if (!isTopic)
-            return -1
-
-        if (isPresentTopic)
-            studentQuestion.addTopic(topic)
-
-        return topic.getId()
+        error.errorMessage == STUDENT_QUESTION_NOT_FOUND
     }
 
     private int createStudentQuestion(boolean isStudentQuestion) {
@@ -133,7 +125,7 @@ class RemoveTopicFromStudentQuestionSpockTest extends Specification {
         studentQuestion.setTitle(title)
         studentQuestion.setContent(content)
         studentQuestion.setStatus(StudentQuestion.Status.valueOf(status))
-        studentQuestion.setStudent(userRepository.findByUsername(USER_USERNAME))
+        studentQuestion.setStudent(user)
         studentQuestionRepository.save(studentQuestion)
         studentQuestion
     }
@@ -143,6 +135,7 @@ class RemoveTopicFromStudentQuestionSpockTest extends Specification {
         topic.setName(name)
         topic.setCourse(course)
         topicRepository.save(topic)
+        topic
     }
 
     @TestConfiguration

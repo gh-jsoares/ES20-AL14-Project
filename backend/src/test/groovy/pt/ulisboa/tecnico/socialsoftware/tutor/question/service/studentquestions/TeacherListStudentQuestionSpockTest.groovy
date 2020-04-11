@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
+import pt.ulisboa.tecnico.socialsoftware.tutor.course.Course
+import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.StudentQuestionService
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.StudentQuestion
@@ -21,6 +23,7 @@ import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.ST
 @DataJpaTest
 class TeacherListStudentQuestionSpockTest extends Specification {
 
+    public static final String COURSE_NAME = "Software Architecture"
     public static final String USER_NAME = "Alfredo Costa"
     public static final String USER_USERNAME = "alcosta"
     public static final String TEACHER_USERNAME = "T_alcosta"
@@ -35,31 +38,35 @@ class TeacherListStudentQuestionSpockTest extends Specification {
     UserRepository userRepository
 
     @Autowired
+    CourseRepository courseRepository
+
+    @Autowired
     StudentQuestionRepository studentQuestionRepository
 
-    def student
-    def teacher
+    Course course
+    User student
+    User teacher
 
     def setup() {
         student = createUser(1, USER_NAME, USER_USERNAME, User.Role.STUDENT)
         teacher = createUser(2, USER_NAME, TEACHER_USERNAME, User.Role.TEACHER)
+
+        course = new Course(COURSE_NAME, Course.Type.TECNICO)
+        courseRepository.save(course)
     }
 
     def "N student questions exist and are listed"() {
-        given: "a teacher user's username"
-        TEACHER_USERNAME
-
-        and: "and a list of 5 student questions made by a student"
+        given: "a list of 5 student questions made by a student"
         1.upto(5, {
-            createStudentQuestion(it.intValue(), QUESTION_TITLE + it, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name(), USER_USERNAME)
+            createStudentQuestion(it.intValue(), QUESTION_TITLE + it, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name(), student)
         })
 
         when:
-        def result = studentQuestionService.listAllStudentQuestions(TEACHER_USERNAME)
+        def result = studentQuestionService.listAllStudentQuestions(course.getId(), teacher.getId())
 
         then: "the list returned has all the questions made by the students"
         result.size() == 5
-        result.stream().allMatch({ sq -> (sq.getCreatorUsername() == USER_USERNAME) })
+        result.stream().allMatch({ sq -> (sq.getCreatorUsername() == student.getUsername()) })
         and: "reverse sorted by creation date"
         0.upto(result.size() - 2, {
             def date_1 = result[it.intValue()].getCreationDateAsObject()
@@ -70,11 +77,11 @@ class TeacherListStudentQuestionSpockTest extends Specification {
 
     @Unroll
     def "invalid data user=#isUser | teacher=#isTeacher | errorMessage=#errorMessage"() {
-        given: "a username"
-        def username = createUsername(isUser, isTeacher)
+        given: "a userId"
+        def userId = createUserId(isUser, isTeacher)
 
         when:
-        studentQuestionService.listAllStudentQuestions(username)
+        studentQuestionService.listAllStudentQuestions(course.getId(), userId)
 
         then:
         def error = thrown(TutorException)
@@ -86,23 +93,25 @@ class TeacherListStudentQuestionSpockTest extends Specification {
         true   | false     || STUDENT_QUESTION_NOT_A_TEACHER
     }
 
-    private String createUsername(boolean isUser, boolean isTeacher) {
+    private int createUserId(boolean isUser, boolean isTeacher) {
         if (!isUser)
-            return null
+            return -1
         if (!isTeacher)
-            return student.getUsername()
+            return student.getId()
 
-        return teacher.getUsername()
+        return teacher.getId()
     }
 
-    private createStudentQuestion(int key, String title, String content, String status, String username) {
+    private createStudentQuestion(int key, String title, String content, String status, User user) {
         def studentQuestion = new StudentQuestion()
         studentQuestion.setKey(key)
         studentQuestion.setTitle(title)
         studentQuestion.setContent(content)
         studentQuestion.setStatus(StudentQuestion.Status.valueOf(status))
-        studentQuestion.setStudent(userRepository.findByUsername(username))
+        studentQuestion.setStudent(user)
         studentQuestion.setCreationDate(generateRandomCreationDate())
+        studentQuestion.setCourse(course)
+        course.addStudentQuestion(studentQuestion)
         studentQuestionRepository.save(studentQuestion)
     }
 

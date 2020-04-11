@@ -4,6 +4,10 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
+import pt.ulisboa.tecnico.socialsoftware.tutor.course.Course
+import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecution
+import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecutionRepository
+import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.StudentQuestionService
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Option
@@ -24,6 +28,9 @@ import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.ST
 @DataJpaTest
 class TeacherGetStudentQuestionSpockTest extends Specification {
 
+    public static final String COURSE_NAME = "Software Architecture"
+    public static final String COURSE_ACRONYM = "SA"
+    public static final String COURSE_SEMESTER = "1st Semester"
     public static final String USER_NAME = "Alfredo Costa"
     public static final String USER_USERNAME = "alcosta"
     public static final String TEACHER_USERNAME = "T_alcosta"
@@ -43,10 +50,24 @@ class TeacherGetStudentQuestionSpockTest extends Specification {
     @Autowired
     OptionRepository optionRepository
 
-    def student
-    def teacher
+    @Autowired
+    CourseRepository courseRepository
+
+    @Autowired
+    CourseExecutionRepository courseExecutionRepository
+
+    Course course
+    CourseExecution courseExecution
+    User student
+    User teacher
 
     def setup() {
+        course = new Course(COURSE_NAME, Course.Type.TECNICO)
+        courseRepository.save(course)
+
+        courseExecution = new CourseExecution(course, COURSE_ACRONYM, COURSE_SEMESTER, Course.Type.TECNICO)
+        courseExecutionRepository.save(courseExecution)
+
         student = createUser(1, USER_NAME, USER_USERNAME, User.Role.STUDENT)
         teacher = createUser(2, USER_NAME, TEACHER_USERNAME, User.Role.TEACHER)
     }
@@ -58,11 +79,8 @@ class TeacherGetStudentQuestionSpockTest extends Specification {
         and: "it has 4 options"
         createOptions(studentQuestion, OPTION_CONTENT)
 
-        and: "a username of a teacher"
-        TEACHER_USERNAME
-
         when:
-        def result = studentQuestionService.getStudentQuestionAsTeacher(TEACHER_USERNAME, studentQuestion.getId())
+        def result = studentQuestionService.getStudentQuestionAsTeacher(teacher.getId(), studentQuestion.getId())
 
         then: "data is correct"
         result != null
@@ -82,11 +100,11 @@ class TeacherGetStudentQuestionSpockTest extends Specification {
         given: "a student question"
         def studentQuestionId = createStudentQuestion(isStudentQuestion)
 
-        and: "a username"
-        def username = createUsername(isUser, isTeacher)
+        and: "a userId"
+        def userId = createUserId(isUser, isTeacher)
 
         when:
-        studentQuestionService.getStudentQuestionAsTeacher(username, studentQuestionId)
+        studentQuestionService.getStudentQuestionAsTeacher(userId, studentQuestionId)
 
         then:
         def error = thrown(TutorException)
@@ -105,13 +123,13 @@ class TeacherGetStudentQuestionSpockTest extends Specification {
         return -1
     }
 
-    private String createUsername(boolean isUser, boolean isTeacher) {
+    private int createUserId(boolean isUser, boolean isTeacher) {
         if (!isUser)
-            return null
+            return -1
         if (!isTeacher)
-            return student.getUsername()
+            return student.getId()
 
-        return teacher.getUsername()
+        return teacher.getId()
     }
 
     private StudentQuestion createStudentQuestion(int key, String title, String content, String status) {
@@ -122,8 +140,9 @@ class TeacherGetStudentQuestionSpockTest extends Specification {
         studentQuestion.setStatus(StudentQuestion.Status.valueOf(status))
         studentQuestion.setStudent(userRepository.findByUsername(USER_USERNAME))
         studentQuestion.setCreationDate(generateRandomCreationDate())
+        studentQuestion.setCourse(course)
         studentQuestionRepository.save(studentQuestion)
-        return studentQuestion
+        studentQuestion
     }
 
     private createOptions(StudentQuestion studentQuestion, String content) {
@@ -144,12 +163,13 @@ class TeacherGetStudentQuestionSpockTest extends Specification {
         LocalDateTime now = LocalDateTime.now()
         Random random = new Random()
         int year = 60 * 60 * 24 * 365
-        return now.plusSeconds((long) random.nextInt(4 * year) - 2 * year) // +- 2 years
+        now.plusSeconds((long) random.nextInt(4 * year) - 2 * year) // +- 2 years
     }
 
     private User createUser(int key, String name, String username, User.Role role) {
         def user = new User(name, username, key, role)
         userRepository.save(user)
+        user.addCourse(courseExecution)
         user
     }
 
