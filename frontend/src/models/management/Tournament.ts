@@ -16,7 +16,7 @@ export class Tournament {
   numberOfEnrolls!: number;
 
   topics: Topic[] = [];
-  creator!: User;
+  creator: User | undefined;
   quiz: Quiz | undefined;
 
   constructor(jsonObj?: Tournament) {
@@ -37,8 +37,7 @@ export class Tournament {
 
       if (jsonObj.topics) {
         this.topics = jsonObj.topics.map(
-          (topic: Topic) => new Topic(topic)
-        );
+(topic: Topic) => new Topic(topic));
       }
     }
   }
