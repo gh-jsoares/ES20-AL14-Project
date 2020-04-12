@@ -2,6 +2,7 @@ package pt.ulisboa.tecnico.socialsoftware.tutor.discussion;
 
 import pt.ulisboa.tecnico.socialsoftware.tutor.answer.domain.QuestionAnswer;
 import pt.ulisboa.tecnico.socialsoftware.tutor.answer.repository.QuestionAnswerRepository;
+import pt.ulisboa.tecnico.socialsoftware.tutor.course.Course;
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecution;
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.repository.DiscussionRepository;
@@ -10,6 +11,8 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.domain.Discussion;
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Question;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.QuestionRepository;
+import pt.ulisboa.tecnico.socialsoftware.tutor.quiz.domain.Quiz;
+import pt.ulisboa.tecnico.socialsoftware.tutor.quiz.domain.QuizQuestion;
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.UserRepository;
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.User;
 
@@ -111,9 +114,12 @@ public class DiscussionService {
     }
 
     private User checkIfTeacherExists(DiscussionDto discussionDto) {
-        User teacher = userRepository.findById(discussionDto.getUserId()).orElseThrow(() -> new TutorException(ErrorMessage.USER_NOT_FOUND));
+        User teacher = userRepository.findByUsername(discussionDto.getTeacherName());
+        if (teacher == null) {
+            throw new TutorException(ErrorMessage.USER_NOT_FOUND);
+        }
         if (teacher.getRole() != User.Role.TEACHER) {
-            throw new TutorException(ErrorMessage.USER_IS_NOT_TEACHER, discussionDto.getUserName());
+            throw new TutorException(ErrorMessage.USER_IS_NOT_TEACHER, discussionDto.getTeacherName());
         }
         return teacher;
     }
@@ -162,12 +168,15 @@ public class DiscussionService {
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public List<Discussion> getDiscussionFromCourses(Set<CourseExecution> courses) {
         return courses.stream()
-                .map(CourseExecution::getUsers)
+                .map(CourseExecution::getQuizzes)
                 .flatMap(Collection::stream)
-                .filter(user -> user.getRole().equals(User.Role.STUDENT))
-                .map(User::getDiscussions)
+                .map(Quiz::getQuizQuestions)
                 .flatMap(Collection::stream)
+                .map(QuizQuestion::getQuestion)
+                .map(Question::getDiscussions)
+                .flatMap(Collection::stream)
+                .filter(Discussion::needsAnswer)
+                .distinct()
                 .collect(Collectors.toList());
-
     }
 }

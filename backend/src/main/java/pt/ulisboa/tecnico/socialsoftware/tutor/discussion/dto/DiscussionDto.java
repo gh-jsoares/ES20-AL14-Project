@@ -1,6 +1,7 @@
 package pt.ulisboa.tecnico.socialsoftware.tutor.discussion.dto;
 
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.domain.Discussion;
+import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.QuestionDto;
 
 import java.io.Serializable;
 
@@ -10,24 +11,26 @@ public class DiscussionDto implements Serializable {
 
     private Integer userId;
 
-    private Integer questionId;
+    private QuestionDto question;
 
     private String messageFromStudent = null;
 
     private String teacherAnswer = null;
 
-    private String userName = null;
+    private String studentName = null;
+
+    private String teacherName = null;
 
     public DiscussionDto() {}
 
     public DiscussionDto(Discussion discussion) {
         setId(discussion.getId());
-        setQuestionId(discussion.getQuestion().getId());
+        setQuestion(new QuestionDto(discussion.getQuestion()));
         setMessageFromStudent(discussion.getMessageFromStudent());
         setTeacherAnswer(discussion.getTeacherAnswer());
-        setUserName(discussion.getStudent().getUsername());
+        setStudentName(discussion.getStudent().getUsername());
         if (discussion.getTeacher() != null)
-            setUserName(discussion.getTeacher().getUsername());
+            setTeacherName(discussion.getTeacher().getUsername());
     }
 
     public Integer getId() {
@@ -40,10 +43,6 @@ public class DiscussionDto implements Serializable {
 
     public void setUserId(Integer userId) { this.userId = userId; }
 
-    public void setQuestionId(Integer questionId) { this.questionId = questionId;}
-
-    public Integer getQuestionId() { return questionId;}
-
     public String getMessageFromStudent() { return messageFromStudent; }
 
     public void setMessageFromStudent(String messageFromStudent) { this.messageFromStudent = messageFromStudent; }
@@ -52,11 +51,15 @@ public class DiscussionDto implements Serializable {
 
     public void setTeacherAnswer(String teacherAnswer) { this.teacherAnswer = teacherAnswer; }
 
-    public String getUserName() {
-        return userName;
-    }
+    public QuestionDto getQuestion() { return question; }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
-    }
+    public void setQuestion(QuestionDto question) { this.question = question; }
+
+    public String getStudentName() { return studentName; }
+
+    public void setStudentName(String studentName) { this.studentName = studentName; }
+
+    public String getTeacherName() { return teacherName; }
+
+    public void setTeacherName(String teacherName) { this.teacherName = teacherName; }
 }

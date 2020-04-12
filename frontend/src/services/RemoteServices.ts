@@ -568,6 +568,28 @@ export default class RemoteServices {
         });
   }
 
+  static async answerDiscussion(discussion: Discussion): Promise<Discussion> {
+    if (discussion.id) {
+      return httpClient
+          .post(`/discussions/${discussion.id}/`, discussion)
+          .then(response => {
+            return new Discussion(response.data);
+          })
+          .catch(async error => {
+            throw Error(await this.errorMessage(error));
+          });
+    } else {
+      return httpClient
+          .post(`/questions/${discussion.question.id}/discussions/`, discussion)
+          .then(response => {
+            return new Discussion(response.data);
+          })
+          .catch(async error => {
+            throw Error(await this.errorMessage(error));
+          });
+    }
+  }
+
   static async exportAll() {
     return httpClient
       .get('/admin/export', {
