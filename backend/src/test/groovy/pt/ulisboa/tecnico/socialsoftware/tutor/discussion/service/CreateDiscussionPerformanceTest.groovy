@@ -112,6 +112,7 @@ class CreateDiscussionPerformanceTest extends Specification {
         Quiz quiz = new Quiz()
         quiz.setKey(it)
         quiz.setCourseExecution(courseExecution)
+        quiz.setType(Quiz.QuizType.GENERATED)
         courseExecution.addQuiz(quiz)
         QuizQuestion quizQuestion = new QuizQuestion(quiz, question, 0)
         QuizAnswer quizAnswer = new QuizAnswer(students[it], quiz)

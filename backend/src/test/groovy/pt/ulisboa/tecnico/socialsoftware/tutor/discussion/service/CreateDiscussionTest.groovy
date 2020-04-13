@@ -95,6 +95,7 @@ class CreateDiscussionTest extends Specification {
         quiz = new Quiz()
         quiz.setKey(1)
         quiz.setCourseExecution(courseExecution)
+        quiz.setType(Quiz.QuizType.GENERATED)
         courseExecution.addQuiz(quiz)
         quizQuestion = new QuizQuestion(quiz, question, 0)
         quizAnswer = new QuizAnswer(student, quiz)

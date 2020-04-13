@@ -27,7 +27,8 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.user.UserRepository
 import spock.lang.Specification
 
 @DataJpaTest
-class StudentSeesTeacherAnswerTest extends Specification {
+class TeacherSeesStudentRequests extends Specification {
+
     @Autowired
     DiscussionService discussionService
 
@@ -49,7 +50,6 @@ class StudentSeesTeacherAnswerTest extends Specification {
     @Autowired
     CourseExecutionRepository courseExecutionRepository
 
-    public static final Integer INVALID_ID = -1
     public static final String MESSAGE = "message"
     public static final String STUDENT_NAME = "student_test"
     public static final String TEACHER_NAME = "teacher_test"
@@ -57,16 +57,17 @@ class StudentSeesTeacherAnswerTest extends Specification {
     public static final String COURSE_ACRONYM = "acronym_test"
     public static final String COURSE_ACADEMIC_TERM = "academic_term_test"
     public static final String TEACHER_ANSWER = "teacher_answer_test"
+    public static final Integer NON_EXISTING_ID = 100;
 
     Question question
     User student
-    User teacher
     Course course
     CourseExecution courseExecution
     Quiz quiz
     QuizQuestion quizQuestion
     QuizAnswer quizAnswer
     QuestionAnswer questionAnswer
+    Discussion discussion
 
     def setup() {
         CourseDto courseDto = new CourseDto()
@@ -85,7 +86,6 @@ class StudentSeesTeacherAnswerTest extends Specification {
         student = new User('student', STUDENT_NAME, 1, User.Role.STUDENT)
         student.getCourseExecutions().add(courseExecution)
         courseExecution.addUser(student)
-        userRepository.save(student)
 
         quiz = new Quiz()
         quiz.setKey(1)
@@ -96,87 +96,83 @@ class StudentSeesTeacherAnswerTest extends Specification {
         quizAnswer = new QuizAnswer(student, quiz)
         questionAnswer = new QuestionAnswer(quizAnswer, quizQuestion,  10, null,  0)
 
-        questionRepository.save(question)
         DiscussionDto discussionDto = new DiscussionDto()
         discussionDto.setMessageFromStudent(MESSAGE)
 
-        teacher = new User('teacher', TEACHER_NAME, 2, User.Role.TEACHER)
+        questionRepository.save(question)
+        userRepository.save(student)
+
+        discussion = new Discussion(questionAnswer, student, question, discussionDto)
+        discussionRepository.save(discussion)
+    }
+
+    def "teacher has one discussion to answer"() {
+        given: "a teacher from a course with a discussion to answer"
+        def teacher = new User('teacher', TEACHER_NAME, 2, User.Role.TEACHER)
         teacher.getCourseExecutions().add(courseExecution)
-        courseExecution.addUser(student)
+        courseExecution.addUser(teacher)
         userRepository.save(teacher)
 
-        courseExecution.addUser(teacher)
-        discussionDto.setTeacherName(teacher.getUsername())
-    }
-
-    def "student has two discussions with answers"() {
-        given: "two answered discussions"
-        DiscussionDto discussionDto = new DiscussionDto()
-        discussionDto.setMessageFromStudent(MESSAGE)
-
-        createBasicDiscussion(student,question, discussionDto)
-        createBasicDiscussion(student,question, discussionDto)
-
-        when: "search for student discussions"
-        def result = discussionService.getDiscussionStudent(student.getId())
-
-        then: "the returned data is correct"
-        result.size() == 2
-        result.get(0).teacherName == teacher.getUsername()
-        result.get(0).messageFromStudent == MESSAGE
-        result.get(0).teacherAnswer == TEACHER_ANSWER
-        result.get(1).teacherName == teacher.getUsername()
-        result.get(1).messageFromStudent == MESSAGE
-        result.get(1).teacherAnswer == TEACHER_ANSWER
-    }
-
-    def "student has one discussion without answer"() {
-        given: "one unanswered discussion"
-        DiscussionDto discussionDto = new DiscussionDto()
-        discussionDto.setMessageFromStudent(MESSAGE)
-        new Discussion(questionAnswer, student, question, discussionDto)
-
-        when: "search for student discussions"
-        def result = discussionService.getDiscussionStudent(student.getId())
+        when: "searching for teacher course discussions"
+        def result = discussionService.getDiscussionTeacher(teacher.getId())
 
         then: "the returned data is correct"
         result.size() == 1
-        result.get(0).getTeacherAnswer() == null
+        result.get(0).studentName == student.getUsername()
+        result.get(0).messageFromStudent == MESSAGE
+        result.get(0).question.getId() == question.getId()
     }
 
-    def "student doesn't have discussions"() {
-        when:
-        def result = discussionService.getDiscussionStudent(student.getId())
+    def "teacher has no discussions"() {
+        given: "a teacher with no courses"
+        def teacher = new User('teacher', TEACHER_NAME, 2, User.Role.TEACHER)
+        userRepository.save(teacher)
+
+        when: "search for teacher course discussions"
+        def result = discussionService.getDiscussionTeacher(teacher.getId())
 
         then: "the returned data is correct"
         result.size() == 0
     }
 
-    def "non-existing student wants to see discussions"() {
+    def "teacher has already answered the discussion"() {
+        given: "a teacher from a course with a discussion to answer"
+        def teacher = new User('teacher', TEACHER_NAME, 2, User.Role.TEACHER)
+        teacher.getCourseExecutions().add(courseExecution)
+        courseExecution.addUser(teacher)
+        userRepository.save(teacher)
+
+        and: "an answered discussion"
+        discussion
+        discussion.setTeacher(teacher);
+        discussion.setTeacherAnswer(TEACHER_ANSWER);
+
         when:
-        discussionService.getDiscussionStudent(INVALID_ID)
+        def result = discussionService.getDiscussionTeacher(teacher.getId())
+
+        then: "the returned data is correct"
+        result.size() == 0
+    }
+
+    def "get discussion from non-existing teacher"() {
+        when:
+        def result = discussionService.getDiscussionTeacher(NON_EXISTING_ID)
 
         then: "an exception is thrown"
         def exception = thrown(TutorException)
         exception.errorMessage == ErrorMessage.USER_NOT_FOUND
     }
 
-    def "user is not a student"() {
+    def "non-teacher user wants to see discussions "() {
+        given: "non-teacher user"
+        student
+
         when:
-        discussionService.getDiscussionStudent(teacher.getId())
+        def result = discussionService.getDiscussionTeacher(student.getId())
 
         then: "an exception is thrown"
         def exception = thrown(TutorException)
-        exception.errorMessage == ErrorMessage.USER_NOT_STUDENT
-    }
-
-    def createBasicDiscussion(User student, Question question, DiscussionDto discussionDto) {
-        Discussion discussion = new Discussion(questionAnswer, student, question, discussionDto)
-        discussion.setTeacherAnswer(TEACHER_ANSWER)
-        discussion.setTeacher(teacher)
-        discussionRepository.save(discussion)
-
-        student.addDiscussion(discussion)
+        exception.errorMessage == ErrorMessage.USER_IS_NOT_TEACHER
     }
 
     @TestConfiguration

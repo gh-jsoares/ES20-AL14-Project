@@ -93,6 +93,7 @@ class TeacherAnswersStudentServiceSpockTest extends Specification {
         quiz = new Quiz()
         quiz.setKey(1)
         quiz.setCourseExecution(courseExecution)
+        quiz.setType(Quiz.QuizType.GENERATED)
         courseExecution.addQuiz(quiz)
         quizQuestion = new QuizQuestion(quiz, question, 0)
         quizAnswer = new QuizAnswer(student, quiz)
@@ -122,7 +123,7 @@ class TeacherAnswersStudentServiceSpockTest extends Specification {
         def teacher = new User('teacher', TEACHER_NAME, 2, User.Role.TEACHER)
         teacher.getCourseExecutions().add(courseExecution)
         courseExecution.addUser(teacher)
-        discussionDto.setUserName(teacher.getUsername())
+        discussionDto.setTeacherName(teacher.getUsername())
         userRepository.save(teacher)
         discussionDto.setUserId(teacher.getId())
 
@@ -144,7 +145,7 @@ class TeacherAnswersStudentServiceSpockTest extends Specification {
         def discussionDto = discussionDtoCreation(discussion.getId(), TEACHER_ANSWER)
 
         def teacher = new User('teacher', TEACHER_NAME, 2, User.Role.TEACHER)
-        discussionDto.setUserName(teacher.getUsername())
+        discussionDto.setTeacherName(teacher.getUsername())
         userRepository.save(teacher)
         discussionDto.setUserId(teacher.getId())
 
@@ -162,7 +163,7 @@ class TeacherAnswersStudentServiceSpockTest extends Specification {
 
         def teacher = new User('teacher', TEACHER_NAME, 2, User.Role.TEACHER)
         teacher.getCourseExecutions().add(courseExecution)
-        discussionDto.setUserName(teacher.getUsername())
+        discussionDto.setTeacherName(teacher.getUsername())
         userRepository.save(teacher)
         discussionDto.setUserId(teacher.getId())
 
@@ -183,7 +184,7 @@ class TeacherAnswersStudentServiceSpockTest extends Specification {
         def discussionDto = discussionDtoCreation(discussion.getId(), TEACHER_ANSWER)
 
         def teacher = new User('admin', TEACHER_NAME, 2, User.Role.STUDENT)
-        discussionDto.setUserName(student.getUsername())
+        discussionDto.setTeacherName(student.getUsername())
         userRepository.save(teacher)
         discussionDto.setUserId(teacher.getId())
 
@@ -201,7 +202,7 @@ class TeacherAnswersStudentServiceSpockTest extends Specification {
 
         def teacher = new User('teacher', TEACHER_NAME, 2, User.Role.TEACHER)
         teacher.getCourseExecutions().add(courseExecution)
-        discussionDto.setUserName(teacher.getUsername())
+        discussionDto.setTeacherName(teacher.getUsername())
         userRepository.save(teacher)
         discussionDto.setUserId(teacher.getId())
 
@@ -233,7 +234,7 @@ class TeacherAnswersStudentServiceSpockTest extends Specification {
 
         def teacher = new User('teacher', TEACHER_NAME, 2, User.Role.TEACHER)
         teacher.getCourseExecutions().add(courseExecution)
-        discussionDto.setUserName(username)
+        discussionDto.setTeacherName(username)
         userRepository.save(teacher)
         discussionDto.setUserId(teacher.getId())
 
