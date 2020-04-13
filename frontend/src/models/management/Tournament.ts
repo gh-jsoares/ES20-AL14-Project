@@ -14,6 +14,7 @@ export class Tournament {
   version!: string;
   numberOfQuestions!: number;
   numberOfEnrolls!: number;
+  userEnrolled: boolean | undefined;
 
   topics: Topic[] = [];
   creator: User | undefined;
@@ -32,12 +33,12 @@ export class Tournament {
       this.creationDate = jsonObj.creationDate;
       this.availableDate = jsonObj.availableDate;
       this.conclusionDate = jsonObj.conclusionDate;
+      this.userEnrolled = jsonObj.userEnrolled;
       this.creator = jsonObj.creator;
       this.quiz = jsonObj.quiz;
 
       if (jsonObj.topics) {
-        this.topics = jsonObj.topics.map(
-(topic: Topic) => new Topic(topic));
+        this.topics = jsonObj.topics.map((topic: Topic) => new Topic(topic));
       }
     }
   }

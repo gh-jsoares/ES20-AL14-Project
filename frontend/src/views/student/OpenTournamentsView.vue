@@ -58,7 +58,15 @@
           {{ getStatus(tourn) }}
         </div>
         <div class="col last-col">
-          <i class="fas fa-chevron-circle-right"></i>
+          <v-btn
+            :disabled="tourn.userEnrolled || getStatus(tourn) === 'Started'"
+            color="#21b02b"
+            class="enroll"
+            outlined
+            @click="enrollTournament(tourn)"
+          >
+            Enroll
+          </v-btn>
         </div>
       </li>
     </ul>
@@ -68,12 +76,7 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import RemoteServices from '@/services/RemoteServices';
-import StatementManager from '@/models/statement/StatementManager';
-import StatementQuiz from '@/models/statement/StatementQuiz';
-import StatementQuestion from '@/models/statement/StatementQuestion';
-import StatementAnswer from '@/models/statement/StatementAnswer';
 import { Tournament } from '@/models/management/Tournament';
-import Topic from '@/models/management/Topic';
 
 @Component
 export default class OpenTournamentsView extends Vue {
@@ -84,7 +87,7 @@ export default class OpenTournamentsView extends Vue {
   async created() {
     await this.$store.dispatch('loading');
     try {
-      this.tournaments = (await RemoteServices.getOpenTournaments()).reverse();
+      this.tournaments = await RemoteServices.getOpenTournaments();
       this.listTourns = this.tournaments.slice();
     } catch (error) {
       await this.$store.dispatch('error', error);
@@ -112,8 +115,11 @@ export default class OpenTournamentsView extends Vue {
 
   async enrollTournament(tournament: Tournament) {
     let response;
+    await this.$store.dispatch('loading');
     try {
       response = await RemoteServices.enrollTournament(tournament.id);
+      tournament.numberOfEnrolls = response.numberOfEnrolls;
+      tournament.userEnrolled = response.userEnrolled;
       this.tournamentsEnrolledId.push(response.id);
     } catch (error) {
       await this.$store.dispatch('error', error);
@@ -188,6 +194,9 @@ export default class OpenTournamentsView extends Vue {
 
     .topic {
       margin: 3px;
+    }
+
+    .enroll {
     }
   }
 }

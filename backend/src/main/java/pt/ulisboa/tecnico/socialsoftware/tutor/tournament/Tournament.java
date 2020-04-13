@@ -252,6 +252,11 @@ public class Tournament {
         }
     }
 
+    public boolean isStudentEnrolled(int id){
+        return this.enrolledStudents.stream()
+                    .anyMatch(user -> user.getId() == id);
+    }
+
     public void remove() {
         if (this.quiz != null) {
             this.quiz.remove();
