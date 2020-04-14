@@ -152,6 +152,14 @@
                 <v-list-item-title>Solved</v-list-item-title>
               </v-list-item-content>
             </v-list-item>
+            <v-list-item to="/student/discussions">
+              <v-list-item-action>
+                <v-icon>drafts</v-icon>
+              </v-list-item-action>
+              <v-list-item-content>
+                <v-list-item-title>Discussions</v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
           </v-list>
         </v-menu>
 
@@ -328,6 +336,12 @@
               <v-icon>fas fa-user</v-icon>
             </v-list-item-action>
             <v-list-item-content>Stats</v-list-item-content>
+          </v-list-item>
+          <v-list-item to="/student/discussions">
+            <v-list-item-action>
+              <v-icon>drafts</v-icon>
+            </v-list-item-action>
+            <v-list-item-content>Discussions</v-list-item-content>
           </v-list-item>
         </v-list-group>
 
