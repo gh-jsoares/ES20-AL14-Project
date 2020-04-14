@@ -130,7 +130,6 @@
                 try {
                     this.editDiscussion.teacherName = this.$store.getters.getUser.username;
                     const result = await RemoteServices.answerDiscussion(this.editDiscussion);
-                    console.log(result);
                     this.$emit('answer-discussion', result);
                 } catch (error) {
                     await this.$store.dispatch('error', error);

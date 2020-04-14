@@ -102,7 +102,7 @@ export default class DiscussionsView extends Vue {
     }
 
     async onAnsweringDiscussion(discussion: Discussion) {
-        this.discussions.splice(this.discussions.indexOf(discussion), 1);
+        this.discussions = this.discussions.filter(disc => disc.id !== discussion.id);
         this.editDiscussionDialog = false;
         this.currentDiscussion = null;
     }

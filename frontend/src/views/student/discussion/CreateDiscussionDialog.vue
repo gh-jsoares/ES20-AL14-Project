@@ -86,7 +86,7 @@ export default class CreateDiscussionDialog extends Vue {
   @Model('dialog', Boolean) dialog!: boolean;
   @Prop(Number) questionId!: number;
   @Prop(Number) questionAnswerId!: number;
-  @Prop({ type: Option, required: true }) readonly options!: Option[];
+  @Prop({ type: Array, required: true }) readonly options!: Option[];
   @Prop({ type: String, required: true }) readonly content!: String;
   @Prop(Number) correct!: number;
 
