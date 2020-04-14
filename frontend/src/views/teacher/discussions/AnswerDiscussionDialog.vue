@@ -23,10 +23,7 @@
                             <p><b>Question:</b> {{ editDiscussion.question.content }}</p>
                         </v-flex>
                         <v-flex xs24 sm12 md8>
-                            <p class="d-inline-block">
-                                <b>Question Options
-                                </b>
-                            </p>
+                            <p class="d-inline-block"><b>Question Options</b></p>
                             <v-switch class="d-inline-block ml-2 mt-0 pt-0"
                                       :input-value="isExpanded"
                                       @change="expand()"
@@ -55,7 +52,7 @@
                             <v-text-field
                                     v-model="editDiscussion.teacherAnswer"
                                     label="Your answer"
-                                    data-cy="Your answer"
+                                    data-cy="teacherAnswer"
                             />
                         </v-flex>
                     </v-layout>

@@ -31,6 +31,13 @@ Cypress.Commands.add('demoAdminLogin', () => {
     cy.contains('Manage Courses').click()
 })
 
+Cypress.Commands.add('demoTeacherLogin', () => {
+    cy.visit('/')
+    cy.get('[data-cy="teacherButton"]').click()
+    cy.contains('Management').click()
+    cy.contains('Discussions').click()
+})
+
 Cypress.Commands.add('createCourseExecution', (name, acronym, academicTerm) => {
     cy.get('[data-cy="createButton"]').click()
     cy.get('[data-cy="Name"]').type(name)
@@ -67,5 +74,18 @@ Cypress.Commands.add('createFromCourseExecution', (name, acronym, academicTerm) 
     cy.get('[data-cy="Acronym"]').type(acronym)
     cy.get('[data-cy="AcademicTerm"]').type(academicTerm)
     cy.get('[data-cy="saveButton"]').click()
+})
+
+Cypress.Commands.add('answerDiscussion', (studentRequest, teacherAnswer) => {
+    cy.contains(studentRequest)
+        .parent()
+        .should('have.length', 1)
+        .children()
+        .should('have.length', 4)
+        .find('[data-cy="answerDiscussion"]')
+        .click({force: true})
+    cy.get('[data-cy="teacherAnswer"]').type(teacherAnswer)
+    cy.get('[data-cy="sendButton"]').click()
+    cy.contains(studentRequest).should('not.exist')
 })
 
