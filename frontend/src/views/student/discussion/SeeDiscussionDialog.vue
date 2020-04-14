@@ -9,18 +9,18 @@
         <v-card>
             <v-card-title>
         <span class="headline">
-          Answering Discussion
+          Visualizing Discussion
         </span>
             </v-card-title>
 
-            <v-card-text class="text-start" v-if="editDiscussion">
+            <v-card-text class="text-start" v-if="seeDiscussion">
                 <v-container grid-list-md fluid>
                     <v-layout column wrap>
                         <v-flex xs24 sm12 md8>
-                            <p><b>Student Name:</b> {{ editDiscussion.studentName }}</p>
+                            <p><b>Question Title:</b> {{ seeDiscussion.question.title }}</p>
                         </v-flex>
                         <v-flex xs24 sm12 md8>
-                            <p><b>Question:</b> {{ editDiscussion.question.content }}</p>
+                            <p><b>Question:</b> {{ seeDiscussion.question.content }}</p>
                         </v-flex>
                         <v-flex xs24 sm12 md8>
                             <p class="d-inline-block"><b>Question Options</b></p>
@@ -30,7 +30,7 @@
                             ></v-switch>
                             <v-list disabled v-if="isExpanded">
                                 <v-list-item
-                                        v-for="item in editDiscussion.question.options"
+                                        v-for="item in seeDiscussion.question.options"
                                         :key="item.sequence"
                                 >
                                     <v-list-item-icon>
@@ -50,15 +50,13 @@
                         </v-flex>
                         <v-flex xs24 sm12 md8>
                             <p>
-                                <b>Student Question:</b> {{ editDiscussion.messageFromStudent }}
+                                <b>Your question:</b> {{ seeDiscussion.messageFromStudent }}
                             </p>
                         </v-flex>
                         <v-flex xs24 sm12 md8>
-                            <v-text-field
-                                    v-model="editDiscussion.teacherAnswer"
-                                    label="Your answer"
-                                    data-cy="teacherAnswer"
-                            />
+                            <p>
+                                <b>Teacher Answer:</b> {{ seeDiscussion.teacherAnswer }}
+                            </p>
                         </v-flex>
                     </v-layout>
                 </v-container>
@@ -70,10 +68,7 @@
                         color="blue darken-1"
                         @click="$emit('close-dialog')"
                         data-cy="cancelButton"
-                >Cancel</v-btn
-                >
-                <v-btn color="blue darken-1" @click="answerDiscussion" data-cy="sendButton"
-                >Send Answer</v-btn
+                >Close</v-btn
                 >
             </v-card-actions>
         </v-card>
@@ -82,15 +77,14 @@
 
 <script lang="ts">
     import { Component, Model, Prop, Vue } from 'vue-property-decorator';
-    import RemoteServices from '@/services/RemoteServices';
     import { Discussion } from '@/models/management/Discussion';
 
     @Component
-    export default class AnswerDiscussionDialog extends Vue {
+    export default class SeeDiscussionDialog extends Vue {
         @Model('dialog', Boolean) dialog!: boolean;
         @Prop({ type: Discussion, required: true }) readonly discussion!: Discussion;
 
-        editDiscussion!: Discussion;
+        seeDiscussion!: Discussion;
         isExpanded: boolean = false;
         headers: Object = [
             {
@@ -108,30 +102,7 @@
         ];
 
         created() {
-            this.editDiscussion = new Discussion(this.discussion);
-        }
-
-        async answerDiscussion() {
-            if (
-                this.editDiscussion &&
-                !this.editDiscussion.teacherAnswer
-            ) {
-                await this.$store.dispatch(
-                    'error',
-                    'You need to answer the question from the student.'
-                );
-                return;
-            }
-
-            if (this.editDiscussion) {
-                try {
-                    this.editDiscussion.teacherName = this.$store.getters.getUser.username;
-                    const result = await RemoteServices.answerDiscussion(this.editDiscussion);
-                    this.$emit('answer-discussion', result);
-                } catch (error) {
-                    await this.$store.dispatch('error', error);
-                }
-            }
+            this.seeDiscussion = new Discussion(this.discussion);
         }
 
         async expand() {

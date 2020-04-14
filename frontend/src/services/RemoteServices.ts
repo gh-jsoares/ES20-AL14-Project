@@ -582,6 +582,19 @@ export default class RemoteServices {
       });
   }
 
+  static async getDiscussionsStudent(): Promise<Discussion[]> {
+    return httpClient
+        .get('/student/discussions/')
+        .then(response => {
+          return response.data.map((discussion: any) => {
+            return new Discussion(discussion);
+          });
+        })
+        .catch(async error => {
+          throw Error(await this.errorMessage(error));
+        });
+  }
+
   static async answerDiscussion(discussion: Discussion): Promise<Discussion> {
     if (discussion.id) {
       return httpClient

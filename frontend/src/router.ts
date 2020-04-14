@@ -26,6 +26,7 @@ import AssessmentsView from '@/views/teacher/assessments/AssessmentsView.vue';
 import CreateQuizzesView from '@/views/student/CreateQuizzesView.vue';
 import CoursesView from '@/views/admin/Courses/CoursesView.vue';
 import DiscussionsView from '@/views/teacher/discussions/DiscussionsView.vue';
+import StudentDiscussionsView from '@/views/student/discussion/StudentDiscussionsView.vue';
 
 Vue.use(Router);
 
@@ -112,7 +113,7 @@ let router = new Router({
           name: 'discussions-management',
           component: DiscussionsView,
           meta: {
-            title: process.env.VUE_APP_NAME + ' - Assessment Topics',
+            title: process.env.VUE_APP_NAME + ' - Discussions',
             requiredAuth: 'Teacher'
           }
         },
@@ -187,6 +188,15 @@ let router = new Router({
           }
         },
         {
+          path: 'discussions',
+          name: 'discussions',
+          component: StudentDiscussionsView,
+          meta: {
+            title: process.env.VUE_APP_NAME + ' - Scan',
+            requiredAuth: 'Student'
+          }
+        },
+        {
           path: 'scan',
           name: 'scan',
           component: ScanView,
@@ -194,7 +204,7 @@ let router = new Router({
             title: process.env.VUE_APP_NAME + ' - Scan',
             requiredAuth: 'Student'
           }
-        }
+        },
       ]
     },
     {
