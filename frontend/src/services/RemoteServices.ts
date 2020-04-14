@@ -555,38 +555,52 @@ export default class RemoteServices {
       });
   }
 
+  static createDiscussion(
+    questionId: number,
+    discussion: Discussion
+  ): Promise<Discussion> {
+    return httpClient
+      .post(`/questions/${questionId}/discussions/`, discussion)
+      .then(response => {
+        return new Discussion(response.data);
+      })
+      .catch(async error => {
+        throw Error(await this.errorMessage(error));
+      });
+  }
+
   static async getDiscussions(): Promise<Discussion[]> {
     return httpClient
-        .get('/teacher/discussions/')
-        .then(response => {
-          return response.data.map((discussion: any) => {
-            return new Discussion(discussion);
-          });
-        })
-        .catch(async error => {
-          throw Error(await this.errorMessage(error));
+      .get('/teacher/discussions/')
+      .then(response => {
+        return response.data.map((discussion: any) => {
+          return new Discussion(discussion);
         });
+      })
+      .catch(async error => {
+        throw Error(await this.errorMessage(error));
+      });
   }
 
   static async answerDiscussion(discussion: Discussion): Promise<Discussion> {
     if (discussion.id) {
       return httpClient
-          .post(`/discussions/${discussion.id}/`, discussion)
-          .then(response => {
-            return new Discussion(response.data);
-          })
-          .catch(async error => {
-            throw Error(await this.errorMessage(error));
-          });
+        .post(`/discussions/${discussion.id}/`, discussion)
+        .then(response => {
+          return new Discussion(response.data);
+        })
+        .catch(async error => {
+          throw Error(await this.errorMessage(error));
+        });
     } else {
       return httpClient
-          .post(`/questions/${discussion.question.id}/discussions/`, discussion)
-          .then(response => {
-            return new Discussion(response.data);
-          })
-          .catch(async error => {
-            throw Error(await this.errorMessage(error));
-          });
+        .post(`/questions/${discussion.question.id}/discussions/`, discussion)
+        .then(response => {
+          return new Discussion(response.data);
+        })
+        .catch(async error => {
+          throw Error(await this.errorMessage(error));
+        });
     }
   }
 
