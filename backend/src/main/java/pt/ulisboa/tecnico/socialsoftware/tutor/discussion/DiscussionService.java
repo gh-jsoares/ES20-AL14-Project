@@ -56,8 +56,8 @@ public class DiscussionService {
         value = { SQLException.class },
         backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
-    public DiscussionDto createDiscussion(Integer questionId, DiscussionDto discussionDto) {
-        User student = getStudentById(discussionDto.getUserId());
+    public DiscussionDto createDiscussion(Integer userId, Integer questionId, DiscussionDto discussionDto) {
+        User student = getStudentById(userId);
 
         Question question = getQuestion(questionId);
 
@@ -105,23 +105,12 @@ public class DiscussionService {
         value = { SQLException.class },
         backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
-    public DiscussionDto teacherAnswersStudent(Integer discussionId, DiscussionDto discussionDto) {
+    public DiscussionDto teacherAnswersStudent(Integer userId, Integer discussionId, DiscussionDto discussionDto) {
         Discussion discussion = discussionRepository.findById(discussionId).orElseThrow(() -> new TutorException(ErrorMessage.DISCUSSION_NOT_FOUND, discussionId));
-        User teacher = checkIfTeacherExists(discussionDto);
+        User teacher = getTeacherById(userId);
 
         discussion.updateTeacherAnswer(teacher, discussionDto);
         return new DiscussionDto(discussion);
-    }
-
-    private User checkIfTeacherExists(DiscussionDto discussionDto) {
-        User teacher = userRepository.findByUsername(discussionDto.getTeacherName());
-        if (teacher == null) {
-            throw new TutorException(ErrorMessage.USER_NOT_FOUND);
-        }
-        if (teacher.getRole() != User.Role.TEACHER) {
-            throw new TutorException(ErrorMessage.USER_IS_NOT_TEACHER, discussionDto.getTeacherName());
-        }
-        return teacher;
     }
 
     @Retryable(

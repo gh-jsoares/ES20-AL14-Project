@@ -88,9 +88,8 @@ class CreateDiscussionPerformanceTest extends Specification {
         1.upto(discNum, {
             DiscussionDto discussionDto = new DiscussionDto()
             discussionDto.setId(questionAnswers[it].getId())
-            discussionDto.setUserId(students[it].getId())
             discussionDto.setMessageFromStudent(MESSAGE)
-            discussionService.createDiscussion(questions[it].getId(), discussionDto)
+            discussionService.createDiscussion(students[it].getId(), questions[it].getId(), discussionDto)
         })
         then:
         true
