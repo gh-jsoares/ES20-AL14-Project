@@ -13,7 +13,7 @@
         </span>
             </v-card-title>
 
-            <v-card-text class="text-left" v-if="editDiscussion">
+            <v-card-text class="text-start" v-if="editDiscussion">
                 <v-container grid-list-md fluid>
                     <v-layout column wrap>
                         <v-flex xs24 sm12 md8>
@@ -127,7 +127,6 @@
                 try {
                     this.editDiscussion.teacherName = this.$store.getters.getUser.username;
                     const result = await RemoteServices.answerDiscussion(this.editDiscussion);
-                    console.log(result);
                     this.$emit('answer-discussion', result);
                 } catch (error) {
                     await this.$store.dispatch('error', error);
