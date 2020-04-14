@@ -97,10 +97,9 @@ class TeacherAnswersStudentServiceSpockPerformanceTest extends Specification {
         1.upto(COUNT, {
             DiscussionDto discussionDto = new DiscussionDto()
             discussionDto.setTeacherName(teacher.getUsername())
-            discussionDto.setUserId(teacher.getId())
             discussionDto.setTeacherAnswer(TEACHER_ANSWER)
             discussionDto.setMessageFromStudent(MESSAGE)
-            discussionService.teacherAnswersStudent(discussions[it].getId(), discussionDto)
+            discussionService.teacherAnswersStudent(teacher.getId(), discussions[it].getId(), discussionDto)
         })
         then:
         true

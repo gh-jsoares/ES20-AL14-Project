@@ -9,8 +9,6 @@ public class DiscussionDto implements Serializable {
 
     private Integer id;
 
-    private Integer userId;
-
     private QuestionDto question;
 
     private String messageFromStudent = null;
@@ -38,10 +36,6 @@ public class DiscussionDto implements Serializable {
     }
 
     public void setId(Integer id) { this.id = id; }
-
-    public Integer getUserId() { return userId; }
-
-    public void setUserId(Integer userId) { this.userId = userId; }
 
     public String getMessageFromStudent() { return messageFromStudent; }
 

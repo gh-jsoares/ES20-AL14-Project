@@ -29,7 +29,7 @@
                                 v-on="on"
                                 @click="answerDiscussion(item)"
                                 data-cy="answerDiscussion"
-                        >cached</v-icon
+                        >question_answer</v-icon
                         >
                     </template>
                     <span>Answer discussion</span>

@@ -37,7 +37,12 @@
                                         :key="item.sequence"
                                 >
                                     <v-list-item-icon>
-                                        <v-icon v-if="item.correct">check_box</v-icon>
+                                        <v-icon class="mr-n3" v-if="item.correct">
+                                            check
+                                        </v-icon>
+                                        <v-icon class="mr-n3" v-else>
+                                            close
+                                        </v-icon>
                                     </v-list-item-icon>
 
                                     <v-list-item-content>
