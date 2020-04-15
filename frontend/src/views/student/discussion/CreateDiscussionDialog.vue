@@ -25,15 +25,13 @@
                   Question Options
                 </b>
               </p>
-              <v-switch class="d-inline-block ml-2 mt-0 pt-0"
+              <v-switch
+                class="d-inline-block ml-2 mt-0 pt-0"
                 :input-value="isExpanded"
                 @change="expand()"
               ></v-switch>
               <v-list disabled v-if="isExpanded">
-                <v-list-item
-                  v-for="item in options"
-                  :key="item.sequence"
-                >
+                <v-list-item v-for="item in options" :key="item.sequence">
                   <v-list-item-icon>
                     <v-icon class="mr-n3" v-if="item.optionId === correct">
                       check
@@ -43,7 +41,8 @@
                     </v-icon>
                   </v-list-item-icon>
                   <v-list-item-content>
-                    <v-list-item-title v-text="item.content"></v-list-item-title>
+                    <v-list-item-title v-text="item.content">
+                    </v-list-item-title>
                   </v-list-item-content>
                 </v-list-item>
               </v-list>
@@ -67,7 +66,10 @@
           data-cy="cancelButton"
           >Cancel</v-btn
         >
-        <v-btn color="blue darken-1" @click="createDiscussion" data-cy="sendButton"
+        <v-btn
+          color="blue darken-1"
+          @click="createDiscussion"
+          data-cy="sendButton"
           >Send Discussion</v-btn
         >
       </v-card-actions>
@@ -98,20 +100,17 @@ export default class CreateDiscussionDialog extends Vue {
   }
 
   async createDiscussion() {
-    if (
-          this.newDiscussion &&
-          !this.newDiscussion.messageFromStudent
-      ) {
-      await this.$store.dispatch(
-        'error',
-        'You need to write a question.'
-      );
+    if (this.newDiscussion && !this.newDiscussion.messageFromStudent) {
+      await this.$store.dispatch('error', 'You need to write a question.');
       return;
     }
 
     try {
       this.newDiscussion.id = this.questionAnswerId;
-      const result = await RemoteServices.createDiscussion(this.questionId, this.newDiscussion);
+      const result = await RemoteServices.createDiscussion(
+        this.questionId,
+        this.newDiscussion
+      );
       this.$emit('create-discussion', result);
     } catch (error) {
       await this.$store.dispatch('error', error);
@@ -124,5 +123,4 @@ export default class CreateDiscussionDialog extends Vue {
 }
 </script>
 
-<style lang="scss">
-</style>
+<style lang="scss"></style>
