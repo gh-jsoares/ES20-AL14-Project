@@ -1,4 +1,4 @@
-<template>
+<template id="createTournApp">
   <div class="container">
     <v-alert
       v-model="saved"
@@ -6,6 +6,7 @@
       type="success"
       close-text="Close Alert"
       dismissible
+      data-cy="saved"
     >
       {{ successMsg }}
     </v-alert>
@@ -15,6 +16,7 @@
       type="error"
       close-text="Close Alert"
       dismissible
+      data-cy="failed"
     >
       {{ errorMsg }}
     </v-alert>
@@ -22,7 +24,7 @@
       <v-card-title>Create Tournament</v-card-title>
       <v-spacer></v-spacer>
       <v-card-text>
-        <v-text-field v-model="tourn.title" label="*Title" />
+        <v-text-field v-model="tourn.title" label="*Title" data-cy="Title" />
         <v-autocomplete
           v-model="tourn.topics"
           :items="topics"
@@ -33,6 +35,7 @@
           hide-selected
           multiple
           deletable-chips
+          data-cy="Topics"
         ></v-autocomplete>
         <v-row class="mt-5">
           <v-col cols="9">
@@ -43,6 +46,7 @@
               :min="1"
               :max="100"
               persistent-hint
+              data-cy="QuestSlider"
             >
               <template v-slot:prepend>
                 <v-text-field
@@ -52,6 +56,7 @@
                   :max="100"
                   dense
                   height="23px"
+                  data-cy="QuestText"
                 ></v-text-field>
               </template>
             </v-slider>
@@ -63,6 +68,7 @@
               class="pt-6"
               v-model="tourn.scramble"
               label="Scramble"
+              data-cy="Scramble"
             ></v-switch>
           </v-col>
         </v-row>
@@ -71,10 +77,10 @@
             <v-datetime-picker
               label="*Start Date"
               v-model="startDate"
-              :rules="[() => !!tourn.availableDate || 'Required.']"
               format="yyyy-MM-dd HH:mm"
               date-format="yyyy-MM-dd"
               time-format="HH:mm"
+              data-cy="startDate"
             >
             </v-datetime-picker>
           </v-col>
@@ -85,13 +91,16 @@
               format="yyyy-MM-dd HH:mm"
               date-format="yyyy-MM-dd"
               time-format="HH:mm"
+              data-cy="endDate"
             >
             </v-datetime-picker>
           </v-col>
         </v-row>
         <v-row class="mt-5">
           <v-spacer></v-spacer>
-          <v-btn color="primary" @click="save()">Create</v-btn>
+          <v-btn color="primary" @click="save()" data-cy="createBtn"
+            >Create</v-btn
+          >
         </v-row>
       </v-card-text>
     </v-card>
@@ -136,6 +145,7 @@ export default class CreateTournamentView extends Vue {
     try {
       let created = await RemoteServices.createTournament(this.tourn);
       this.show(created);
+      this.clear();
     } catch (error) {
       await this.$store.dispatch('error', error);
     }
@@ -183,6 +193,17 @@ export default class CreateTournamentView extends Vue {
       .toISOString()
       .replace('T', ' ')
       .substr(0, 16);
+  }
+
+  clear() {
+    this.tourn.title = '';
+    this.tourn.topics = [];
+    this.tourn.numberOfQuestions = 1;
+    this.tourn.scramble = false;
+    this.tourn.availableDate = '';
+    this.tourn.conclusionDate = '';
+    this.startDate = '';
+    this.endDate = '';
   }
 }
 </script>

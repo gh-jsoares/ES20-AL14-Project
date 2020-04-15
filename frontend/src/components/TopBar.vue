@@ -333,6 +333,13 @@
             <v-list-item-content>Solved Quizzes</v-list-item-content>
           </v-list-item>
 
+          <v-list-item to="/student/create-tournament">
+            <v-list-item-action>
+              <v-icon>create</v-icon>
+            </v-list-item-action>
+            <v-list-item-content>Create Tournament</v-list-item-content>
+          </v-list-item>
+
           <v-list-item to="/student/stats">
             <v-list-item-action>
               <v-icon>fas fa-user</v-icon>
