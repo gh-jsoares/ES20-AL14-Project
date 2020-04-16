@@ -37,7 +37,7 @@
           deletable-chips
           data-cy="Topics"
         ></v-autocomplete>
-        <v-row class="mt-5">
+        <v-row class="mt-5 hidden-sm-and-down">
           <v-col cols="9">
             <v-subheader>Number of Questions</v-subheader>
             <v-slider
@@ -72,6 +72,45 @@
             ></v-switch>
           </v-col>
         </v-row>
+        <!-- start of mobile -->
+        <v-row class="pt-5 hidden-md-and-up">
+          <v-col cols="12">
+            <v-subheader>Number of Questions</v-subheader>
+          </v-col>
+          <v-col>
+            <v-slider
+              v-model="tourn.numberOfQuestions"
+              thumb-label
+              :min="1"
+              :max="100"
+              persistent-hint
+              data-cy="QuestSlider"
+            >
+              <template v-slot:prepend>
+                <v-text-field
+                  v-model="tourn.numberOfQuestions"
+                  class="mt-0 pt-0 slider-helper"
+                  :min="1"
+                  :max="100"
+                  dense
+                  height="23px"
+                  data-cy="QuestText"
+                ></v-text-field>
+              </template>
+            </v-slider>
+          </v-col>
+        </v-row>
+        <v-row
+          class="hidden-md-and-up"
+          style="display: flex; justify-content: center; align-self: center"
+        >
+          <v-switch
+            v-model="tourn.scramble"
+            label="Scramble"
+            data-cy="Scramble"
+          ></v-switch>
+        </v-row>
+        <!-- end of mobile -->
         <v-row>
           <v-col>
             <v-datetime-picker
@@ -96,7 +135,7 @@
             </v-datetime-picker>
           </v-col>
         </v-row>
-        <v-row class="mt-5">
+        <v-row>
           <v-spacer></v-spacer>
           <v-btn color="primary" @click="save()" data-cy="createBtn"
             >Create</v-btn

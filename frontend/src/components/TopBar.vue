@@ -151,7 +151,7 @@
           <template v-slot:activator="{ on }">
             <v-btn v-on="on" text dark>
               Tournaments
-              <v-icon>fas fa-file-alt</v-icon>
+              <v-icon>fas fa-trophy</v-icon>
             </v-btn>
           </template>
           <v-list dense>
