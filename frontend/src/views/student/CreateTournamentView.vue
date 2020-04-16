@@ -20,7 +20,7 @@
     >
       {{ errorMsg }}
     </v-alert>
-    <v-card class="mx-auto  py-5 px-8" max-width="1000px">
+    <v-card class="mx-auto  py-sm-5 px-sm-8" max-width="1000px">
       <v-card-title>Create Tournament</v-card-title>
       <v-spacer></v-spacer>
       <v-card-text>
@@ -73,11 +73,9 @@
           </v-col>
         </v-row>
         <!-- start of mobile -->
-        <v-row class="pt-5 hidden-md-and-up">
-          <v-col cols="12">
-            <v-subheader>Number of Questions</v-subheader>
-          </v-col>
+        <v-row class="hidden-md-and-up">
           <v-col>
+            <v-subheader>Number of Questions</v-subheader>
             <v-slider
               v-model="tourn.numberOfQuestions"
               thumb-label
@@ -100,11 +98,9 @@
             </v-slider>
           </v-col>
         </v-row>
-        <v-row
-          class="hidden-md-and-up"
-          style="display: flex; justify-content: center; align-self: center"
-        >
+        <v-row class="hidden-md-and-up">
           <v-switch
+            class="my-0 mx-auto"
             v-model="tourn.scramble"
             label="Scramble"
             data-cy="Scramble"
