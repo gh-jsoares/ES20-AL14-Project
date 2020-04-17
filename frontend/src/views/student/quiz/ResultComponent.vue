@@ -25,9 +25,7 @@
         v-html="convertMarkDown(question.content, question.image)"
       ></div>
       <div @click="createDiscussion" class="square">
-        <i
-          class="fas fa-comment-alt mt-3"
-        />
+        <i class="fas fa-comment-alt mt-3" />
       </div>
       <div @click="increaseOrder" class="square">
         <i
