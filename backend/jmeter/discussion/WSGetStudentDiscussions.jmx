@@ -196,8 +196,8 @@ insert into discussions values (1, &apos;???&apos;, &apos;yes&apos;, 1800, 676, 
             <stringProp name="HTTPSampler.response_timeout"></stringProp>
           </HTTPSamplerProxy>
           <hashTree>
-            <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="Assert questionId" enabled="true">
-              <stringProp name="JSON_PATH">$[0].questionId</stringProp>
+            <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="Assert question id" enabled="true">
+              <stringProp name="JSON_PATH">$[0].question.id</stringProp>
               <stringProp name="EXPECTED_VALUE">1800</stringProp>
               <boolProp name="JSONVALIDATION">true</boolProp>
               <boolProp name="EXPECT_NULL">false</boolProp>
@@ -214,8 +214,8 @@ insert into discussions values (1, &apos;???&apos;, &apos;yes&apos;, 1800, 676, 
               <boolProp name="ISREGEX">false</boolProp>
             </JSONPathAssertion>
             <hashTree/>
-            <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="Assert username" enabled="true">
-              <stringProp name="JSON_PATH">$[0].userName</stringProp>
+            <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="Assert teacher name" enabled="true">
+              <stringProp name="JSON_PATH">$[0].teacherName</stringProp>
               <stringProp name="EXPECTED_VALUE">Demo-Teacher</stringProp>
               <boolProp name="JSONVALIDATION">true</boolProp>
               <boolProp name="EXPECT_NULL">false</boolProp>
