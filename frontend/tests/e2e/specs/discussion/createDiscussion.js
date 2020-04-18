@@ -1,11 +1,17 @@
+const cleanupFile = 'tests/e2e/support/deleteDiscussionSubmission.sql';
+
 describe('creating Discussion walkthrough', () => {
+  before(() => {
+    cy.databaseRunFile(cleanupFile);
+  });
+
   beforeEach(() => {
     cy.demoStudentLogin();
   });
 
   afterEach(() => {
     cy.contains('Logout').click();
-    cy.deleteDiscussion('Allocation viewtype', 'This is my discussion.');
+    cy.databaseRunFile(cleanupFile);
   });
 
   it('student logins and creates a discussion', () => {
