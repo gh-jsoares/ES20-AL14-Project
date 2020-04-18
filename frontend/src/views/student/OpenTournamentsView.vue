@@ -12,7 +12,7 @@
         solo
         dense
       ></v-text-field>
-      <h2 class="mt-5">Available Tournaments</h2>
+      <h2 class="mt-5">Open Tournaments</h2>
       <v-dialog v-model="dialog" max-width="350">
         <v-card class="mx-auto text-left">
           <v-card-text class="pa-4">
@@ -85,7 +85,7 @@
         dense
         data-cy="searchBar"
       ></v-text-field>
-      <h2>Available Tournaments</h2>
+      <h2>Open Tournaments</h2>
       <ul>
         <li class="list-header">
           <div class="col">Title</div>
