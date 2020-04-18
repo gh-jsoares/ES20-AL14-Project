@@ -19,9 +19,9 @@ describe('List Student Questions as Student walkthrough', () => {
         .should('have.length', 1)
         .parent()
         .children()
-        .should('have.length', 2)
+        .should('have.length', 2) // 2 questions
         .children()
-        .should('have.length', 14)
+        .should('have.length', 14) // 7 * 2 questions
     });
 });
   
