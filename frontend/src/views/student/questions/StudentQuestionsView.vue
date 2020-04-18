@@ -21,7 +21,9 @@
           />
 
           <v-spacer />
-          <!-- <v-btn color="primary" dark @click="newStudentQuestion">New Student Question</v-btn> -->
+          <v-btn color="primary" @click="newStudentQuestion" dark>
+            New Student Question
+          </v-btn>
         </v-card-title>
       </template>
 
@@ -68,6 +70,12 @@
         </v-tooltip>
       </template>
     </v-data-table>
+    <edit-student-question-dialog
+      v-if="currentStudentQuestion"
+      v-model="editStudentQuestionDialog"
+      :studentQuestion="currentStudentQuestion"
+      v-on:save-student-question="onSaveStudentQuestion"
+    />
     <show-student-question-dialog
       v-if="currentStudentQuestion"
       v-model="studentQuestionDialog"
@@ -86,10 +94,12 @@ import Image from '@/models/management/Image';
 import StudentQuestion from '@/models/management/StudentQuestion';
 
 import ShowStudentQuestionDialog from '@/views/student/questions/ShowStudentQuestionDialog.vue';
+import EditStudentQuestionDialog from '@/views/student/questions/EditStudentQuestionDialog.vue';
 
 @Component({
   components: {
-    'show-student-question-dialog': ShowStudentQuestionDialog
+    'show-student-question-dialog': ShowStudentQuestionDialog,
+    'edit-student-question-dialog': EditStudentQuestionDialog
   }
 })
 export default class StudentQuestionsView extends Vue {
@@ -179,7 +189,10 @@ export default class StudentQuestionsView extends Vue {
   async handleFileUpload(event: File, studentQuestion: StudentQuestion) {
     if (studentQuestion.id) {
       try {
-        const imageURL = await RemoteServices.uploadImageToStudentQuestion(event, studentQuestion.id);
+        const imageURL = await RemoteServices.uploadImageToStudentQuestion(
+          event,
+          studentQuestion.id
+        );
         studentQuestion.image = new Image();
         studentQuestion.image.url = imageURL;
         confirm('Image ' + imageURL + ' was uploaded!');
@@ -187,6 +200,27 @@ export default class StudentQuestionsView extends Vue {
         await this.$store.dispatch('error', error);
       }
     }
+  }
+
+  @Watch('editStudentQuestionDialog')
+  closeError() {
+    if (!this.editStudentQuestionDialog) {
+      this.currentStudentQuestion = null;
+    }
+  }
+
+  newStudentQuestion() {
+    this.currentStudentQuestion = new StudentQuestion();
+    this.editStudentQuestionDialog = true;
+  }
+
+  async onSaveStudentQuestion(studentQuestion: StudentQuestion) {
+    this.studentQuestions = this.studentQuestions.filter(
+      q => q.id !== studentQuestion.id
+    );
+    this.studentQuestions.unshift(studentQuestion);
+    this.editStudentQuestionDialog = false;
+    this.currentStudentQuestion = null;
   }
 }
 </script>

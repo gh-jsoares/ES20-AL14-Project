@@ -81,10 +81,10 @@ Cypress.Commands.add('gotoStudentQuestions', () => {
   cy.contains('Student Questions').click();
 });
 
-const DB_TABLENAME = 'tutordb'
-const DB_USERNAME = 'engineer'
-const DB_PASSWORD = 'password'
+const DB_TABLE    = Cypress.env('db_table')
+const DB_USERNAME = Cypress.env('db_username')
+const DB_PASSWORD = Cypress.env('db_password')
 
 Cypress.Commands.add('queryDatabase', (query) => {
-  cy.exec(`SET PGPASSWORD=${DB_PASSWORD} && psql -U ${DB_USERNAME} -d ${DB_TABLENAME} -c "${query}"`)
+  cy.exec(`SET PGPASSWORD=${DB_PASSWORD} && psql -U ${DB_USERNAME} -d ${DB_TABLE} -c "${query}"`)
 })

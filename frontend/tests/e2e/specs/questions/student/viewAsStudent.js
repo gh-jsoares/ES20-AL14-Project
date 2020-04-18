@@ -14,9 +14,7 @@ describe('List Student Questions as Student walkthrough', () => {
     it('login view student question details', () => {
       cy.contains('Student Question Title')
         .parent()
-        .should('have.length', 1)
         .children()
-        .should('have.length', 7)
         .find('[data-cy="viewStudentQuestionDetails"]')
         .click();
       cy.wait(2000);
