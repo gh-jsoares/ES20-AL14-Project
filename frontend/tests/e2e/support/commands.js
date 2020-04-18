@@ -24,6 +24,7 @@
 // -- This will overwrite an existing command --
 // Cypress.Commands.overwrite("visit", (originalFn, url, options) => { ... })
 /// <reference types="Cypress" />
+
 Cypress.Commands.add('demoAdminLogin', () => {
   cy.visit('/');
   cy.get('[data-cy="adminButton"]').click();
@@ -72,16 +73,56 @@ Cypress.Commands.add(
   }
 );
 
-Cypress.Commands.add('answerDiscussion', (studentRequest, teacherAnswer) => {
-    cy.contains(studentRequest)
-        .parent()
-        .should('have.length', 1)
-        .children()
-        .should('have.length', 4)
-        .find('[data-cy="answerDiscussion"]')
-        .click({force: true})
+Cypress.Commands.add('answerDiscussion', (questionTitle, teacherAnswer) => {
+    cy.get('[data-cy="questionTitleButton"]').click()
     cy.get('[data-cy="teacherAnswer"]').type(teacherAnswer)
     cy.get('[data-cy="sendButton"]').click()
-    cy.contains(studentRequest).should('not.exist')
+    cy.contains(questionTitle).should('not.exist')
 })
 
+
+//New
+
+const dbUser = 'jm';
+const dbPassword = '123';
+const dbName = 'tutordb';
+
+const dbAccess =
+  'PGPASSWORD=' +
+  dbPassword +
+  ' psql -d ' +
+  dbName +
+  ' -U ' +
+  dbUser +
+  ' -h localhost';
+
+Cypress.Commands.add('databaseRunFile', filename => {
+  cy.exec(dbAccess + ' -f ' + filename);
+});
+
+Cypress.Commands.add('demoStudentLogin', () => {
+  cy.visit('/');
+  cy.get('[data-cy="studentButton"]').click();
+});
+
+Cypress.Commands.add('demoTeacherLogin', () => {
+    cy.visit('/');
+    cy.get('[data-cy="teacherButton"]').click();
+    cy.contains('Management').click();
+    cy.contains('Discussions').click();
+});
+
+Cypress.Commands.add('answerQuiz', name => {
+  cy.get('[data-cy="quizzesButton"]').click();
+  cy.contains('Available').click();
+  cy.contains(name).click();
+  cy.contains('End Quiz').click();
+  cy.contains('I\'m sure').click();
+});
+
+Cypress.Commands.add('createDiscussion', discussion => {
+  cy.get('[data-cy="Open Discussion"]').click();
+  cy.get('[data-cy="Question Options"]').parent().click();
+  cy.get('[data-cy="Your question"]').type(discussion);
+  cy.get('[data-cy="sendButton"]').click();
+});
