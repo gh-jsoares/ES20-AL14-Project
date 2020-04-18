@@ -153,8 +153,8 @@ export default class CreateTournamentView extends Vue {
   failed: boolean = false;
   successMsg: string = '';
   errorMsg: string = '';
-  startDate: string | undefined;
-  endDate: string | undefined;
+  startDate: string = '';
+  endDate: string = '';
   async created() {
     await this.$store.dispatch('loading');
     try {
