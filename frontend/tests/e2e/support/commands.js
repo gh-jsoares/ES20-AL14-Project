@@ -76,7 +76,7 @@ Cypress.Commands.add(
 
 const dbUser     = Cypress.env('db_username');
 const dbPassword = Cypress.env('db_password');
-const dbName     = Cypress.env('db_table');
+const dbName     = Cypress.env('db_name');
 const dbAccess   = (Cypress.platform === "win32") ?
   `SET PGPASSWORD=${dbPassword} && psql -U ${dbUser} -d ${dbName}` :
   `PGPASSWORD=${dbPassword} psql -U ${dbUser} -d ${dbName}`;
