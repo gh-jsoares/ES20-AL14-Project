@@ -16,6 +16,7 @@
     </div>
 
     <span
+      class="student-question-content"
       v-html="convertMarkDown(studentQuestion.content, studentQuestion.image)"
     />
     <ul>
@@ -51,12 +52,14 @@ export default class ShowStudentQuestion extends Vue {
 }
 </script>
 
-<style lang="sass" scoped>
+<style lang="sass">
 .review
   padding-bottom: 5px
   border-bottom: 1px solid #333333
   p
     margin: 0
-img
+span.student-question-content
   max-width: 100%
+  img
+    max-width: 100%
 </style>

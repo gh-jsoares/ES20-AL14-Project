@@ -14,11 +14,16 @@ describe('List Student Questions as Student walkthrough', () => {
   });
 
   it('login view student question details', () => {
-    cy.contains('Student Question Title')
+    cy.fixture('questions/student/studentQuestionsData.json').then(data => {
+      const studentQuestion = data.student_questions[0]
+      cy.get('[data-cy="studentQuestionViewTitle"]')
       .parent()
+      .parent()
+      .filter(`:contains('${studentQuestion.title}')`)
       .children()
       .find('[data-cy="viewStudentQuestionDetails"]')
       .click();
+    });
   });
 });
   

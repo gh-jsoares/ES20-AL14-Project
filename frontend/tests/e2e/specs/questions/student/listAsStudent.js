@@ -15,9 +15,8 @@ describe('List Student Questions as Student walkthrough', () => {
 
   it('login list student questions', () => {
     cy.fixture('questions/student/studentQuestionsData.json').then(data => {
-      cy.contains('Student Question Title')
+      cy.get('[data-cy="studentQuestionViewTitle"]')
         .parent()
-        .should('have.length', 1)
         .parent()
         .children()
         .should('have.length.of.at.least', data.student_questions.length)
