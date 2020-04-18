@@ -18,5 +18,23 @@
             "status": "AWAITING_APPROVAL",
             "creation_date": "NOW()"
         }
+    ],
+    "options": [
+        {
+            "content": "Yes",
+            "correct": true
+        },
+        {
+            "content": "No",
+            "correct": false
+        },
+        {
+            "content": "Impossible",
+            "correct": false
+        },
+        {
+            "content": "Preposterous",
+            "correct": false
+        }
     ]
 }

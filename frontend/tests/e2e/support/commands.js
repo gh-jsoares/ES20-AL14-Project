@@ -104,6 +104,9 @@ Cypress.Commands.add('studentQuestionsInit', (num) => {
       if(num && i == num) break;
       const studentQuestion = data.student_questions[i];
       cy.queryDatabase(`INSERT INTO student_questions (id, key, title, content, course_id, student_id, status, creation_date) VALUES ('${studentQuestion.id}', '${studentQuestion.id}', '${studentQuestion.title} ${studentQuestion.id}', '${studentQuestion.content}', '${studentQuestion.course_id}', '${studentQuestion.student_id}', '${studentQuestion.status}', ${studentQuestion.creation_date});`);
+      data.options.forEach(option => {
+        cy.queryDatabase(`INSERT INTO options (content, correct, student_question_id) VALUES ('${option.content}', '${option.correct}', '${studentQuestion.id}');`);
+      });
     }
   });
 })
@@ -111,9 +114,42 @@ Cypress.Commands.add('studentQuestionsInit', (num) => {
 Cypress.Commands.add('studentQuestionsCleanup', () => {
   cy.fixture('questions/student/studentQuestionsData.json').then(data => {
     data.student_questions.forEach(studentQuestion => {
-      cy.queryDatabase(`DELETE FROM student_questions where id = '${studentQuestion.id}';`);
+      cy.queryDatabase(
+        `WITH sq_id AS (\
+          SELECT id FROM student_questions WHERE title LIKE '${studentQuestion.title}%'\
+        ) DELETE FROM options WHERE student_question_id in (SELECT id from sq_id);\
+      `);
+      cy.queryDatabase(`DELETE FROM student_questions where title LIKE '${studentQuestion.title}%';`);
     });
   });
+});
+
+Cypress.Commands.add('createStudentQuestion', (studentQuestion, options) => {
+  cy.get('[data-cy="studentQuestionNew"]')
+    .click()
+    .get('[data-cy="studentQuestionNewTitle"]')
+    .type(studentQuestion.title)
+    .get('[data-cy="studentQuestionNewContent"]')
+    .type(studentQuestion.content);
+  options.forEach((option, i) => {
+    cy.get(`[data-cy="studentQuestionNewOption-${i+1}-content"]`)
+      .type(option.content);
+    if(option.correct) {
+      cy.get(`[data-cy="studentQuestionNewOption-${i+1}-correct"]`)
+        .parent()
+        .parent()
+        .click();
+    }
+  });
+  cy.get('[data-cy="studentQuestionNewSave"]')
+    .click()
+    .get('[data-cy="studentQuestionViewTitle"]')
+    .parent()
+    .parent()
+    .children()
+    .should('have.length.of.at.least', 1)
+    .children()
+    .should('have.length.of.at.least', 7);
 })
 
 Cypress.Commands.add('goToOpenTournaments', () => {

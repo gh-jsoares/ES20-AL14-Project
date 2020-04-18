@@ -21,13 +21,18 @@
           />
 
           <v-spacer />
-          <v-btn color="primary" @click="newStudentQuestion" dark>
+          <v-btn
+            color="primary"
+            @click="newStudentQuestion"
+            dark
+            data-cy="studentQuestionNew"
+          >
             New Student Question
           </v-btn>
         </v-card-title>
       </template>
 
-      <template v-slot:item.title="{ item }" >
+      <template v-slot:item.title="{ item }">
         <span data-cy="studentQuestionViewTitle">{{ item.title }}</span>
       </template>
 
