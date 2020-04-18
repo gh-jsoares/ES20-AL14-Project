@@ -1,0 +1,22 @@
+{
+    "student_questions": [
+        {
+            "id": 10000,
+            "title": "Student Question Title",
+            "content": "Is this a student question?",
+            "course_id": 2,
+            "student_id": 676,
+            "status": "AWAITING_APPROVAL",
+            "creation_date": "NOW()"
+        },
+        {
+            "id": 10001,
+            "title": "Student Question Title",
+            "content": "Is this a student question?",
+            "course_id": 2,
+            "student_id": 676,
+            "status": "AWAITING_APPROVAL",
+            "creation_date": "NOW()"
+        }
+    ]
+}

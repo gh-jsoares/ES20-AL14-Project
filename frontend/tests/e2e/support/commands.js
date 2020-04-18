@@ -72,6 +72,23 @@ Cypress.Commands.add(
   }
 );
 
+// New
+
+const dbUser     = Cypress.env('db_username');
+const dbPassword = Cypress.env('db_password');
+const dbName     = Cypress.env('db_name');
+const dbAccess   = (Cypress.platform === "win32") ?
+  `SET PGPASSWORD=${dbPassword} && psql -U ${dbUser} -d ${dbName}` :
+  `PGPASSWORD=${dbPassword} psql -U ${dbUser} -d ${dbName}`;
+
+Cypress.Commands.add('databaseRunFile', filename => {
+  cy.exec(dbAccess + ' -f ' + filename);
+});
+
+Cypress.Commands.add('queryDatabase', query => {
+  cy.exec(`${dbAccess} -c "${query}"`);
+});
+
 Cypress.Commands.add('demoStudentLogin', () => {
   cy.visit('/');
   cy.get('[data-cy="studentButton"]').click();
@@ -81,10 +98,51 @@ Cypress.Commands.add('gotoStudentQuestions', () => {
   cy.contains('Student Questions').click();
 });
 
-const DB_TABLE    = Cypress.env('db_table')
-const DB_USERNAME = Cypress.env('db_username')
-const DB_PASSWORD = Cypress.env('db_password')
-
-Cypress.Commands.add('queryDatabase', (query) => {
-  cy.exec(`SET PGPASSWORD=${DB_PASSWORD} && psql -U ${DB_USERNAME} -d ${DB_TABLE} -c "${query}"`)
+Cypress.Commands.add('studentQuestionsInit', (num) => {
+  cy.fixture('questions/student/studentQuestionsData.json').then(data => {
+    for(const i in data.student_questions) {
+      if(i == num) break;
+      const studentQuestion = data.student_questions[i];
+      cy.queryDatabase(`INSERT INTO student_questions (id, key, title, content, course_id, student_id, status, creation_date) VALUES ('${studentQuestion.id}', '${studentQuestion.id}', '${studentQuestion.title} ${studentQuestion.id}', '${studentQuestion.content}', '${studentQuestion.course_id}', '${studentQuestion.student_id}', '${studentQuestion.status}', ${studentQuestion.creation_date});`);
+    }
+  });
 })
+
+Cypress.Commands.add('studentQuestionsCleanup', () => {
+  cy.fixture('questions/student/studentQuestionsData.json').then(data => {
+    data.student_questions.forEach(studentQuestion => {
+      cy.queryDatabase(`DELETE FROM student_questions where id = '${studentQuestion.id}';`);
+    });
+  });
+})
+
+Cypress.Commands.add('goToOpenTournaments', () => {
+  cy.contains('Tournaments').click();
+  cy.contains('Open').click();
+});
+
+Cypress.Commands.add('searchOpenTournaments', txt => {
+  cy.get('[data-cy="searchBar"]')
+    .clear()
+    .type(txt)
+    .type('{enter}');
+});
+
+Cypress.Commands.add('assertSearchResults', (data, times) => {
+  cy.get('[data-cy="tournRow"]').should($rows => {
+    expect($rows).to.have.length(times);
+    for (let i = 0; i < times; i++) {
+      const cols = $rows.eq(i).children();
+      for (let j = 0; j < cols.length - 1; j++) {
+        const col = cols.eq(j);
+        if (Array.isArray(data[i][j])) {
+          expect(col.children()).to.have.length(data[i][j].length);
+          for (let k = 0; k < data[i][j].length; k++)
+            expect(col).to.contain(data[i][j][k]);
+        } else {
+          expect(col.text().trim()).to.eq(data[i][j]);
+        }
+      }
+    }
+  });
+});
