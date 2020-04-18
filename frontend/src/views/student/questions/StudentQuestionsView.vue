@@ -56,6 +56,7 @@
         <v-tooltip bottom>
           <template v-slot:activator="{ on }">
             <v-icon
+              data-cy="viewStudentQuestionDetails"
               small
               class="mr-2"
               v-on="on"
