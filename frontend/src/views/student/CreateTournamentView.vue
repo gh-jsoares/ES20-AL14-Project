@@ -92,7 +92,6 @@
                   :max="100"
                   dense
                   height="23px"
-                  data-cy="QuestText"
                 ></v-text-field>
               </template>
             </v-slider>
@@ -103,7 +102,6 @@
             class="my-0 mx-auto"
             v-model="tourn.scramble"
             label="Scramble"
-            data-cy="Scramble"
           ></v-switch>
         </v-row>
         <!-- end of mobile -->

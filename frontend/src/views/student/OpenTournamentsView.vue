@@ -1,89 +1,167 @@
 <template>
-  <div class="container">
-    <v-text-field
-      class="searchBar"
-      placeholder="Search by Title"
-      append-icon="search"
-      v-model="search"
-      @keyup="filterTournaments()"
-      hide-details
-      single-line
-      rounded
-      solo
-      dense
-    ></v-text-field>
-    <h2>Available Tournaments</h2>
-    <ul>
-      <li class="list-header">
-        <div class="col">Title</div>
-        <div class="col">Creator</div>
-        <div class="col long-col">Topics</div>
-        <div class="col short-col">Questions</div>
-        <div class="col short-col">Enrolled</div>
-        <div class="col">Opens At</div>
-        <div class="col">Closes At</div>
-        <div class="col">Status</div>
-        <div class="col last-col"></div>
-      </li>
-      <li class="list-row" v-for="tourn in listTourns" :key="tourn.id">
-        <div class="col">
-          {{ tourn.title }}
-        </div>
-        <div class="col">
-          {{ tourn.creator.username }}
-        </div>
-        <div class="col long-col">
-          <v-chip
-            class="topic"
-            v-for="topic in tourn.topics"
-            :key="topic.id"
-            label
+  <div>
+    <!--mobile layout-->
+    <div class="hidden-md-and-up pa-2" style="overflow-x: hidden">
+      <v-text-field
+        placeholder="Search by Title"
+        append-icon="search"
+        v-model="search"
+        @keyup="filterTournaments()"
+        hide-details
+        single-line
+        solo
+        dense
+      ></v-text-field>
+      <h2 class="mt-5">Open Tournaments</h2>
+      <v-dialog v-model="dialog" max-width="350">
+        <v-card class="mx-auto text-left">
+          <v-card-text class="pa-4">
+            <p class="overline mb-4">{{ getStatus(current) }}</p>
+            <p class="title text-left text--darken-1 mb-1">
+              {{ current.title }}
+            </p>
+            <p class="subtitle-2 overline mt-1 mb-4">
+              By {{ current.creator.username }}
+            </p>
+            <v-chip
+              class="ma-1"
+              label
+              v-for="topic in current.topics"
+              :key="topic.id"
+              >{{ topic.name }}</v-chip
+            >
+            <p class="mt-4 ma-0">
+              Has {{ current.numberOfQuestions }} questions and there's
+              {{ current.numberOfEnrolls }} students currently enrolled. Is
+              open:
+            </p>
+            <v-spacer></v-spacer>
+            <p class="text-center mt-1 ma-0">
+              From: {{ current.availableDate }}
+            </p>
+            <p class="text-center ma-0">To: {{ current.conclusionDate }}</p>
+          </v-card-text>
+          <v-card-actions>
+            <v-btn color="grey darken-2" @click="dialog = false" text>
+              Close
+            </v-btn>
+            <v-spacer></v-spacer>
+            <v-btn color="success" text>Enroll</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+      <v-card
+        :class="
+          'px-3 my-2 py-0 ' +
+            (tourn.state === 'ENROLL' ? 'not-started' : 'started')
+        "
+        v-for="tourn in listTourns"
+        :key="tourn.id"
+        @click="openDialog(tourn)"
+      >
+        <v-row justify="center">
+          <v-col class="text-left">
+            {{ tourn.title }}
+          </v-col>
+          <v-col cols="2"
+            ><v-icon color="primary" dense
+              >fas fa-chevron-circle-right</v-icon
+            ></v-col
           >
-            {{ topic.name }}
-          </v-chip>
-        </div>
-        <div class="col short-col">
-          {{ tourn.numberOfQuestions }}
-        </div>
-        <div class="col short-col">
-          {{ tourn.numberOfEnrolls }}
-        </div>
-        <div class="col">
-          {{ tourn.availableDate }}
-        </div>
-        <div class="col">
-          {{ tourn.conclusionDate }}
-        </div>
-        <div class="col" >
-          {{ getStatus(tourn) }}
-        </div>
-        <div class="col last-col">
-          <i class="fas fa-chevron-circle-right"></i>
-        </div>
-      </li>
-    </ul>
+        </v-row>
+      </v-card>
+    </div>
+    <!--end mobile layout-->
+    <div class="container hidden-sm-and-down">
+      <v-text-field
+        class="searchBar"
+        placeholder="Search by Title"
+        append-icon="search"
+        v-model="search"
+        @keyup="filterTournaments()"
+        hide-details
+        single-line
+        solo
+        dense
+        data-cy="searchBar"
+      ></v-text-field>
+      <h2>Open Tournaments</h2>
+      <ul>
+        <li class="list-header">
+          <div class="col">Title</div>
+          <div class="col">Creator</div>
+          <div class="col long-col">Topics</div>
+          <div class="col short-col">Questions</div>
+          <div class="col short-col">Enrolled</div>
+          <div class="col">Opens At</div>
+          <div class="col">Closes At</div>
+          <div class="col">Status</div>
+          <div class="col last-col"></div>
+        </li>
+        <li
+          class="list-row"
+          v-for="tourn in listTourns"
+          :key="tourn.id"
+          data-cy="tournRow"
+        >
+          <div class="col">
+            {{ tourn.title }}
+          </div>
+          <div class="col">
+            {{ tourn.creator.username }}
+          </div>
+          <div class="col long-col">
+            <v-chip
+              class="topic"
+              v-for="topic in tourn.topics"
+              :key="topic.id"
+              label
+            >
+              {{ topic.name }}
+            </v-chip>
+          </div>
+          <div class="col short-col">
+            {{ tourn.numberOfQuestions }}
+          </div>
+          <div class="col short-col">
+            {{ tourn.numberOfEnrolls }}
+          </div>
+          <div class="col">
+            {{ tourn.availableDate }}
+          </div>
+          <div class="col">
+            {{ tourn.conclusionDate }}
+          </div>
+          <div class="col">
+            {{ getStatus(tourn) }}
+          </div>
+          <div class="col last-col">
+            <i class="fas fa-chevron-circle-right"></i>
+          </div>
+        </li>
+      </ul>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import RemoteServices from '@/services/RemoteServices';
-import StatementManager from '@/models/statement/StatementManager';
-import StatementQuiz from '@/models/statement/StatementQuiz';
-import StatementQuestion from '@/models/statement/StatementQuestion';
-import StatementAnswer from '@/models/statement/StatementAnswer';
 import { Tournament } from '@/models/management/Tournament';
-import Topic from '@/models/management/Topic';
+import User from '@/models/user/User';
 
 @Component
 export default class OpenTournamentsView extends Vue {
   tournaments: Tournament[] = [];
   listTourns: Tournament[] = [];
   search: String = '';
+  dialog: boolean = false;
+  current: Tournament = new Tournament();
   async created() {
+    this.current.creator = new User();
     await this.$store.dispatch('loading');
     try {
-      this.tournaments = (await RemoteServices.getOpenTournaments()).reverse();
+      this.tournaments = await RemoteServices.getOpenTournaments();
       this.listTourns = this.tournaments.slice();
     } catch (error) {
       await this.$store.dispatch('error', error);
@@ -108,10 +186,23 @@ export default class OpenTournamentsView extends Vue {
         return '?';
     }
   }
+
+  openDialog(tourn: Tournament) {
+    this.dialog = true;
+    this.current = tourn;
+  }
 }
 </script>
 
 <style lang="scss" scoped>
+.started {
+  border-left: 12px solid limegreen !important;
+}
+
+.not-started {
+  border-left: 12px solid white !important;
+}
+
 .container {
   max-width: 75vw;
   margin-left: auto;
