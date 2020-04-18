@@ -80,22 +80,6 @@ Cypress.Commands.add(
   }
 );
 
-Cypress.Commands.add('answerDiscussion', (questionTitle, teacherAnswer) => {
-    cy.get('[data-cy="questionTitleButton"]').click()
-    cy.get('[data-cy="teacherAnswer"]').type(teacherAnswer)
-    cy.get('[data-cy="sendButton"]').click()
-    cy.contains(questionTitle).should('not.exist')
-})
-
-Cypress.Commands.add('seeDiscussion', (questionTitle) => {
-    cy.get('[data-cy="quizzesButton"]').click();
-    cy.contains('Discussions').click();
-    cy.get('[data-cy="questionTitleButton"]').click()
-        .parent()
-        .click({force: true})
-    cy.get('[data-cy="closeButton"]').click()
-})
-
 //New
 
 const dbUser = 'jm';
@@ -140,4 +124,18 @@ Cypress.Commands.add('createDiscussion', discussion => {
   cy.get('[data-cy="Question Options"]').parent().click();
   cy.get('[data-cy="Your question"]').type(discussion);
   cy.get('[data-cy="sendButton"]').click();
+});
+
+Cypress.Commands.add('answerDiscussion', (questionTitle, teacherAnswer) => {
+    cy.get('[data-cy="questionTitleButton"]').click();
+    cy.get('[data-cy="teacherAnswer"]').type(teacherAnswer);
+    cy.get('[data-cy="sendButton"]').click();
+    cy.get('[data-cy="questionTitleButton"]').should('not.exist');
+});
+
+Cypress.Commands.add('seeDiscussion', () => {
+    cy.get('[data-cy="quizzesButton"]').click();
+    cy.contains('Discussions').click();
+    cy.get('[data-cy="questionTitleButton"]').click();
+    cy.get('[data-cy="closeButton"]').click();
 });

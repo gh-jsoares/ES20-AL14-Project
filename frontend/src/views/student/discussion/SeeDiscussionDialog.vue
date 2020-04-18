@@ -53,9 +53,14 @@
                                 <b>Your question:</b> {{ seeDiscussion.messageFromStudent }}
                             </p>
                         </v-flex>
-                        <v-flex xs24 sm12 md8>
+                        <v-flex xs24 sm12 md8 v-if="seeDiscussion.teacherAnswer">
                             <p>
                                 <b>Teacher Answer:</b> {{ seeDiscussion.teacherAnswer }}
+                            </p>
+                        </v-flex>
+                        <v-flex xs24 sm12 md8 v-else>
+                            <p>
+                                <b>No teacher has answered yet.</b>
                             </p>
                         </v-flex>
                     </v-layout>

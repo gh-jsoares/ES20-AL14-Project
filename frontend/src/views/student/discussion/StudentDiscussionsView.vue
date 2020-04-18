@@ -11,6 +11,7 @@
                     v-for="discussion in discussions"
                     :key="discussion.question.title"
                     @click="seeDiscussion(discussion)"
+                    data-cy="questionTitleButton"
             >
                 <div class="col">
                     {{ discussion.question.title }}
