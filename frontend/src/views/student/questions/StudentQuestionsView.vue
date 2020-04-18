@@ -1,6 +1,7 @@
 <template>
   <v-card class="table">
     <v-data-table
+      data-cy="student-questions-table"
       :headers="headers"
       :custom-filter="customFilter"
       :items="studentQuestions"

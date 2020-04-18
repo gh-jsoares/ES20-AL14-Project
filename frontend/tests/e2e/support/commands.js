@@ -71,3 +71,20 @@ Cypress.Commands.add(
     cy.get('[data-cy="saveButton"]').click();
   }
 );
+
+Cypress.Commands.add('demoStudentLogin', () => {
+  cy.visit('/');
+  cy.get('[data-cy="studentButton"]').click();
+});
+
+Cypress.Commands.add('gotoStudentQuestions', () => {
+  cy.contains('Student Questions').click();
+});
+
+const DB_TABLENAME = 'tutordb'
+const DB_USERNAME = 'engineer'
+const DB_PASSWORD = 'password'
+
+Cypress.Commands.add('queryDatabase', (query) => {
+  cy.exec(`SET PGPASSWORD=${DB_PASSWORD} && psql -U ${DB_USERNAME} -d ${DB_TABLENAME} -c "${query}"`)
+})
