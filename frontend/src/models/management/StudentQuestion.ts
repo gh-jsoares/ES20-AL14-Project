@@ -5,7 +5,7 @@ import Topic from '@/models/management/Topic';
 export default class StudentQuestion {
   id: number | null = null;
   title: string = '';
-  status: string = 'AVAILABLE';
+  status: string = 'AWAITING_APPROVAL';
   content: string = '';
   creationDate!: string | null;
   image: Image | null = null;
@@ -29,8 +29,8 @@ export default class StudentQuestion {
 
       this.creatorUsername = jsonObj.creatorUsername;
       this.lastReviewerUsername = jsonObj.lastReviewerUsername;
-      this.reviewedDate = jsonObj.creationDate;
-      this.rejectedExplanation = jsonObj.creationDate;
+      this.reviewedDate = jsonObj.reviewedDate;
+      this.rejectedExplanation = jsonObj.rejectedExplanation;
 
       this.options = jsonObj.options.map(
         (option: Option) => new Option(option)
