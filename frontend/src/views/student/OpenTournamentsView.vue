@@ -11,6 +11,7 @@
       rounded
       solo
       dense
+      data-cy="searchTournament"
     ></v-text-field>
     <h2>Available Tournaments</h2>
     <ul>
@@ -45,7 +46,7 @@
         <div class="col short-col">
           {{ tourn.numberOfQuestions }}
         </div>
-        <div class="col short-col">
+        <div class="col short-col" data-cy="numEnrolls">
           {{ tourn.numberOfEnrolls }}
         </div>
         <div class="col">
@@ -63,6 +64,7 @@
             color="#21b02b"
             class="enroll"
             outlined
+            data-cy="enrollBtn"
             @click="enrollTournament(tourn)"
           >
             Enroll
