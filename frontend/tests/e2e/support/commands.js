@@ -32,6 +32,13 @@ Cypress.Commands.add('demoAdminLogin', () => {
   cy.contains('Manage Courses').click();
 });
 
+Cypress.Commands.add('demoStudentLogin', () => {
+  cy.visit('/');
+  cy.get('[data-cy="studentButton"]').click();
+  cy.get('[data-cy="quizzesButton"]').click();
+  cy.contains('Discussions').click();
+});
+
 Cypress.Commands.add('createCourseExecution', (name, acronym, academicTerm) => {
   cy.get('[data-cy="createButton"]').click();
   cy.get('[data-cy="Name"]').type(name);
@@ -73,17 +80,21 @@ Cypress.Commands.add(
   }
 );
 
-Cypress.Commands.add('answerDiscussion', (studentRequest, teacherAnswer) => {
-    cy.contains(studentRequest)
+Cypress.Commands.add('answerDiscussion', (questionTitle, teacherAnswer) => {
+    cy.contains(questionTitle)
         .parent()
-        .should('have.length', 1)
-        .children()
-        .should('have.length', 4)
-        .find('[data-cy="answerDiscussion"]')
         .click({force: true})
     cy.get('[data-cy="teacherAnswer"]').type(teacherAnswer)
     cy.get('[data-cy="sendButton"]').click()
-    cy.contains(studentRequest).should('not.exist')
+    cy.contains(questionTitle).should('not.exist')
+})
+
+Cypress.Commands.add('seeDiscussion', (questionTitle) => {
+    cy.contains('Discussions').click();
+    cy.contains(questionTitle)
+        .parent()
+        .click({force: true})
+    cy.get('[data-cy="closeButton"]').click()
 })
 
 const dbUser = 'hello';
