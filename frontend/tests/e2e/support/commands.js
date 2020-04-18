@@ -81,24 +81,25 @@ Cypress.Commands.add(
 );
 
 Cypress.Commands.add('answerDiscussion', (questionTitle, teacherAnswer) => {
-    cy.contains(questionTitle)
-        .parent()
-        .click({force: true})
+    cy.get('[data-cy="questionTitleButton"]').click()
     cy.get('[data-cy="teacherAnswer"]').type(teacherAnswer)
     cy.get('[data-cy="sendButton"]').click()
     cy.contains(questionTitle).should('not.exist')
 })
 
 Cypress.Commands.add('seeDiscussion', (questionTitle) => {
+    cy.get('[data-cy="quizzesButton"]').click();
     cy.contains('Discussions').click();
-    cy.contains(questionTitle)
+    cy.get('[data-cy="questionTitleButton"]').click()
         .parent()
         .click({force: true})
     cy.get('[data-cy="closeButton"]').click()
 })
 
-const dbUser = 'hello';
-const dbPassword = 'yaqXIT123';
+//New
+
+const dbUser = 'jm';
+const dbPassword = '123';
 const dbName = 'tutordb';
 
 const dbAccess =
@@ -117,6 +118,13 @@ Cypress.Commands.add('databaseRunFile', filename => {
 Cypress.Commands.add('demoStudentLogin', () => {
   cy.visit('/');
   cy.get('[data-cy="studentButton"]').click();
+});
+
+Cypress.Commands.add('demoTeacherLogin', () => {
+    cy.visit('/');
+    cy.get('[data-cy="teacherButton"]').click();
+    cy.contains('Management').click();
+    cy.contains('Discussions').click();
 });
 
 Cypress.Commands.add('answerQuiz', name => {
