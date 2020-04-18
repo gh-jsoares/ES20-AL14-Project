@@ -21,7 +21,7 @@
           />
 
           <v-spacer />
-          <!-- <v-btn color="primary" dark @click="newStudentQuestion">New StudentQuestion</v-btn> -->
+          <!-- <v-btn color="primary" dark @click="newStudentQuestion">New Student Question</v-btn> -->
         </v-card-title>
       </template>
 
@@ -30,11 +30,10 @@
       </template>
 
       <template v-slot:item.topics="{ item }">
-        <!-- <edit-studentQuestion-topics
-          :studentQuestion="item"
-          :topics="topics"
-        /> -->
-        <span>{{ item.topics }} | TODO</span>
+        <span v-if="item.topics.length == 0">No topics</span>
+        <v-chip v-for="topic in item.topics" :key="topic.id">
+          {{ topic.name }}
+        </v-chip>
       </template>
 
       <template v-slot:item.status="{ item }">
@@ -54,8 +53,7 @@
       </template>
 
       <template v-slot:item.action="{ item }">
-        {{ item.id }}TODO
-        <!-- <v-tooltip bottom>
+        <v-tooltip bottom>
           <template v-slot:activator="{ on }">
             <v-icon
               small
@@ -65,18 +63,16 @@
               >visibility</v-icon
             >
           </template>
-          <span>Show StudentQuestion</span>
+          <span>View Details</span>
         </v-tooltip>
-        <v-tooltip bottom v-if="item.numberOfAnswers === 0">
-          <template v-slot:activator="{ on }">
-            <v-icon small class="mr-2" v-on="on" @click="editStudentQuestion(item)"
-              >edit</v-icon
-            >
-          </template>
-          <span>Edit StudentQuestion</span>
-        </v-tooltip> -->
       </template>
     </v-data-table>
+    <show-student-question-dialog
+      v-if="currentStudentQuestion"
+      v-model="studentQuestionDialog"
+      :studentQuestion="currentStudentQuestion"
+      v-on:close-show-student-question-dialog="onCloseShowStudentQuestionDialog"
+    />
   </v-card>
 </template>
 
@@ -88,7 +84,13 @@ import Topic from '@/models/management/Topic';
 import Image from '@/models/management/Image';
 import StudentQuestion from '@/models/management/StudentQuestion';
 
-@Component
+import ShowStudentQuestionDialog from '@/views/student/questions/ShowStudentQuestionDialog.vue';
+
+@Component({
+  components: {
+    'show-student-question-dialog': ShowStudentQuestionDialog
+  }
+})
 export default class StudentQuestionsView extends Vue {
   studentQuestions: StudentQuestion[] = [];
   topics: Topic[] = [];
@@ -162,6 +164,28 @@ export default class StudentQuestionsView extends Vue {
 
   convertMarkDownNoFigure(text: string, image: Image | null = null): string {
     return convertMarkDownNoFigure(text, image);
+  }
+
+  showStudentQuestionDialog(studentQuestion: StudentQuestion) {
+    this.currentStudentQuestion = studentQuestion;
+    this.studentQuestionDialog = true;
+  }
+
+  onCloseShowStudentQuestionDialog() {
+    this.studentQuestionDialog = false;
+  }
+
+  async handleFileUpload(event: File, studentQuestion: StudentQuestion) {
+    if (studentQuestion.id) {
+      try {
+        const imageURL = await RemoteServices.uploadImageToStudentQuestion(event, studentQuestion.id);
+        studentQuestion.image = new Image();
+        studentQuestion.image.url = imageURL;
+        confirm('Image ' + imageURL + ' was uploaded!');
+      } catch (error) {
+        await this.$store.dispatch('error', error);
+      }
+    }
   }
 }
 </script>
