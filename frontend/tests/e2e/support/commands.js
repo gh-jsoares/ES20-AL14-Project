@@ -24,6 +24,11 @@
 // -- This will overwrite an existing command --
 // Cypress.Commands.overwrite("visit", (originalFn, url, options) => { ... })
 /// <reference types="Cypress" />
+
+//database credentials
+const dbUser = 'name';
+const dbPassword = '1234';
+
 Cypress.Commands.add('demoAdminLogin', () => {
   cy.visit('/');
   cy.get('[data-cy="adminButton"]').click();
@@ -71,3 +76,54 @@ Cypress.Commands.add(
     cy.get('[data-cy="saveButton"]').click();
   }
 );
+
+Cypress.Commands.add('demoStudentLogin', () => {
+  cy.visit('/');
+  cy.get('[data-cy="studentButton"]').click();
+});
+
+Cypress.Commands.add('answerQuiz', name => {
+  cy.get('[data-cy="quizzesButton"]').click();
+  cy.contains('Available').click();
+  cy.contains(name).click();
+  cy.contains('End Quiz').click();
+  cy.contains('I\'m sure').click();
+});
+
+Cypress.Commands.add('createDiscussion', discussion => {
+  cy.get('[data-cy="Open Discussion"]').click();
+  cy.get('[data-cy="Question Options"]').parent().click();
+  cy.get('[data-cy="Your question"]').type(discussion);
+  cy.get('[data-cy="sendButton"]').click();
+});
+
+Cypress.Commands.add('deleteDiscussion', (name, discussion) => {
+  cy.exec(
+    'PGPASSWORD=' +
+      dbPassword +
+      ' psql -d tutordb -U ' +
+      dbUser +
+      ' -h localhost -c "delete from discussions where message_from_student = \'' +
+      discussion +
+      '\'"'
+  );
+  cy.exec(
+    'PGPASSWORD=' +
+      dbPassword +
+      ' psql -d tutordb -U ' +
+      dbUser +
+      ' -h localhost -c "delete from question_answers qa where exists (select * from quiz_answers a, quizzes q ' +
+      'where qa.quiz_answer_id = a.id and a.quiz_id = q.id and q.title = \'' +
+      name +
+      '\')"'
+  );
+  cy.exec(
+    'PGPASSWORD=' +
+      dbPassword +
+      ' psql -d tutordb -U ' +
+      dbUser +
+      ' -h localhost -c "delete from quiz_answers a where exists (select * from quizzes q where a.quiz_id = q.id and q.title = \'' +
+      name +
+      '\')"'
+  );
+});

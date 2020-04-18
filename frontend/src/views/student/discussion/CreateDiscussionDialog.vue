@@ -26,6 +26,7 @@
                 </b>
               </p>
               <v-switch
+                data-cy="Question Options"
                 class="d-inline-block ml-2 mt-0 pt-0"
                 :input-value="isExpanded"
                 @change="expand()"

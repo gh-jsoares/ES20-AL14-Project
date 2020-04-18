@@ -114,7 +114,7 @@
 
         <v-menu offset-y v-if="isStudent && currentCourse" open-on-hover>
           <template v-slot:activator="{ on }">
-            <v-btn v-on="on" text dark>
+            <v-btn v-on="on" text dark data-cy="quizzesButton">
               Quizzes
               <v-icon>fas fa-file-alt</v-icon>
             </v-btn>
