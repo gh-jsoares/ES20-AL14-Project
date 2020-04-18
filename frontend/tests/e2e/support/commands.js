@@ -98,6 +98,24 @@ Cypress.Commands.add('gotoStudentQuestions', () => {
   cy.contains('Student Questions').click();
 });
 
+Cypress.Commands.add('studentQuestionsInit', (num) => {
+  cy.fixture('questions/student/studentQuestionsData.json').then(data => {
+    for(const i in data.student_questions) {
+      if(i == num) break;
+      const studentQuestion = data.student_questions[i];
+      cy.queryDatabase(`INSERT INTO student_questions (id, key, title, content, course_id, student_id, status, creation_date) VALUES ('${studentQuestion.id}', '${studentQuestion.id}', '${studentQuestion.title} ${studentQuestion.id}', '${studentQuestion.content}', '${studentQuestion.course_id}', '${studentQuestion.student_id}', '${studentQuestion.status}', ${studentQuestion.creation_date});`);
+    }
+  });
+})
+
+Cypress.Commands.add('studentQuestionsCleanup', () => {
+  cy.fixture('questions/student/studentQuestionsData.json').then(data => {
+    data.student_questions.forEach(studentQuestion => {
+      cy.queryDatabase(`DELETE FROM student_questions where id = '${studentQuestion.id}';`);
+    });
+  });
+})
+
 Cypress.Commands.add('goToOpenTournaments', () => {
   cy.contains('Tournaments').click();
   cy.contains('Open').click();

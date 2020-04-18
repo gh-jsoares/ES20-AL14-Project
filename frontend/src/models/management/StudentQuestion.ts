@@ -36,7 +36,8 @@ export default class StudentQuestion {
         (option: Option) => new Option(option)
       );
 
-      this.topics = jsonObj.topics.map((topic: Topic) => new Topic(topic));
+      if (jsonObj.topics)
+        this.topics = jsonObj.topics.map((topic: Topic) => new Topic(topic));
     }
   }
 }
