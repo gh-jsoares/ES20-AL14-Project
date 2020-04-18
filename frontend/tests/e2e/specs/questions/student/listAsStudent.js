@@ -27,9 +27,9 @@ describe('List Student Questions as Student walkthrough', () => {
         .should('have.length', 1)
         .parent()
         .children()
-        .should('have.length', data.student_questions.length)
+        .should('have.length.of.at.least', data.student_questions.length)
         .children()
-        .should('have.length', data.student_questions.length * 7);
+        .should('have.length.of.at.least', data.student_questions.length * 7);
     });
   });
 });

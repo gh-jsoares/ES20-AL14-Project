@@ -179,7 +179,10 @@ export default class StudentQuestionsView extends Vue {
   async handleFileUpload(event: File, studentQuestion: StudentQuestion) {
     if (studentQuestion.id) {
       try {
-        const imageURL = await RemoteServices.uploadImageToStudentQuestion(event, studentQuestion.id);
+        const imageURL = await RemoteServices.uploadImageToStudentQuestion(
+          event,
+          studentQuestion.id
+        );
         studentQuestion.image = new Image();
         studentQuestion.image.url = imageURL;
         confirm('Image ' + imageURL + ' was uploaded!');

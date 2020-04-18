@@ -616,7 +616,8 @@ export default class RemoteServices {
     return httpClient
       .get(
         `/executions/${Store.getters.getCurrentCourse.courseExecutionId}/tournaments`
-      ).then(response => {
+      )
+      .then(response => {
         return response.data.map((tournament: any) => {
           return new Tournament(tournament);
         });
