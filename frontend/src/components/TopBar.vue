@@ -160,7 +160,7 @@
                 <v-icon>assignment</v-icon>
               </v-list-item-action>
               <v-list-item-content>
-                <v-list-item-title>Available</v-list-item-title>
+                <v-list-item-title>Open</v-list-item-title>
               </v-list-item-content>
             </v-list-item>
           </v-list>
@@ -323,6 +323,13 @@
               <v-icon>done</v-icon>
             </v-list-item-action>
             <v-list-item-content>Solved Quizzes</v-list-item-content>
+          </v-list-item>
+
+          <v-list-item to="/student/tournaments">
+            <v-list-item-action>
+              <v-icon>assignment</v-icon>
+            </v-list-item-action>
+            <v-list-item-content>Open Tournaments</v-list-item-content>
           </v-list-item>
 
           <v-list-item to="/student/stats">

@@ -24,14 +24,30 @@
 // -- This will overwrite an existing command --
 // Cypress.Commands.overwrite("visit", (originalFn, url, options) => { ... })
 /// <reference types="Cypress" />
-const dbUser='dani' //change to db username
-const dbPassword='123' //change to db user's passwword, user MUST have a password to access the database, empty password won't work
+const dbUser = 'dani';
+const dbPassword = '123';
+const dbName = 'tutordb';
 
-const dbCommand='PGPASSWORD=' + dbPassword + ' psql -d tutordb -U ' + dbUser + ' -h localhost -c ';
+const dbAccess =
+  'PGPASSWORD=' +
+  dbPassword +
+  ' psql -d ' +
+  dbName +
+  ' -U ' +
+  dbUser +
+  ' -h localhost';
+
+//Database Commands
 
 Cypress.Commands.add('databaseCommand',(command) => {
-  cy.exec(dbCommand + command);
+  cy.exec(dbAccess + ' -c ' + command);
 })
+
+Cypress.Commands.add('databaseRunFile', filename => {
+  cy.exec(dbAccess + ' -f ' + filename);
+});
+
+//    ------------------------      //
 
 Cypress.Commands.add('demoAdminLogin', () => {
   cy.visit('/');
@@ -68,22 +84,24 @@ Cypress.Commands.add('deleteCourseExecution', acronym => {
 Cypress.Commands.add(
   'createFromCourseExecution',
   (name, acronym, academicTerm) => {
-  cy.contains(name)
-    .parent()
-    .should('have.length', 1)
-    .children()
-    .should('have.length', 7)
-    .find('[data-cy="createFromCourse"]')
-    .click();
-  cy.get('[data-cy="Acronym"]').type(acronym);
-  cy.get('[data-cy="AcademicTerm"]').type(academicTerm);
-  cy.get('[data-cy="saveButton"]').click();
-})
+    cy.contains(name)
+      .parent()
+      .should('have.length', 1)
+      .children()
+      .should('have.length', 7)
+      .find('[data-cy="createFromCourse"]')
+      .click();
+    cy.get('[data-cy="Acronym"]').type(acronym);
+    cy.get('[data-cy="AcademicTerm"]').type(academicTerm);
+    cy.get('[data-cy="saveButton"]').click();
+  }
+);
+
+// New
 
 Cypress.Commands.add('demoStudentLogin', () => {
   cy.visit('/');
   cy.get('[data-cy="studentButton"]').click();
-  cy.contains('Tournaments').click();
 });
 
 Cypress.Commands.add('goToTournamentCreation', () => {
@@ -93,12 +111,38 @@ Cypress.Commands.add('goToTournamentCreation', () => {
 
 Cypress.Commands.add('goToOpenTournaments', () => {
   cy.contains('Tournaments').click();
-  cy.contains('Available').click();
+  cy.contains('Open').click();
+});
+
+Cypress.Commands.add('searchOpenTournaments', txt => {
+  cy.get('[data-cy="searchBar"]')
+    .clear()
+    .type(txt)
+    .type('{enter}');
+});
+
+Cypress.Commands.add('assertSearchResults', (data, times) => {
+  cy.get('[data-cy="tournRow"]').should($rows => {
+    expect($rows).to.have.length(times);
+    for (let i = 0; i < times; i++) {
+      const cols = $rows.eq(i).children();
+      for (let j = 0; j < cols.length - 1; j++) {
+        const col = cols.eq(j);
+        if (Array.isArray(data[i][j])) {
+          expect(col.children()).to.have.length(data[i][j].length);
+          for (let k = 0; k < data[i][j].length; k++)
+            expect(col).to.contain(data[i][j][k]);
+        } else {
+          expect(col.text().trim()).to.eq(data[i][j]);
+        }
+      }
+    }
+  })
 });
 
 Cypress.Commands.add('enrollTournament',() => {
   cy.get('[data-cy="enrollBtn"]').click();
-})
+});
 
 Cypress.Commands.add('checkTournamentEnroll',(hasStarted) => {
   cy.get('[data-cy="enrollBtn"]')
@@ -106,8 +150,4 @@ Cypress.Commands.add('checkTournamentEnroll',(hasStarted) => {
   if (!hasStarted)
     cy.get('[data-cy="numEnrolls"]')
       .contains("1");
-})
-
-Cypress.Commands.add('searchTournament',(title) => {
-  if (!!title) cy.get('[data-cy="searchTournament"]').type(title);
 });

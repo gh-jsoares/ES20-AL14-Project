@@ -189,10 +189,10 @@ let router = new Router({
         },
         {
           path: 'tournaments',
-          name: 'available-tournaments',
+          name: 'open-tournaments',
           component: OpenTournamentsView,
           meta: {
-            title: process.env.VUE_APP_NAME + ' - Available Tournaments',
+            title: process.env.VUE_APP_NAME + ' - Open Tournaments',
             requiredAuth: 'Student'
           }
         }
