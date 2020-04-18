@@ -104,6 +104,16 @@
           </v-list>
         </v-menu>
 
+        <v-btn
+          to="/student/questions"
+          v-if="isStudent && currentCourse"
+          text
+          dark
+        >
+          Student Questions
+          <v-icon>question_answer</v-icon>
+        </v-btn>
+
         <v-menu offset-y v-if="isStudent && currentCourse" open-on-hover>
           <template v-slot:activator="{ on }">
             <v-btn v-on="on" text dark>
@@ -169,16 +179,6 @@
         <v-btn to="/student/stats" v-if="isStudent && currentCourse" text dark>
           Stats
           <v-icon>fas fa-user</v-icon>
-        </v-btn>
-
-        <v-btn
-          to="/student/questions"
-          v-if="isStudent && currentCourse"
-          text
-          dark
-        >
-          Student Questions
-          <v-icon>question_answer</v-icon>
         </v-btn>
 
         <v-btn
@@ -305,6 +305,16 @@
           </template>
 
           <v-list-item
+            to="/student/questions"
+            v-if="isStudent && currentCourse"
+          >
+            <v-list-item-action>
+              <v-icon>question_answer</v-icon>
+            </v-list-item-action>
+            <v-list-item-content>Student Questions</v-list-item-content>
+          </v-list-item>
+
+          <v-list-item
             to="/student/available"
             v-if="isStudent && currentCourse"
           >
@@ -347,16 +357,6 @@
               <v-icon>fas fa-user</v-icon>
             </v-list-item-action>
             <v-list-item-content>Stats</v-list-item-content>
-          </v-list-item>
-
-          <v-list-item
-            to="/student/questions"
-            v-if="isStudent && currentCourse"
-          >
-            <v-list-item-action>
-              <v-icon>question_answer</v-icon>
-            </v-list-item-action>
-            <v-list-item-content>Student Questions</v-list-item-content>
           </v-list-item>
         </v-list-group>
 

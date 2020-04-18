@@ -74,21 +74,19 @@ Cypress.Commands.add(
 
 // New
 
-const dbUser = 'example';
-const dbPassword = 'example';
-const dbName = 'tutordb';
-
-const dbAccess =
-  'PGPASSWORD=' +
-  dbPassword +
-  ' psql -d ' +
-  dbName +
-  ' -U ' +
-  dbUser +
-  ' -h localhost';
+const dbUser     = Cypress.env('db_username');
+const dbPassword = Cypress.env('db_password');
+const dbName     = Cypress.env('db_table');
+const dbAccess   = (Cypress.platform === "win32") ?
+  `SET PGPASSWORD=${dbPassword} && psql -U ${dbUser} -d ${dbName}` :
+  `PGPASSWORD=${dbPassword} psql -U ${dbUser} -d ${dbName}`;
 
 Cypress.Commands.add('databaseRunFile', filename => {
   cy.exec(dbAccess + ' -f ' + filename);
+});
+
+Cypress.Commands.add('queryDatabase', query => {
+  cy.exec(`${dbAccess} -c "${query}"`);
 });
 
 Cypress.Commands.add('demoStudentLogin', () => {
