@@ -72,6 +72,25 @@ Cypress.Commands.add(
   }
 );
 
+// New
+
+const dbUser = 'example';
+const dbPassword = 'example';
+const dbName = 'tutordb';
+
+const dbAccess =
+  'PGPASSWORD=' +
+  dbPassword +
+  ' psql -d ' +
+  dbName +
+  ' -U ' +
+  dbUser +
+  ' -h localhost';
+
+Cypress.Commands.add('databaseRunFile', filename => {
+  cy.exec(dbAccess + ' -f ' + filename);
+});
+
 Cypress.Commands.add('demoStudentLogin', () => {
   cy.visit('/');
   cy.get('[data-cy="studentButton"]').click();
@@ -81,10 +100,33 @@ Cypress.Commands.add('gotoStudentQuestions', () => {
   cy.contains('Student Questions').click();
 });
 
-const DB_TABLENAME = 'tutordb'
-const DB_USERNAME = 'engineer'
-const DB_PASSWORD = 'password'
+Cypress.Commands.add('goToOpenTournaments', () => {
+  cy.contains('Tournaments').click();
+  cy.contains('Open').click();
+});
 
-Cypress.Commands.add('queryDatabase', (query) => {
-  cy.exec(`SET PGPASSWORD=${DB_PASSWORD} && psql -U ${DB_USERNAME} -d ${DB_TABLENAME} -c "${query}"`)
-})
+Cypress.Commands.add('searchOpenTournaments', txt => {
+  cy.get('[data-cy="searchBar"]')
+    .clear()
+    .type(txt)
+    .type('{enter}');
+});
+
+Cypress.Commands.add('assertSearchResults', (data, times) => {
+  cy.get('[data-cy="tournRow"]').should($rows => {
+    expect($rows).to.have.length(times);
+    for (let i = 0; i < times; i++) {
+      const cols = $rows.eq(i).children();
+      for (let j = 0; j < cols.length - 1; j++) {
+        const col = cols.eq(j);
+        if (Array.isArray(data[i][j])) {
+          expect(col.children()).to.have.length(data[i][j].length);
+          for (let k = 0; k < data[i][j].length; k++)
+            expect(col).to.contain(data[i][j][k]);
+        } else {
+          expect(col.text().trim()).to.eq(data[i][j]);
+        }
+      }
+    }
+  });
+});
