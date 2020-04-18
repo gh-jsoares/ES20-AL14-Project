@@ -83,6 +83,7 @@
         single-line
         solo
         dense
+        data-cy="searchBar"
       ></v-text-field>
       <h2>Available Tournaments</h2>
       <ul>
@@ -97,7 +98,12 @@
           <div class="col">Status</div>
           <div class="col last-col"></div>
         </li>
-        <li class="list-row" v-for="tourn in listTourns" :key="tourn.id">
+        <li
+          class="list-row"
+          v-for="tourn in listTourns"
+          :key="tourn.id"
+          data-cy="tournRow"
+        >
           <div class="col">
             {{ tourn.title }}
           </div>
@@ -155,7 +161,7 @@ export default class OpenTournamentsView extends Vue {
     this.current.creator = new User();
     await this.$store.dispatch('loading');
     try {
-      this.tournaments = (await RemoteServices.getOpenTournaments()).reverse();
+      this.tournaments = await RemoteServices.getOpenTournaments();
       this.listTourns = this.tournaments.slice();
     } catch (error) {
       await this.$store.dispatch('error', error);
