@@ -73,9 +73,10 @@ Cypress.Commands.add(
 );
 
 // New
-const dbUser = 'alex';
-const dbPassword = 'alex';
-const dbName = 'projES';
+
+const dbUser = 'example';
+const dbPassword = 'example';
+const dbName = 'tutordb';
 
 const dbAccess =
   'PGPASSWORD=' +
