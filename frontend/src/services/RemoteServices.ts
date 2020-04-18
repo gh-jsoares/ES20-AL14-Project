@@ -255,6 +255,16 @@ export default class RemoteServices {
     return httpClient.put(`/questions/${questionId}/topics`, topics);
   }
 
+  static async updateStudentQuestionTopics(
+    studentQuestionId: number,
+    topics: Topic[]
+  ) {
+    return httpClient.put(
+      `/questions/student/${studentQuestionId}/topics/`,
+      topics.map(topic => topic.id)
+    );
+  }
+
   static async getTopics(): Promise<Topic[]> {
     return httpClient
       .get(`/courses/${Store.getters.getCurrentCourse.courseId}/topics`)

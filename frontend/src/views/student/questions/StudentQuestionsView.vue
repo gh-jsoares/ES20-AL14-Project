@@ -32,10 +32,11 @@
       </template>
 
       <template v-slot:item.topics="{ item }">
-        <span v-if="item.topics.length == 0">No topics</span>
-        <v-chip v-for="topic in item.topics" :key="topic.id">
-          {{ topic.name }}
-        </v-chip>
+        <edit-student-question-topics
+          :studentQuestion="item"
+          :topics="topics"
+          v-on:student-question-changed-topics="onStudentQuestionChangedTopics"
+        />
       </template>
 
       <template v-slot:item.status="{ item }">
@@ -95,11 +96,13 @@ import StudentQuestion from '@/models/management/StudentQuestion';
 
 import ShowStudentQuestionDialog from '@/views/student/questions/ShowStudentQuestionDialog.vue';
 import EditStudentQuestionDialog from '@/views/student/questions/EditStudentQuestionDialog.vue';
+import EditStudentQuestionTopics from '@/views/student/questions/EditStudentQuestionTopics.vue';
 
 @Component({
   components: {
     'show-student-question-dialog': ShowStudentQuestionDialog,
-    'edit-student-question-dialog': EditStudentQuestionDialog
+    'edit-student-question-dialog': EditStudentQuestionDialog,
+    'edit-student-question-topics': EditStudentQuestionTopics
   }
 })
 export default class StudentQuestionsView extends Vue {
@@ -221,6 +224,19 @@ export default class StudentQuestionsView extends Vue {
     this.studentQuestions.unshift(studentQuestion);
     this.editStudentQuestionDialog = false;
     this.currentStudentQuestion = null;
+  }
+
+  onStudentQuestionChangedTopics(
+    studentQuestionId: Number,
+    changedTopics: Topic[]
+  ) {
+    let studentQuestion = this.studentQuestions.find(
+      (studentQuestion: StudentQuestion) =>
+        studentQuestion.id == studentQuestionId
+    );
+    if (studentQuestion) {
+      studentQuestion.topics = changedTopics;
+    }
   }
 }
 </script>
