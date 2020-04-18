@@ -1,4 +1,4 @@
-const cleanupFile = 'tests/e2e/support/openTournamentsCleanup.sql';
+const cleanupFile = 'tests/e2e/support/tournament/openTournamentsCleanup.sql';
 
 describe('Student creates tournaments walkthrough', () => {
   beforeEach(() => {
