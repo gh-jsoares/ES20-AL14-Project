@@ -21,13 +21,15 @@ describe('List Student Questions as Student walkthrough', () => {
   });
 
   it('login list student questions', () => {
-    cy.contains('Student Question Title')
-      .parent()
-      .should('have.length', 1)
-      .parent()
-      .children()
-      .should('have.length', 2) // 2 questions
-      .children()
-      .should('have.length', 14); // 7 * 2 questions
+    cy.fixture('questions/student/studentQuestionsData.json').then(data => {
+      cy.contains('Student Question Title')
+        .parent()
+        .should('have.length', 1)
+        .parent()
+        .children()
+        .should('have.length', data.student_questions.length)
+        .children()
+        .should('have.length', data.student_questions.length * 7);
+    });
   });
 });
