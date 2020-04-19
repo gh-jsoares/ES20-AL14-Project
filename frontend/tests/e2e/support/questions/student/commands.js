@@ -124,6 +124,26 @@ Cypress.Commands.add('assertStudentQuestionDetails', (studentQuestion, options) 
     });
 });
 
+Cypress.Commands.add('acceptStudentQuestion', studentQuestion => {
+    cy.server(); // cannot be chained
+
+    cy.route('put', `/questions/student/all/${studentQuestion.id}/approve`).as('acceptStudentQuestion');
+
+    cy.get('[data-cy="studentQuestionViewTitle"]')
+        .parent()
+        .parent()
+        .filter(`:contains('${studentQuestion.title}')`)
+        .children()
+        .find('[data-cy="approveStudentQuestion"]')
+        .click()
+        .wait('@acceptStudentQuestion')
+        .get('[data-cy="studentQuestionViewTitle"]')
+        .parent()
+        .parent()
+        .filter(`:contains('${studentQuestion.title}')`)
+        .contains('ACCEPTED')
+});
+
 Cypress.Commands.add('initStudentQuestions', ({ amount, student_id, course_id, offset = 0 } = {}) => {
     cy.fixture('questions/student/studentQuestionsData.json').then(data => {
 
