@@ -1,0 +1,67 @@
+<template>
+  <div>
+    <div class="review" v-if="studentQuestion.status !== 'AWAITING_APPROVAL'">
+      <p data-cy="studentQuestionDetailsReview">
+        Last Reviewed by
+        {{ studentQuestion.lastReviewerUsername }}
+        on
+        {{ studentQuestion.reviewedDate }}
+      </p>
+      <template v-if="studentQuestion.status === 'REJECTED'">
+        <h4>Reason:</h4>
+        <v-alert data-cy="studentQuestionDetailsRejected" type="error">
+          {{ studentQuestion.rejectedExplanation }}
+        </v-alert>
+      </template>
+    </div>
+
+    <span
+      data-cy="studentQuestionDetailsContent"
+      v-html="convertMarkDown(studentQuestion.content, studentQuestion.image)"
+    />
+    <ul>
+      <li v-for="option in studentQuestion.options" :key="option.number">
+        <span
+          :data-cy="`studentQuestionDetailsOptionCorrect`"
+          v-if="option.correct"
+          v-html="convertMarkDown('**[★]** ', null)"
+        />
+        <span
+          :data-cy="`studentQuestionDetailsOption`"
+          v-html="convertMarkDown(option.content, null)"
+          v-bind:class="[option.correct ? 'font-weight-bold' : '']"
+        />
+      </li>
+    </ul>
+    <br />
+  </div>
+</template>
+
+<script lang="ts">
+import { Component, Vue, Prop } from 'vue-property-decorator';
+import { convertMarkDown } from '@/services/ConvertMarkdownService';
+import StudentQuestion from '@/models/management/StudentQuestion';
+import Image from '@/models/management/Image';
+
+@Component
+export default class ShowStudentQuestion extends Vue {
+  @Prop({ type: StudentQuestion, required: true })
+  readonly studentQuestion!: StudentQuestion;
+
+  convertMarkDown(text: string, image: Image | null = null): string {
+    return convertMarkDown(text, image);
+  }
+}
+</script>
+
+<style lang="sass">
+.review
+  padding-bottom: 5px
+  border-bottom: 1px solid #333333
+  p
+    margin: 0
+span.student-question-content
+  max-width: 100%
+  img
+    max-width: 100%
+</style>

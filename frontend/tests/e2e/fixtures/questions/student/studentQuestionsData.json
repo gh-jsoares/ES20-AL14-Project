@@ -1,0 +1,101 @@
+{
+    "student_questions": [
+        {
+            "id": 10000,
+            "title": "Student Question Title",
+            "content": "Is this a student question?",
+            "course_id": 2,
+            "student_id": 676,
+            "status": "AWAITING_APPROVAL",
+            "creation_date": "NOW()"
+        },
+        {
+            "id": 10001,
+            "title": "Student Question Title",
+            "content": "Is this a student question?",
+            "course_id": 2,
+            "student_id": 676,
+            "status": "AWAITING_APPROVAL",
+            "creation_date": "NOW()"
+        },
+        {
+            "id": 10002,
+            "title": "Student Question Title",
+            "content": "Is this a student question?",
+            "course_id": 2,
+            "student_id": 676,
+            "status": "ACCEPTED",
+            "reviewed_date": "NOW()",
+            "last_reviewer_id": 678,
+            "creation_date": "NOW()"
+        },
+        {
+            "id": 10003,
+            "title": "Student Question Title",
+            "content": "Is this a student question?",
+            "course_id": 2,
+            "student_id": 676,
+            "status": "REJECTED",
+            "rejected_explanation": "Not quite right",
+            "reviewed_date": "NOW()",
+            "last_reviewer_id": 678,
+            "creation_date": "NOW()"
+        },
+        {
+            "id": 10004,
+            "title": "Student Question Title",
+            "content": "Is this a student question?",
+            "course_id": 2,
+            "student_id": 676,
+            "status": "ACCEPTED",
+            "reviewed_date": "NOW()",
+            "last_reviewer_id": 678,
+            "creation_date": "NOW()"
+        },
+        {
+            "id": 10005,
+            "title": "Student Question Title",
+            "content": "Is this a student question?",
+            "course_id": 2,
+            "student_id": 676,
+            "status": "AWAITING_APPROVAL",
+            "creation_date": "NOW()"
+        }
+    ],
+    "options": [
+        {
+            "content": "Yes",
+            "correct": true
+        },
+        {
+            "content": "No",
+            "correct": false
+        },
+        {
+            "content": "Impossible",
+            "correct": false
+        },
+        {
+            "content": "Preposterous",
+            "correct": false
+        }
+    ],
+    "options": [
+        {
+            "content": "Yes",
+            "correct": true
+        },
+        {
+            "content": "No",
+            "correct": false
+        },
+        {
+            "content": "Impossible",
+            "correct": false
+        },
+        {
+            "content": "Preposterous",
+            "correct": false
+        }
+    ]
+}
