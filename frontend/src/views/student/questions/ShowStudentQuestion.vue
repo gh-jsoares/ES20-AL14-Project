@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="review" v-if="studentQuestion.status !== 'AWAITING_APPROVAL'">
-      <p>
+      <p data-cy="studentQuestionDetailsReview">
         Last Reviewed by
         {{ studentQuestion.lastReviewerUsername }}
         on
@@ -9,23 +9,25 @@
       </p>
       <template v-if="studentQuestion.status === 'REJECTED'">
         <h4>Reason:</h4>
-        <v-alert type="error">
+        <v-alert data-cy="studentQuestionDetailsRejected" type="error">
           {{ studentQuestion.rejectedExplanation }}
         </v-alert>
       </template>
     </div>
 
     <span
-      class="student-question-content"
+      data-cy="studentQuestionDetailsContent"
       v-html="convertMarkDown(studentQuestion.content, studentQuestion.image)"
     />
     <ul>
       <li v-for="option in studentQuestion.options" :key="option.number">
         <span
+          :data-cy="`studentQuestionDetailsOptionCorrect`"
           v-if="option.correct"
           v-html="convertMarkDown('**[★]** ', null)"
         />
         <span
+          :data-cy="`studentQuestionDetailsOption`"
           v-html="convertMarkDown(option.content, null)"
           v-bind:class="[option.correct ? 'font-weight-bold' : '']"
         />

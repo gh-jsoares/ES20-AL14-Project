@@ -8,13 +8,17 @@
   >
     <v-card>
       <v-card-title>
-        <span class="headline">{{ studentQuestion.title }}</span>
+        <span class="headline" data-cy="studentQuestionDetailsTitle">
+          {{ studentQuestion.title }}
+        </span>
         <v-chip
           class="status"
           :color="getStatusColor(studentQuestion.status)"
           small
         >
-          <span>{{ studentQuestion.status }}</span>
+          <span data-cy="studentQuestionDetailsStatus">
+            {{ studentQuestion.status }}
+          </span>
         </v-chip>
       </v-card-title>
 
