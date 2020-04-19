@@ -1,4 +1,4 @@
-//To run these tests first go to tests/e2e/support/commands.js and change the values for dbUser and dbPassword
+//To run these tests first copy cypress.env.json.example rename it to cypress.env.json and change the values inside for db connection
 const setupFile = 'tests/e2e/support/tournament/enrollTournamentSetup.sql';
 const cleanupFile = 'tests/e2e/support/tournament/enrollTournamentCleanup.sql';
 
@@ -19,7 +19,7 @@ describe('Student enrolls in tournaments walkthrough', () => {
   after(() => {
     cy.log('try to clean database');
     cy.databaseRunFile(cleanupFile);
-  })
+  });
 
   it('enroll in tournament successfully', () => {
     cy.searchOpenTournaments('T1-Cypress Test');
@@ -34,5 +34,4 @@ describe('Student enrolls in tournaments walkthrough', () => {
     cy.log('check if enroll is possible');
     cy.checkTournamentEnroll(true);
   });
-
 });

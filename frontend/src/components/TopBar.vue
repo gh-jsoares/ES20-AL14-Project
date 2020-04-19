@@ -104,6 +104,16 @@
           </v-list>
         </v-menu>
 
+        <v-btn
+          to="/student/questions"
+          v-if="isStudent && currentCourse"
+          text
+          dark
+        >
+          Student Questions
+          <v-icon>question_answer</v-icon>
+        </v-btn>
+
         <v-menu offset-y v-if="isStudent && currentCourse" open-on-hover>
           <template v-slot:activator="{ on }">
             <v-btn v-on="on" text dark>
@@ -151,7 +161,7 @@
           <template v-slot:activator="{ on }">
             <v-btn v-on="on" text dark>
               Tournaments
-              <v-icon>fas fa-file-alt</v-icon>
+              <v-icon>fas fa-trophy</v-icon>
             </v-btn>
           </template>
           <v-list dense>
@@ -161,6 +171,14 @@
               </v-list-item-action>
               <v-list-item-content>
                 <v-list-item-title>Open</v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+            <v-list-item to="/student/create-tournament">
+              <v-list-item-action>
+                <v-icon>create</v-icon>
+              </v-list-item-action>
+              <v-list-item-content>
+                <v-list-item-title>Create</v-list-item-title>
               </v-list-item-content>
             </v-list-item>
           </v-list>
@@ -295,6 +313,16 @@
           </template>
 
           <v-list-item
+            to="/student/questions"
+            v-if="isStudent && currentCourse"
+          >
+            <v-list-item-action>
+              <v-icon>question_answer</v-icon>
+            </v-list-item-action>
+            <v-list-item-content>Student Questions</v-list-item-content>
+          </v-list-item>
+
+          <v-list-item
             to="/student/available"
             v-if="isStudent && currentCourse"
           >
@@ -323,6 +351,13 @@
               <v-icon>done</v-icon>
             </v-list-item-action>
             <v-list-item-content>Solved Quizzes</v-list-item-content>
+          </v-list-item>
+
+          <v-list-item to="/student/create-tournament">
+            <v-list-item-action>
+              <v-icon>create</v-icon>
+            </v-list-item-action>
+            <v-list-item-content>Create Tournament</v-list-item-content>
           </v-list-item>
 
           <v-list-item to="/student/tournaments">
