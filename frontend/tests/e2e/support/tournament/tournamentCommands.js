@@ -97,3 +97,12 @@ Cypress.Commands.add('closeTournamentAlert', (type, msg) => {
     .find('button')
     .click();
 });
+
+Cypress.Commands.add('enrollTournament', () => {
+  cy.get('[data-cy="enrollBtn"]').click();
+});
+
+Cypress.Commands.add('checkTournamentEnroll', hasStarted => {
+  cy.get('[data-cy="enrollBtn"]').should('be.disabled')
+  if (!hasStarted) cy.get('[data-cy="numEnrolls"]').contains('1');
+});

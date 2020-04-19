@@ -208,7 +208,7 @@ export default class CreateTournamentView extends Vue {
   show(created: Tournament) {
     this.saved = true;
     this.successMsg =
-      'New Tournament Saved: ' +
+      'New tournament Saved: ' +
       created.title +
       ' by ' +
       created.creator?.username +

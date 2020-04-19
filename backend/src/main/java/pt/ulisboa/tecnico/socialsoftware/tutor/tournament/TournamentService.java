@@ -63,7 +63,7 @@ public class TournamentService {
         Tournament tournament = getTournament(tournamentId);
         tournament.addEnrolledStudent(user);
         user.addEnrolledTournament(tournament);
-        return new TournamentDto(tournament);
+        return new TournamentDto(tournament, user.getId());
     }
 
     private Tournament getTournament(int tournamentId) {
@@ -134,13 +134,13 @@ public class TournamentService {
             value = { SQLException.class },
             backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
-    public List<TournamentDto> getOpenTournaments(int executionId) {
+    public List<TournamentDto> getOpenTournaments(int executionId, int userId) {
         CourseExecution courseExecution = getCourseExecution(executionId);
 
         return courseExecution.getTournaments().stream()
                 .filter(tourn -> !tourn.getState().equals(Tournament.State.CLOSED))
                 .sorted(Comparator.comparing(Tournament::getId).reversed())
-                .map(TournamentDto::new)
+                .map(tournament -> new TournamentDto(tournament, userId))
                 .collect(Collectors.toList());
     }
 }
