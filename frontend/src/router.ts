@@ -28,6 +28,8 @@ import CoursesView from '@/views/admin/Courses/CoursesView.vue';
 import DiscussionsView from '@/views/teacher/discussions/DiscussionsView.vue';
 import StudentDiscussionsView from '@/views/student/discussion/StudentDiscussionsView.vue';
 
+import OpenTournamentsView from '@/views/student/OpenTournamentsView.vue';
+
 Vue.use(Router);
 
 let router = new Router({
@@ -205,6 +207,15 @@ let router = new Router({
             requiredAuth: 'Student'
           }
         },
+        {
+          path: 'tournaments',
+          name: 'open-tournaments',
+          component: OpenTournamentsView,
+          meta: {
+            title: process.env.VUE_APP_NAME + ' - Open Tournaments',
+            requiredAuth: 'Student'
+          }
+        }
       ]
     },
     {

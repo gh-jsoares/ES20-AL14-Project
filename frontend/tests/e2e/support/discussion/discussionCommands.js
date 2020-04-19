@@ -35,6 +35,7 @@ Cypress.Commands.add('answerDiscussion', (questionTitle, teacherAnswer) => {
 Cypress.Commands.add('seeDiscussion', () => {
   cy.get('[data-cy="quizzesButton"]').click();
   cy.contains('Discussions').click();
+  cy.contains('Discussion Question Title').click();
   cy.get('[data-cy="questionTitleButton"]').click();
   cy.get('[data-cy="closeButton"]').click();
 });
