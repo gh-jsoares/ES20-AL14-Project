@@ -9,12 +9,14 @@ public class StatementAnswerDto implements Serializable {
     private Integer timeTaken;
     private Integer sequence;
     private Integer optionId;
+    private Integer questionAnswerId;
 
     public StatementAnswerDto(){}
 
     public StatementAnswerDto(QuestionAnswer questionAnswer) {
         this.timeTaken = questionAnswer.getTimeTaken();
         this.sequence = questionAnswer.getSequence();
+        this.questionAnswerId = questionAnswer.getId();
 
         if(questionAnswer.getOption() != null) {
             this.optionId = questionAnswer.getOption().getId();
@@ -43,6 +45,14 @@ public class StatementAnswerDto implements Serializable {
 
     public void setSequence(Integer sequence) {
         this.sequence = sequence;
+    }
+
+    public Integer getQuestionAnswerId() {
+        return questionAnswerId;
+    }
+
+    public void setQuestionAnswerId(Integer questionAnswerId) {
+        this.questionAnswerId = questionAnswerId;
     }
 
     @Override

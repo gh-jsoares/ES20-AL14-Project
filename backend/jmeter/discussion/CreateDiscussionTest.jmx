@@ -214,7 +214,7 @@ insert into question_answers values (61000, 40000, 7663, 15000, 40000);</stringP
           </HTTPSamplerProxy>
           <hashTree>
             <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="Assert questionId" enabled="true">
-              <stringProp name="JSON_PATH">$.questionId</stringProp>
+              <stringProp name="JSON_PATH">$.question.id</stringProp>
               <stringProp name="EXPECTED_VALUE">1800</stringProp>
               <boolProp name="JSONVALIDATION">true</boolProp>
               <boolProp name="EXPECT_NULL">false</boolProp>
@@ -231,8 +231,8 @@ insert into question_answers values (61000, 40000, 7663, 15000, 40000);</stringP
               <boolProp name="ISREGEX">false</boolProp>
             </JSONPathAssertion>
             <hashTree/>
-            <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="Assert username" enabled="true">
-              <stringProp name="JSON_PATH">$.userName</stringProp>
+            <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="Assert student name" enabled="true">
+              <stringProp name="JSON_PATH">$.studentName</stringProp>
               <stringProp name="EXPECTED_VALUE">Demo-Student</stringProp>
               <boolProp name="JSONVALIDATION">true</boolProp>
               <boolProp name="EXPECT_NULL">false</boolProp>

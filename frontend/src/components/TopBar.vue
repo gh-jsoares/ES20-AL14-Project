@@ -103,6 +103,14 @@
                 <v-list-item-title>Students</v-list-item-title>
               </v-list-item-content>
             </v-list-item>
+            <v-list-item to="/management/discussions">
+              <v-list-item-action>
+                <v-icon>drafts</v-icon>
+              </v-list-item-action>
+              <v-list-item-content>
+                <v-list-item-title>Discussions</v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
             <v-list-item to="/management/impexp">
               <v-list-item-action>
                 <v-icon>cloud</v-icon>
@@ -126,7 +134,7 @@
 
         <v-menu offset-y v-if="isStudent && currentCourse" open-on-hover>
           <template v-slot:activator="{ on }">
-            <v-btn v-on="on" text dark>
+            <v-btn v-on="on" text dark data-cy="quizzesButton">
               Quizzes
               <v-icon>fas fa-file-alt</v-icon>
             </v-btn>
@@ -162,6 +170,14 @@
               </v-list-item-action>
               <v-list-item-content>
                 <v-list-item-title>Solved</v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+            <v-list-item to="/student/discussions">
+              <v-list-item-action>
+                <v-icon>drafts</v-icon>
+              </v-list-item-action>
+              <v-list-item-content>
+                <v-list-item-title>Discussions</v-list-item-title>
               </v-list-item-content>
             </v-list-item>
           </v-list>
@@ -302,6 +318,14 @@
               <v-list-item-title>Students</v-list-item-title>
             </v-list-item-content>
           </v-list-item>
+          <v-list-item to="/management/discussions">
+            <v-list-item-action>
+              <v-icon>drafts</v-icon>
+            </v-list-item-action>
+            <v-list-item-content>
+              <v-list-item-title>Discussions</v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
           <v-list-item to="/management/impexp">
             <v-list-item-action>
               <v-icon>cloud</v-icon>
@@ -382,6 +406,12 @@
               <v-icon>fas fa-user</v-icon>
             </v-list-item-action>
             <v-list-item-content>Stats</v-list-item-content>
+          </v-list-item>
+          <v-list-item to="/student/discussions">
+            <v-list-item-action>
+              <v-icon>drafts</v-icon>
+            </v-list-item-action>
+            <v-list-item-content>Discussions</v-list-item-content>
           </v-list-item>
         </v-list-group>
 

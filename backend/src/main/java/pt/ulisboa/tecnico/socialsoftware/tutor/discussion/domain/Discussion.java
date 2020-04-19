@@ -83,6 +83,8 @@ public class Discussion {
 
     public void setTeacher(User teacher) { this.teacher = teacher; }
 
+    public boolean needsAnswer() { return teacher == null; }
+
     public void updateTeacherAnswer(User teacher, DiscussionDto discussionDto) {
         checkIfDiscussionHasBeenAnswered();
         checkIfTeacherIsEnrolledInQuestionCourseExecution(teacher);

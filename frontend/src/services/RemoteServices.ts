@@ -13,6 +13,7 @@ import Assessment from '@/models/management/Assessment';
 import AuthDto from '@/models/user/AuthDto';
 import StatementAnswer from '@/models/statement/StatementAnswer';
 import { QuizAnswers } from '@/models/management/QuizAnswers';
+import { Discussion } from '@/models/management/Discussion';
 import StudentQuestion from '@/models/management/StudentQuestion';
 import { Tournament } from '@/models/management/Tournament';
 
@@ -660,6 +661,68 @@ export default class RemoteServices {
       .catch(async error => {
         throw Error(await this.errorMessage(error));
       });
+  }
+
+  static createDiscussion(
+    questionId: number,
+    discussion: Discussion
+  ): Promise<Discussion> {
+    return httpClient
+      .post(`/questions/${questionId}/discussions/`, discussion)
+      .then(response => {
+        return new Discussion(response.data);
+      })
+      .catch(async error => {
+        throw Error(await this.errorMessage(error));
+      });
+  }
+
+  static async getDiscussions(): Promise<Discussion[]> {
+    return httpClient
+      .get('/teacher/discussions/')
+      .then(response => {
+        return response.data.map((discussion: any) => {
+          return new Discussion(discussion);
+        });
+      })
+      .catch(async error => {
+        throw Error(await this.errorMessage(error));
+      });
+  }
+
+  static async getDiscussionsStudent(): Promise<Discussion[]> {
+    return httpClient
+      .get('/student/discussions/')
+      .then(response => {
+        return response.data.map((discussion: any) => {
+          return new Discussion(discussion);
+        });
+      })
+      .catch(async error => {
+        throw Error(await this.errorMessage(error));
+      });
+  }
+
+  static async answerDiscussion(discussion: Discussion): Promise<Discussion> {
+    if (discussion.id) {
+      return httpClient
+        .post(`/discussions/${discussion.id}/`, discussion)
+        .then(response => {
+          return new Discussion(response.data);
+        })
+        .catch(async error => {
+          throw Error(await this.errorMessage(error));
+        });
+    } else {
+      return httpClient
+        .post(`/questions/${discussion.question.id}/discussions/`, discussion)
+        .then(response => {
+          return new Discussion(response.data);
+        })
+        .catch(async error => {
+          throw Error(await this.errorMessage(error));
+        });
+    }
   }
 
   static async exportAll() {
