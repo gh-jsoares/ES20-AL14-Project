@@ -1,5 +1,7 @@
 <template>
-  <v-form>
+  <v-form
+    data-cy="studentQuestionEditTopics"
+  >
     <v-autocomplete
       v-model="studentQuestionTopics"
       :items="topics"
@@ -16,13 +18,17 @@
           close
           @click="data.select"
           @click:close="removeTopic(data.item)"
+          data-cy="studentQuestionEditTopicsRemove"
         >
           {{ data.item.name }}
         </v-chip>
       </template>
       <template v-slot:item="data">
         <v-list-item-content>
-          <v-list-item-title v-html="data.item.name" />
+          <v-list-item-title
+            v-html="data.item.name"
+            data-cy="studentQuestionEditTopicsAdd"
+          />
         </v-list-item-content>
       </template>
     </v-autocomplete>
