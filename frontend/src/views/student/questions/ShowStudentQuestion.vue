@@ -16,6 +16,7 @@
     </div>
 
     <span
+      class="student-question-content"
       data-cy="studentQuestionDetailsContent"
       v-html="convertMarkDown(studentQuestion.content, studentQuestion.image)"
     />
@@ -63,5 +64,5 @@ export default class ShowStudentQuestion extends Vue {
 span.student-question-content
   max-width: 100%
   img
-    max-width: 100%
+    max-width: 100% !important
 </style>

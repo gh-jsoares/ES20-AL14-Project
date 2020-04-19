@@ -89,16 +89,14 @@ public class StudentQuestionController {
 
     @PutMapping("/questions/student/all/{studentQuestionId}/approve")
     @PreAuthorize("hasRole('ROLE_TEACHER') and hasPermission(#studentQuestionId, 'STUDENTQUESTION.ACCESS')")
-    public ResponseEntity studentQuestionApprove(Principal principal, @PathVariable Integer studentQuestionId) {
-        this.studentQuestionService.approveStudentQuestion(getAuthUser(principal).getId(), studentQuestionId);
-        return ResponseEntity.ok().build();
+    public StudentQuestionDto studentQuestionApprove(Principal principal, @PathVariable Integer studentQuestionId) {
+        return this.studentQuestionService.approveStudentQuestion(getAuthUser(principal).getId(), studentQuestionId);
     }
 
     @PutMapping("/questions/student/all/{studentQuestionId}/reject")
     @PreAuthorize("hasRole('ROLE_TEACHER') and hasPermission(#studentQuestionId, 'STUDENTQUESTION.ACCESS')")
-    public ResponseEntity studentQuestionReject(Principal principal, @PathVariable Integer studentQuestionId, @RequestBody String explanation) {
-        this.studentQuestionService.rejectStudentQuestion(getAuthUser(principal).getId(), studentQuestionId, explanation);
-        return ResponseEntity.ok().build();
+    public StudentQuestionDto studentQuestionReject(Principal principal, @PathVariable Integer studentQuestionId, @RequestBody String explanation) {
+        return this.studentQuestionService.rejectStudentQuestion(getAuthUser(principal).getId(), studentQuestionId, explanation);
     }
 
     @GetMapping("/courses/{courseId}/questions/student/")
