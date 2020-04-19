@@ -2,13 +2,17 @@ package pt.ulisboa.tecnico.socialsoftware.tutor.discussion;
 
 import pt.ulisboa.tecnico.socialsoftware.tutor.answer.domain.QuestionAnswer;
 import pt.ulisboa.tecnico.socialsoftware.tutor.answer.repository.QuestionAnswerRepository;
+import pt.ulisboa.tecnico.socialsoftware.tutor.course.Course;
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseDto;
+import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecution;
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.repository.DiscussionRepository;
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.dto.DiscussionDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.domain.Discussion;
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Question;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.QuestionRepository;
+import pt.ulisboa.tecnico.socialsoftware.tutor.quiz.domain.Quiz;
+import pt.ulisboa.tecnico.socialsoftware.tutor.quiz.domain.QuizQuestion;
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.UserRepository;
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.User;
 
@@ -22,9 +26,11 @@ import org.springframework.stereotype.Service;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException;
 
@@ -50,8 +56,8 @@ public class DiscussionService {
         value = { SQLException.class },
         backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
-    public DiscussionDto createDiscussion(Integer questionId, DiscussionDto discussionDto) {
-        User student = getStudentById(discussionDto.getUserId());
+    public DiscussionDto createDiscussion(Integer userId, Integer questionId, DiscussionDto discussionDto) {
+        User student = getStudentById(userId);
 
         Question question = getQuestion(questionId);
 
@@ -77,6 +83,14 @@ public class DiscussionService {
         return student;
     }
 
+    private User getTeacherById(Integer teacherId) {
+        User student = userRepository.findById(teacherId).orElseThrow(() -> new TutorException(ErrorMessage.USER_NOT_FOUND, teacherId));
+        if (student.getRole() != User.Role.TEACHER) {
+            throw new TutorException(ErrorMessage.USER_IS_NOT_TEACHER, teacherId);
+        }
+        return student;
+    }
+
     private Question getQuestion(Integer questionId) {
         return questionRepository.findById(questionId).orElseThrow(() -> new TutorException(ErrorMessage.QUESTION_NOT_FOUND, questionId));
     }
@@ -91,20 +105,12 @@ public class DiscussionService {
         value = { SQLException.class },
         backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
-    public DiscussionDto teacherAnswersStudent(Integer discussionId, DiscussionDto discussionDto) {
+    public DiscussionDto teacherAnswersStudent(Integer userId, Integer discussionId, DiscussionDto discussionDto) {
         Discussion discussion = discussionRepository.findById(discussionId).orElseThrow(() -> new TutorException(ErrorMessage.DISCUSSION_NOT_FOUND, discussionId));
-        User teacher = checkIfTeacherExists(discussionDto);
+        User teacher = getTeacherById(userId);
 
         discussion.updateTeacherAnswer(teacher, discussionDto);
         return new DiscussionDto(discussion);
-    }
-
-    private User checkIfTeacherExists(DiscussionDto discussionDto) {
-        User teacher = userRepository.findById(discussionDto.getUserId()).orElseThrow(() -> new TutorException(ErrorMessage.USER_NOT_FOUND));
-        if (teacher.getRole() != User.Role.TEACHER) {
-            throw new TutorException(ErrorMessage.USER_IS_NOT_TEACHER, discussionDto.getUserName());
-        }
-        return teacher;
     }
 
     @Retryable(
@@ -124,11 +130,42 @@ public class DiscussionService {
             value = { SQLException.class },
             backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public List<DiscussionDto> getDiscussionTeacher(Integer teacherId) {
+        User teacher = getTeacherById(teacherId);
+
+        List<Discussion> discussions = getDiscussionFromCourses(teacher.getCourseExecutions());
+        return discussions.stream()
+                .map(DiscussionDto::new)
+                .collect(Collectors.toList());
+    }
+
+    @Retryable(
+            value = { SQLException.class },
+            backoff = @Backoff(delay = 5000))
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
     public CourseDto findDiscussionCourse(Integer discussionId) {
         return discussionRepository.findById(discussionId)
                 .map(Discussion::getQuestion)
                 .map(Question::getCourse)
                 .map(CourseDto::new)
                 .orElseThrow(() -> new TutorException(ErrorMessage.DISCUSSION_NOT_FOUND, discussionId));
+    }
+
+    @Retryable(
+            value = { SQLException.class },
+            backoff = @Backoff(delay = 5000))
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public List<Discussion> getDiscussionFromCourses(Set<CourseExecution> courses) {
+        return courses.stream()
+                .map(CourseExecution::getQuizzes)
+                .flatMap(Collection::stream)
+                .map(Quiz::getQuizQuestions)
+                .flatMap(Collection::stream)
+                .map(QuizQuestion::getQuestion)
+                .map(Question::getDiscussions)
+                .flatMap(Collection::stream)
+                .filter(Discussion::needsAnswer)
+                .distinct()
+                .collect(Collectors.toList());
     }
 }

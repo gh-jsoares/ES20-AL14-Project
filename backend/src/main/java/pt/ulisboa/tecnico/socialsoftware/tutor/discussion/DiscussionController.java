@@ -22,14 +22,16 @@ public class DiscussionController {
 
     @PostMapping("/questions/{questionId}/discussions")
     @PreAuthorize("hasRole('ROLE_STUDENT') and hasPermission(#questionId, 'QUESTION.ACCESS')")
-    public DiscussionDto createDiscussion(@PathVariable Integer questionId, @Valid @RequestBody DiscussionDto discussionDto) {
-        return this.discussionService.createDiscussion(questionId, discussionDto);
+    public DiscussionDto createDiscussion(Principal principal, @PathVariable Integer questionId, @Valid @RequestBody DiscussionDto discussionDto) {
+        User user = (User) ((Authentication) principal).getPrincipal();
+        return this.discussionService.createDiscussion(user.getId(), questionId, discussionDto);
     }
 
     @PostMapping("/discussions/{discussionId}")
     @PreAuthorize("hasRole('ROLE_TEACHER') and hasPermission(#discussionId, 'DISCUSSION.ACCESS')")
-    public DiscussionDto teacherAnswersStudent(@PathVariable Integer discussionId, @Valid @RequestBody DiscussionDto discussionDto) {
-        return discussionService.teacherAnswersStudent(discussionId, discussionDto);
+    public DiscussionDto teacherAnswersStudent(Principal principal, @PathVariable Integer discussionId, @Valid @RequestBody DiscussionDto discussionDto) {
+        User user = (User) ((Authentication) principal).getPrincipal();
+        return discussionService.teacherAnswersStudent(user.getId(), discussionId, discussionDto);
     }
 
     @GetMapping("/student/discussions/")
@@ -42,6 +44,18 @@ public class DiscussionController {
         }
 
         return discussionService.getDiscussionStudent(user.getId());
+    }
+
+    @GetMapping("/teacher/discussions/")
+    @PreAuthorize("hasRole('ROLE_TEACHER')")
+    public List<DiscussionDto> getDiscussionsTeacher(Principal principal) {
+        User user = (User) ((Authentication) principal).getPrincipal();
+
+        if(user == null){
+            throw new TutorException(AUTHENTICATION_ERROR);
+        }
+
+        return discussionService.getDiscussionTeacher(user.getId());
     }
 
 }

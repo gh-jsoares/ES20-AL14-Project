@@ -26,6 +26,8 @@ import ImpExpView from '@/views/teacher/impexp/ImpExpView.vue';
 import AssessmentsView from '@/views/teacher/assessments/AssessmentsView.vue';
 import CreateQuizzesView from '@/views/student/CreateQuizzesView.vue';
 import CoursesView from '@/views/admin/Courses/CoursesView.vue';
+import DiscussionsView from '@/views/teacher/discussions/DiscussionsView.vue';
+import StudentDiscussionsView from '@/views/student/discussion/StudentDiscussionsView.vue';
 
 import OpenTournamentsView from '@/views/student/tournament/OpenTournamentsView.vue';
 import CreateTournamentView from '@/views/student/tournament/CreateTournamentView.vue';
@@ -111,6 +113,15 @@ let router = new Router({
           }
         },
         {
+          path: 'discussions',
+          name: 'discussions-management',
+          component: DiscussionsView,
+          meta: {
+            title: process.env.VUE_APP_NAME + ' - Discussions',
+            requiredAuth: 'Teacher'
+          }
+        },
+        {
           path: 'impexp',
           name: 'impexp-management',
           component: ImpExpView,
@@ -186,6 +197,15 @@ let router = new Router({
           component: StatsView,
           meta: {
             title: process.env.VUE_APP_NAME + ' - Stats',
+            requiredAuth: 'Student'
+          }
+        },
+        {
+          path: 'discussions',
+          name: 'discussions',
+          component: StudentDiscussionsView,
+          meta: {
+            title: process.env.VUE_APP_NAME + ' - Scan',
             requiredAuth: 'Student'
           }
         },

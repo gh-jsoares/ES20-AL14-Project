@@ -15,6 +15,7 @@
 
 // Import commands.js using ES2015 syntax:
 import './commands';
+import './discussion/discussionCommands';
 
 import './database';
 import './admin/commands';

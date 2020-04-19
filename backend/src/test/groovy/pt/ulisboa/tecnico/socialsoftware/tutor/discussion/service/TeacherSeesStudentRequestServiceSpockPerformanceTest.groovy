@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
+import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.domain.Discussion
 import spock.lang.Specification
 
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.User
@@ -12,7 +13,6 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.user.UserRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Question
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.QuestionRepository
 
-import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.dto.DiscussionDto
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.repository.DiscussionRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.DiscussionService
 
@@ -28,9 +28,8 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.quiz.domain.QuizQuestion
 import pt.ulisboa.tecnico.socialsoftware.tutor.answer.domain.QuestionAnswer
 import pt.ulisboa.tecnico.socialsoftware.tutor.answer.domain.QuizAnswer
 
-
 @DataJpaTest
-class CreateDiscussionPerformanceTest extends Specification {
+class TeacherSeesStudentRequestServiceSpockPerformanceTest extends Specification {
 
     @Autowired
     DiscussionService discussionService
@@ -54,15 +53,17 @@ class CreateDiscussionPerformanceTest extends Specification {
     CourseExecutionRepository courseExecutionRepository
 
     public static final String MESSAGE = "message"
-    public static final String STUDENT_NAME = "student_test"
+    public static final String USER_NAME = "test"
     public static final String COURSE_NAME = "course_test"
     public static final String COURSE_ACRONYM = "acronym_test"
     public static final String COURSE_ACADEMIC_TERM = "academic_term_test"
+    public static final Integer COUNT = 1
 
-    Integer discNum = 1
-    User[] students = new User[discNum + 1]
-    Question[] questions = new Question[discNum + 1]
-    QuestionAnswer[] questionAnswers = new QuestionAnswer[discNum + 1]
+    User[] students = new User[COUNT + 1]
+    User teacher
+    Question[] questions = new Question[COUNT + 1]
+    QuestionAnswer[] questionAnswers = new QuestionAnswer[COUNT + 1]
+    Discussion[] discussions = new Discussion[COUNT + 1]
     Course course
     CourseExecution courseExecution
 
@@ -78,29 +79,34 @@ class CreateDiscussionPerformanceTest extends Specification {
         courseExecution = courseExecutionRepository.findAll().get(0)
     }
 
-    def "create a discussion"() {
-        given: "the students, questions and discussions"
-        1.upto(discNum, {
-            createUser(it)
+    def "performance testing COUNT teachers answering discussions"() {
+        given: "COUNT students, COUNT teachers, questions and discussions"
+        createUser(COUNT + 1, User.Role.TEACHER)
+        1.upto(COUNT, {
+            createUser(it, User.Role.STUDENT)
             createQuestion(it)
         })
+        and: "COUNT discussions"
+        1.upto(COUNT, {
+            createDiscussion(it)
+        })
         when:
-        1.upto(discNum, {
-            DiscussionDto discussionDto = new DiscussionDto()
-            discussionDto.setId(questionAnswers[it].getId())
-            discussionDto.setMessageFromStudent(MESSAGE)
-            discussionService.createDiscussion(students[it].getId(), questions[it].getId(), discussionDto)
+        1.upto(COUNT, {
+            discussionService.getDiscussionTeacher(teacher.getId())
         })
         then:
         true
     }
 
-    def createUser(it) {
-        User user = new User(STUDENT_NAME, STUDENT_NAME + it, it, User.Role.STUDENT)
+    def createUser(it, role) {
+        User user = new User(USER_NAME, USER_NAME + it, it.intValue(), role)
         userRepository.save(user)
         user.addCourse(courseExecution)
         courseExecution.addUser(user)
-        students[it] = user
+        if (role == User.Role.STUDENT)
+            students[it] = user
+        else
+            teacher = user
     }
 
     def createQuestion(it) {
@@ -115,10 +121,22 @@ class CreateDiscussionPerformanceTest extends Specification {
         courseExecution.addQuiz(quiz)
         QuizQuestion quizQuestion = new QuizQuestion(quiz, question, 0)
         QuizAnswer quizAnswer = new QuizAnswer(students[it], quiz)
-        questionAnswers[it] = new QuestionAnswer(quizAnswer, quizQuestion,  10, null,  0)
+        questionAnswers[it] = new QuestionAnswer(quizAnswer, quizQuestion, 10, null, 0)
 
         questions[it] = question
         questionRepository.save(question)
+    }
+
+    def createDiscussion(it) {
+        def discussion = new Discussion()
+        discussion.setId(it)
+        discussion.setMessageFromStudent(MESSAGE)
+        discussion.setQuestion(questions[it])
+        discussion.setStudent(students[it])
+
+        discussions[it] = discussion
+        discussionRepository.save(discussion)
+
     }
 
     @TestConfiguration

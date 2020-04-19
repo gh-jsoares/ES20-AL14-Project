@@ -24,6 +24,9 @@
         class="question-content"
         v-html="convertMarkDown(question.content, question.image)"
       ></div>
+      <div @click="createDiscussion" class="square" data-cy="Open Discussion">
+        <i class="fas fa-comment-alt mt-3" />
+      </div>
       <div @click="increaseOrder" class="square">
         <i
           v-if="questionOrder !== questionNumber - 1"
@@ -60,6 +63,17 @@
         />
       </li>
     </ul>
+    <create-discussion-dialog
+      v-if="createDiscussionDialog"
+      v-model="createDiscussionDialog"
+      :questionId="question.questionId"
+      :questionAnswerId="answer.questionAnswerId"
+      :options="question.options"
+      :content="question.content"
+      :correct="correctAnswer.correctOptionId"
+      v-on:create-discussion="discussionCreated"
+      v-on:close-dialog="onCloseDialog"
+    />
   </div>
 </template>
 
@@ -70,8 +84,13 @@ import StatementQuestion from '@/models/statement/StatementQuestion';
 import StatementAnswer from '@/models/statement/StatementAnswer';
 import StatementCorrectAnswer from '@/models/statement/StatementCorrectAnswer';
 import Image from '@/models/management/Image';
+import CreateDiscussionDialog from '@/views/student/discussion/CreateDiscussionDialog.vue';
 
-@Component
+@Component({
+  components: {
+    'create-discussion-dialog': CreateDiscussionDialog
+  }
+})
 export default class ResultComponent extends Vue {
   @Model('questionOrder', Number) questionOrder: number | undefined;
   @Prop(StatementQuestion) readonly question!: StatementQuestion;
@@ -80,6 +99,7 @@ export default class ResultComponent extends Vue {
   @Prop() readonly questionNumber!: number;
   hover: boolean = false;
   optionLetters: string[] = ['A', 'B', 'C', 'D'];
+  createDiscussionDialog: boolean = false;
 
   @Emit()
   increaseOrder() {
@@ -93,6 +113,18 @@ export default class ResultComponent extends Vue {
 
   convertMarkDown(text: string, image: Image | null = null): string {
     return convertMarkDown(text, image);
+  }
+
+  createDiscussion() {
+    this.createDiscussionDialog = true;
+  }
+
+  onCloseDialog() {
+    this.createDiscussionDialog = false;
+  }
+
+  discussionCreated() {
+    this.createDiscussionDialog = false;
   }
 }
 </script>
