@@ -1,7 +1,7 @@
 const cleanupFile =
   'tests/e2e/support/discussion/deleteDiscussionSubmission.sql';
 
-describe('creating and answering discussion walkthrough', () => {
+describe('creating, answering and seeing discussion walkthrough', () => {
   before(() => {
     cy.databaseRunFile(cleanupFile);
     cy.demoStudentLogin();
