@@ -99,15 +99,6 @@ export default class EditStudentQuestionDialog extends Vue {
     this.editStudentQuestion = new StudentQuestion(this.studentQuestion);
   }
 
-  // TODO use EasyMDE with these configs
-  // markdownConfigs: object = {
-  //   status: false,
-  //   spellChecker: false,
-  //   insertTexts: {
-  //     image: ['![image][image]', '']
-  //   }
-  // };
-
   async saveStudentQuestion() {
     if (
       this.editStudentQuestion &&
@@ -120,14 +111,6 @@ export default class EditStudentQuestionDialog extends Vue {
       return;
     }
 
-    /* if (this.editStudentQuestion && this.editStudentQuestion.id != null) {
-      try {
-        const result = await RemoteServices.updateStudentQuestion(this.editStudentQuestion);
-        this.$emit('save-student-question', result);
-      } catch (error) {
-        await this.$store.dispatch('error', error);
-      }
-    } else  */
     if (this.editStudentQuestion) {
       try {
         const result = await RemoteServices.createStudentQuestion(
