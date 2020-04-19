@@ -67,7 +67,8 @@
           data-cy="cancelButton"
           color="blue darken-1"
           @click="$emit('dialog', false)"
-        >Cancel
+        >
+          Cancel
         </v-btn>
         <v-btn
           color="blue darken-1"

@@ -1,12 +1,14 @@
 Cypress.Commands.add('goToStudentQuestions', () => {
-    cy.server()
-        .route('/courses/2/topics').as('getTopics')
+    cy.server(); // cannot be chained
+
+    cy.route('/courses/2/topics').as('getTopics')
         .route('/courses/2/questions/student').as('getStudentQuestions');
 
     cy.contains('Student Questions')
         .click()
         .wait(['@getTopics', '@getStudentQuestions']);
 });
+
 
 Cypress.Commands.add('assertListStudentQuestions', (amount) => {
     cy.get('[data-cy="studentQuestionViewTitle"]')
@@ -96,15 +98,15 @@ Cypress.Commands.add('assertStudentQuestionDetails', (studentQuestion, options) 
             .contains(studentQuestion.rejected_explanation);
     }
 
-    options.forEach((option, i) => {
+    options.forEach(option => {
         if (option.correct)
             cy.get(`[data-cy="studentQuestionDetailsOptionCorrect"]`)
                 .siblings(`[data-cy="studentQuestionDetailsOption"]`)
                 .contains(option.content);
         else
             cy.get(`[data-cy="studentQuestionDetailsOption"]`)
-                .contains(option.content)
-    })
+                .contains(option.content);
+    });
 });
 
 Cypress.Commands.add('initStudentQuestions', ({ amount, student_id, course_id, offset = 0 } = {}) => {
@@ -160,6 +162,7 @@ Cypress.Commands.add('initStudentQuestions', ({ amount, student_id, course_id, o
                      ${studentQuestion.creation_date}\
                 );`
             );
+            
             data.options.forEach(option => {
                 cy.queryDatabase(
                     `INSERT INTO options\
