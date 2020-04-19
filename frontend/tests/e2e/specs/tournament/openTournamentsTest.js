@@ -1,5 +1,5 @@
-const setupFile = 'tests/e2e/support/openTournamentsSetup.sql';
-const cleanupFile = 'tests/e2e/support/openTournamentsCleanup.sql';
+const setupFile = 'tests/e2e/support/tournament/openTournamentsSetup.sql';
+const cleanupFile = 'tests/e2e/support/tournament/openTournamentsCleanup.sql';
 
 describe('search/view open tournaments walkthrough', () => {
   before(() => {
