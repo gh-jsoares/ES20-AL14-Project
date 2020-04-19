@@ -15,8 +15,8 @@ describe('View Student Question details as Student walkthrough', () => {
 
     it('login view student question details', () => {
         cy.fixture('questions/student/studentQuestionsData.json').then(data => {
-            const studentQuestion = data.student_questions[3]
-            cy.assertStudentQuestionDetails(studentQuestion, data.options)
+            const studentQuestion = data.student_questions[3];
+            cy.assertStudentQuestionDetails(studentQuestion, data.options);
         });
     });
 });

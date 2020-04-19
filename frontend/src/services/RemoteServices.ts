@@ -179,6 +179,22 @@ export default class RemoteServices {
       });
   }
 
+  static async createStudentQuestion(
+    studentQuestion: StudentQuestion
+  ): Promise<StudentQuestion> {
+    return httpClient
+      .post(
+        `/courses/${Store.getters.getCurrentCourse.courseId}/questions/student`,
+        studentQuestion
+      )
+      .then(response => {
+        return new StudentQuestion(response.data);
+      })
+      .catch(async error => {
+        throw Error(await this.errorMessage(error));
+      });
+  }
+
   static async deleteQuestion(questionId: number) {
     return httpClient.delete(`/questions/${questionId}`).catch(async error => {
       throw Error(await this.errorMessage(error));
@@ -238,6 +254,16 @@ export default class RemoteServices {
 
   static async updateQuestionTopics(questionId: number, topics: Topic[]) {
     return httpClient.put(`/questions/${questionId}/topics`, topics);
+  }
+
+  static async updateStudentQuestionTopics(
+    studentQuestionId: number,
+    topics: Topic[]
+  ) {
+    return httpClient.put(
+      `/questions/student/${studentQuestionId}/topics/`,
+      topics.map(topic => topic.id)
+    );
   }
 
   static async getTopics(): Promise<Topic[]> {
