@@ -41,7 +41,15 @@
       </template>
 
       <template v-slot:item.topics="{ item }">
+        <template v-if="item.status === 'ACCEPTED'">
+          <span v-if="item.topics.length == 0">No topics</span>
+          <v-chip v-for="topic in item.topics" :key="topic.id">
+            {{ topic.name }}
+          </v-chip>
+        </template>
+
         <edit-student-question-topics
+          v-else
           :studentQuestion="item"
           :topics="topics"
           v-on:student-question-changed-topics="onStudentQuestionChangedTopics"
