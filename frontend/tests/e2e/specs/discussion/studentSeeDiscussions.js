@@ -4,9 +4,6 @@ const cleanupFile =
 describe('creating and answering discussion walkthrough', () => {
   before(() => {
     cy.databaseRunFile(cleanupFile);
-  });
-
-  beforeEach(() => {
     cy.demoStudentLogin();
   });
 
