@@ -1,11 +1,11 @@
-describe('View Student Question details as Student walkthrough', () => {
+describe('View Student Question details as Teacher walkthrough', () => {
     beforeEach(() => {
-        cy.demoStudentLogin();
+        cy.demoTeacherLogin();
 
         cy.cleanupStudentQuestions();
         cy.initStudentQuestions({ amount: 1, offset: 3 });
 
-        cy.goToStudentQuestionsAsStudent();
+        cy.goToStudentQuestionsAsTeacher();
     });
 
     afterEach(() => {

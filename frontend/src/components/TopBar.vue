@@ -45,6 +45,16 @@
           </v-list>
         </v-menu>
 
+        <v-btn
+          to="/management/student/questions"
+          v-if="isTeacher && currentCourse"
+          text
+          dark
+        >
+          Student Questions
+          <v-icon>question_answer</v-icon>
+        </v-btn>
+
         <v-menu offset-y v-if="isTeacher && currentCourse" open-on-hover>
           <template v-slot:activator="{ on }">
             <v-btn v-on="on" text dark>

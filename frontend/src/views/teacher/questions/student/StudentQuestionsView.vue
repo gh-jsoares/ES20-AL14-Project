@@ -19,16 +19,6 @@
             label="Search"
             class="mx-2"
           />
-
-          <v-spacer />
-          <v-btn
-            color="primary"
-            @click="newStudentQuestion"
-            dark
-            data-cy="studentQuestionNew"
-          >
-            New Student Question
-          </v-btn>
         </v-card-title>
       </template>
 
@@ -41,35 +31,16 @@
       </template>
 
       <template v-slot:item.topics="{ item }">
-        <template v-if="item.status === 'ACCEPTED'">
-          <span v-if="item.topics.length == 0">No topics</span>
-          <v-chip v-for="topic in item.topics" :key="topic.id">
-            {{ topic.name }}
-          </v-chip>
-        </template>
-
-        <edit-student-question-topics
-          v-else
-          :studentQuestion="item"
-          :topics="topics"
-          v-on:student-question-changed-topics="onStudentQuestionChangedTopics"
-        />
+        <span v-if="item.topics.length == 0">No topics</span>
+        <v-chip v-for="topic in item.topics" :key="topic.id">
+          {{ topic.name }}
+        </v-chip>
       </template>
 
       <template v-slot:item.status="{ item }">
         <v-chip :color="getStatusColor(item.status)" small>
           <span>{{ item.status }}</span>
         </v-chip>
-      </template>
-
-      <template v-slot:item.image="{ item }">
-        <v-file-input
-          show-size
-          dense
-          small-chips
-          @change="handleFileUpload($event, item)"
-          accept="image/*"
-        />
       </template>
 
       <template v-slot:item.action="{ item }">
@@ -86,13 +57,43 @@
           </template>
           <span>View Details</span>
         </v-tooltip>
+
+        <template v-if="item.status === 'AWAITING_APPROVAL'">
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on }">
+              <v-icon
+                data-cy="approveStudentQuestion"
+                small
+                class="mr-2 green--text"
+                v-on="on"
+                @click="approveStudentQuestion(item)"
+                >check</v-icon
+              >
+            </template>
+            <span>Approve</span>
+          </v-tooltip>
+
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on }">
+              <v-icon
+                data-cy="rejectStudentQuestionDialog"
+                small
+                class="mr-2 red--text"
+                v-on="on"
+                @click="openRejectStudentQuestionDialog(item)"
+                >close</v-icon
+              >
+            </template>
+            <span>Reject</span>
+          </v-tooltip>
+        </template>
       </template>
     </v-data-table>
-    <edit-student-question-dialog
+    <reject-student-question-dialog
       v-if="currentStudentQuestion"
-      v-model="editStudentQuestionDialog"
+      v-model="rejectStudentQuestionDialog"
       :studentQuestion="currentStudentQuestion"
-      v-on:save-student-question="onSaveStudentQuestion"
+      v-on:reject-student-question="onRejectStudentQuestion"
     />
     <show-student-question-dialog
       v-if="currentStudentQuestion"
@@ -107,26 +108,22 @@
 import { Component, Vue, Watch } from 'vue-property-decorator';
 import RemoteServices from '@/services/RemoteServices';
 import { convertMarkDownNoFigure } from '@/services/ConvertMarkdownService';
-import Topic from '@/models/management/Topic';
 import Image from '@/models/management/Image';
 import StudentQuestion from '@/models/management/StudentQuestion';
 
 import ShowStudentQuestionDialog from '@/views/student/questions/ShowStudentQuestionDialog.vue';
-import EditStudentQuestionDialog from '@/views/student/questions/EditStudentQuestionDialog.vue';
-import EditStudentQuestionTopics from '@/views/student/questions/EditStudentQuestionTopics.vue';
+import RejectStudentQuestionDialog from '@/views/teacher/questions/student/RejectStudentQuestionDialog.vue';
 
 @Component({
   components: {
     'show-student-question-dialog': ShowStudentQuestionDialog,
-    'edit-student-question-dialog': EditStudentQuestionDialog,
-    'edit-student-question-topics': EditStudentQuestionTopics
+    'reject-student-question-dialog': RejectStudentQuestionDialog
   }
 })
 export default class StudentQuestionsView extends Vue {
   studentQuestions: StudentQuestion[] = [];
-  topics: Topic[] = [];
   currentStudentQuestion: StudentQuestion | null = null;
-  editStudentQuestionDialog: boolean = false;
+  rejectStudentQuestionDialog: boolean = false;
   studentQuestionDialog: boolean = false;
   search: string = '';
   statusList = ['AWAITING_APPROVAL', 'ACCEPTED', 'REJECTED'];
@@ -141,16 +138,11 @@ export default class StudentQuestionsView extends Vue {
       sortable: false
     },
     { text: 'Status', value: 'status', align: 'center' },
+    { text: 'Student', value: 'creatorUsername', align: 'center' },
     {
       text: 'Creation Date',
       value: 'creationDate',
       align: 'center'
-    },
-    {
-      text: 'Image',
-      value: 'image',
-      align: 'center',
-      sortable: false
     },
     {
       text: 'Actions',
@@ -163,10 +155,7 @@ export default class StudentQuestionsView extends Vue {
   async created() {
     await this.$store.dispatch('loading');
     try {
-      [this.topics, this.studentQuestions] = await Promise.all([
-        RemoteServices.getTopics(),
-        RemoteServices.getStudentQuestionsAsStudent()
-      ]);
+      this.studentQuestions = await RemoteServices.getStudentQuestionsAsTeacher();
     } catch (error) {
       await this.$store.dispatch('error', error);
     }
@@ -206,54 +195,42 @@ export default class StudentQuestionsView extends Vue {
     this.studentQuestionDialog = false;
   }
 
-  async handleFileUpload(event: File, studentQuestion: StudentQuestion) {
-    if (studentQuestion.id) {
+  async approveStudentQuestion(studentQuestion: StudentQuestion) {
+    if (confirm('Are you sure you want to approve this student question?')) {
       try {
-        const imageURL = await RemoteServices.uploadImageToStudentQuestion(
-          event,
-          studentQuestion.id
+        const newStudentQuestion = await RemoteServices.approveStudentQuestion(
+          studentQuestion
         );
-        studentQuestion.image = new Image();
-        studentQuestion.image.url = imageURL;
-        confirm('Image ' + imageURL + ' was uploaded!');
+        this.updateStudentQuestion(newStudentQuestion);
       } catch (error) {
         await this.$store.dispatch('error', error);
       }
     }
   }
 
-  @Watch('editStudentQuestionDialog')
-  closeError() {
-    if (!this.editStudentQuestionDialog) {
-      this.currentStudentQuestion = null;
-    }
-  }
-
-  newStudentQuestion() {
-    this.currentStudentQuestion = new StudentQuestion();
-    this.editStudentQuestionDialog = true;
-  }
-
-  async onSaveStudentQuestion(studentQuestion: StudentQuestion) {
+  updateStudentQuestion(studentQuestion: StudentQuestion) {
     this.studentQuestions = this.studentQuestions.filter(
       q => q.id !== studentQuestion.id
     );
     this.studentQuestions.unshift(studentQuestion);
-    this.editStudentQuestionDialog = false;
-    this.currentStudentQuestion = null;
   }
 
-  onStudentQuestionChangedTopics(
-    studentQuestionId: Number,
-    changedTopics: Topic[]
-  ) {
-    let studentQuestion = this.studentQuestions.find(
-      (studentQuestion: StudentQuestion) =>
-        studentQuestion.id == studentQuestionId
-    );
-    if (studentQuestion) {
-      studentQuestion.topics = changedTopics;
+  @Watch('rejectStudentQuestionDialog')
+  closeError() {
+    if (!this.rejectStudentQuestionDialog) {
+      this.currentStudentQuestion = null;
     }
+  }
+
+  openRejectStudentQuestionDialog(studentQuestion: StudentQuestion) {
+    this.currentStudentQuestion = studentQuestion;
+    this.rejectStudentQuestionDialog = true;
+  }
+
+  async onRejectStudentQuestion(studentQuestion: StudentQuestion) {
+    this.updateStudentQuestion(studentQuestion);
+    this.rejectStudentQuestionDialog = false;
+    this.currentStudentQuestion = null;
   }
 }
 </script>

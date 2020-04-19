@@ -50,9 +50,9 @@ export default class ShowStudentQuestionDialog extends Vue {
   readonly studentQuestion!: StudentQuestion;
 
   getStatusColor(status: string) {
-    if (status === 'REJECTED') return 'red';
-    else if (status === 'AWAITING_APPROVAL') return 'orange';
-    else return 'green';
+    if (status === 'REJECTED') return 'red white--text';
+    else if (status === 'AWAITING_APPROVAL') return 'orange white--text';
+    else return 'green white--text';
   }
 }
 </script>

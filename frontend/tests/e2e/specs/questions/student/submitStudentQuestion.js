@@ -2,7 +2,7 @@ describe('Submit Student Question walkthrough', () => {
     beforeEach(() => {
         cy.demoStudentLogin();
         cy.cleanupStudentQuestions();
-        cy.goToStudentQuestions();
+        cy.goToStudentQuestionsAsStudent();
     });
 
     afterEach(() => {

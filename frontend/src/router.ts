@@ -18,7 +18,8 @@ import QuizView from '@/views/student/quiz/QuizView.vue';
 import ResultsView from '@/views/student/quiz/ResultsView.vue';
 import StatsView from '@/views/student/StatsView.vue';
 import ScanView from '@/views/student/ScanView.vue';
-import StudentQuestionsView from '@/views/student/questions/StudentQuestionsView.vue';
+import StudentQuestionsViewAsStudent from '@/views/student/questions/StudentQuestionsView.vue';
+import StudentQuestionsViewAsTeacher from '@/views/teacher/questions/student/StudentQuestionsView.vue';
 
 import AdminManagementView from './views/admin/AdminManagementView.vue';
 import NotFoundView from './views/NotFoundView.vue';
@@ -67,6 +68,15 @@ let router = new Router({
       name: 'management',
       component: ManagementView,
       children: [
+        {
+          path: 'student/questions',
+          name: 'student-questions-teacher',
+          component: StudentQuestionsViewAsTeacher,
+          meta: {
+            title: process.env.VUE_APP_NAME + ' - Student Questions',
+            requiredAuth: 'Teacher'
+          }
+        },
         {
           path: 'questions',
           name: 'questions-management',
@@ -139,8 +149,8 @@ let router = new Router({
       children: [
         {
           path: 'questions',
-          name: 'student-questions',
-          component: StudentQuestionsView,
+          name: 'student-questions-student',
+          component: StudentQuestionsViewAsStudent,
           meta: {
             title: process.env.VUE_APP_NAME + ' - Student Questions',
             requiredAuth: 'Student'
