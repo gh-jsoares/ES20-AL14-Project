@@ -16,5 +16,10 @@
 // Import commands.js using ES2015 syntax:
 import './commands';
 
+import './database';
+import './admin/commands';
+import './questions/student/commands';
+import './tournament/tournamentCommands';
+
 // Alternatively you can use CommonJS syntax:
 // require('./commands')

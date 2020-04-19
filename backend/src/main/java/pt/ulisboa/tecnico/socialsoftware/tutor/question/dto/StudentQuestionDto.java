@@ -19,6 +19,7 @@ public class StudentQuestionDto implements Serializable {
     private String creationDate = null;
     private String status;
     private Set<OptionDto> options = new HashSet<>();
+    private Set<TopicDto> topics = new HashSet<>();
     private ImageDto image;
     private String creatorUsername;
     private String lastReviewerUsername = null;
@@ -34,6 +35,7 @@ public class StudentQuestionDto implements Serializable {
         this.content = studentQuestion.getContent();
         this.status = studentQuestion.getStatus().name();
         this.options = studentQuestion.getOptions().stream().map(OptionDto::new).collect(Collectors.toSet());
+        this.topics = studentQuestion.getTopics().stream().map(TopicDto::new).collect(Collectors.toSet());
         this.creatorUsername = studentQuestion.getStudent().getUsername();
 
         populateImage(studentQuestion);
@@ -122,6 +124,14 @@ public class StudentQuestionDto implements Serializable {
 
     public void setOptions(Set<OptionDto> options) {
         this.options = options;
+    }
+
+    public Set<TopicDto> getTopics() {
+        return topics;
+    }
+
+    public void setTopics(Set<TopicDto> topics) {
+        this.topics = topics;
     }
 
     public ImageDto getImage() {
