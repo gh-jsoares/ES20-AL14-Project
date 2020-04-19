@@ -21,7 +21,14 @@
           />
 
           <v-spacer />
-          <!-- <v-btn color="primary" dark @click="newStudentQuestion">New Student Question</v-btn> -->
+          <v-btn
+            color="primary"
+            @click="newStudentQuestion"
+            dark
+            data-cy="studentQuestionNew"
+          >
+            New Student Question
+          </v-btn>
         </v-card-title>
       </template>
 
@@ -34,10 +41,11 @@
       </template>
 
       <template v-slot:item.topics="{ item }">
-        <span v-if="item.topics.length == 0">No topics</span>
-        <v-chip v-for="topic in item.topics" :key="topic.id">
-          {{ topic.name }}
-        </v-chip>
+        <edit-student-question-topics
+          :studentQuestion="item"
+          :topics="topics"
+          v-on:student-question-changed-topics="onStudentQuestionChangedTopics"
+        />
       </template>
 
       <template v-slot:item.status="{ item }">
@@ -72,6 +80,12 @@
         </v-tooltip>
       </template>
     </v-data-table>
+    <edit-student-question-dialog
+      v-if="currentStudentQuestion"
+      v-model="editStudentQuestionDialog"
+      :studentQuestion="currentStudentQuestion"
+      v-on:save-student-question="onSaveStudentQuestion"
+    />
     <show-student-question-dialog
       v-if="currentStudentQuestion"
       v-model="studentQuestionDialog"
@@ -90,10 +104,14 @@ import Image from '@/models/management/Image';
 import StudentQuestion from '@/models/management/StudentQuestion';
 
 import ShowStudentQuestionDialog from '@/views/student/questions/ShowStudentQuestionDialog.vue';
+import EditStudentQuestionDialog from '@/views/student/questions/EditStudentQuestionDialog.vue';
+import EditStudentQuestionTopics from '@/views/student/questions/EditStudentQuestionTopics.vue';
 
 @Component({
   components: {
-    'show-student-question-dialog': ShowStudentQuestionDialog
+    'show-student-question-dialog': ShowStudentQuestionDialog,
+    'edit-student-question-dialog': EditStudentQuestionDialog,
+    'edit-student-question-topics': EditStudentQuestionTopics
   }
 })
 export default class StudentQuestionsView extends Vue {
@@ -193,6 +211,40 @@ export default class StudentQuestionsView extends Vue {
       } catch (error) {
         await this.$store.dispatch('error', error);
       }
+    }
+  }
+
+  @Watch('editStudentQuestionDialog')
+  closeError() {
+    if (!this.editStudentQuestionDialog) {
+      this.currentStudentQuestion = null;
+    }
+  }
+
+  newStudentQuestion() {
+    this.currentStudentQuestion = new StudentQuestion();
+    this.editStudentQuestionDialog = true;
+  }
+
+  async onSaveStudentQuestion(studentQuestion: StudentQuestion) {
+    this.studentQuestions = this.studentQuestions.filter(
+      q => q.id !== studentQuestion.id
+    );
+    this.studentQuestions.unshift(studentQuestion);
+    this.editStudentQuestionDialog = false;
+    this.currentStudentQuestion = null;
+  }
+
+  onStudentQuestionChangedTopics(
+    studentQuestionId: Number,
+    changedTopics: Topic[]
+  ) {
+    let studentQuestion = this.studentQuestions.find(
+      (studentQuestion: StudentQuestion) =>
+        studentQuestion.id == studentQuestionId
+    );
+    if (studentQuestion) {
+      studentQuestion.topics = changedTopics;
     }
   }
 }

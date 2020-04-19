@@ -79,5 +79,23 @@
             "content": "Preposterous",
             "correct": false
         }
+    ],
+    "options": [
+        {
+            "content": "Yes",
+            "correct": true
+        },
+        {
+            "content": "No",
+            "correct": false
+        },
+        {
+            "content": "Impossible",
+            "correct": false
+        },
+        {
+            "content": "Preposterous",
+            "correct": false
+        }
     ]
 }

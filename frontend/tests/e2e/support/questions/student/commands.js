@@ -1,12 +1,14 @@
 Cypress.Commands.add('goToStudentQuestions', () => {
-    cy.server()
-        .route('/courses/2/topics').as('getTopics')
+    cy.server(); // cannot be chained
+
+    cy.route('/courses/2/topics').as('getTopics')
         .route('/courses/2/questions/student').as('getStudentQuestions');
 
     cy.contains('Student Questions')
         .click()
         .wait(['@getTopics', '@getStudentQuestions']);
 });
+
 
 Cypress.Commands.add('assertListStudentQuestions', (amount) => {
     cy.get('[data-cy="studentQuestionViewTitle"]')
@@ -41,6 +43,29 @@ Cypress.Commands.add('assertEmptyListStudentQuestions', () => {
     });
 });
 
+Cypress.Commands.add('createStudentQuestion', (studentQuestion, options) => {
+    cy.get('[data-cy="studentQuestionNew"]')
+        .click()
+        .get('[data-cy="studentQuestionNewTitle"]')
+        .type(`${studentQuestion.title} ${studentQuestion.id}`)
+        .get('[data-cy="studentQuestionNewContent"]')
+        .type(studentQuestion.content);
+
+    options.forEach((option, i) => {
+        cy.get(`[data-cy="studentQuestionNewOption-${i + 1}-content"]`)
+            .type(option.content);
+        if (option.correct) {
+            cy.get(`[data-cy="studentQuestionNewOption-${i + 1}-correct"]`)
+                .parent()
+                .parent()
+                .click();
+        }
+    });
+    
+    cy.get('[data-cy="studentQuestionNewSave"]')
+        .click();
+})
+
 Cypress.Commands.add('showStudentQuestionDetails', (title) => {
     cy.get('[data-cy="studentQuestionViewTitle"]')
         .parent()
@@ -73,15 +98,15 @@ Cypress.Commands.add('assertStudentQuestionDetails', (studentQuestion, options) 
             .contains(studentQuestion.rejected_explanation);
     }
 
-    options.forEach((option, i) => {
+    options.forEach(option => {
         if (option.correct)
             cy.get(`[data-cy="studentQuestionDetailsOptionCorrect"]`)
                 .siblings(`[data-cy="studentQuestionDetailsOption"]`)
                 .contains(option.content);
         else
             cy.get(`[data-cy="studentQuestionDetailsOption"]`)
-                .contains(option.content)
-    })
+                .contains(option.content);
+    });
 });
 
 Cypress.Commands.add('initStudentQuestions', ({ amount, student_id, course_id, offset = 0 } = {}) => {
@@ -97,16 +122,16 @@ Cypress.Commands.add('initStudentQuestions', ({ amount, student_id, course_id, o
 
             if (course_id)
                 studentQuestion.course_id = course_id;
-            
+
             let status_keys = '';
             let status_vals = '';
 
-            if(studentQuestion.status !== 'AWAITING_APPROVAL') {
+            if (studentQuestion.status !== 'AWAITING_APPROVAL') {
                 status_keys = 'reviewed_date, last_reviewer_id,';
                 status_vals = `${studentQuestion.reviewed_date}, '${studentQuestion.last_reviewer_id}',`;
             }
 
-            if(studentQuestion.status === 'REJECTED') {
+            if (studentQuestion.status === 'REJECTED') {
                 status_keys += 'rejected_explanation,';
                 status_vals += `'${studentQuestion.rejected_explanation}',`;
             }
@@ -137,6 +162,7 @@ Cypress.Commands.add('initStudentQuestions', ({ amount, student_id, course_id, o
                      ${studentQuestion.creation_date}\
                 );`
             );
+            
             data.options.forEach(option => {
                 cy.queryDatabase(
                     `INSERT INTO options\

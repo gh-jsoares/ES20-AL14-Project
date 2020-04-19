@@ -163,6 +163,7 @@ public class StudentQuestion {
 
     public void setImage(Image image) {
         this.image = image;
+        image.setStudentQuestion(this);
     }
 
     public LocalDateTime getCreationDate() {
