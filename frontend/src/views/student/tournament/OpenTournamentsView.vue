@@ -51,7 +51,6 @@
               :disabled="
                 current.userEnrolled || getStatus(current) === 'Started'
               "
-              
               @click="enrollTournament(current)"
               text
               >Enroll</v-btn
