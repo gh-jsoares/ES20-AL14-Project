@@ -3,7 +3,7 @@ describe('Update Student Question Topics walkthrough', () => {
         cy.demoStudentLogin();
         cy.cleanupStudentQuestions();
         cy.initStudentQuestions({ amount: 1 })
-        cy.goToStudentQuestions();
+        cy.goToStudentQuestionsAsStudent();
     });
 
     afterEach(() => {

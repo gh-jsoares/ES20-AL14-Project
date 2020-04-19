@@ -1,4 +1,4 @@
-Cypress.Commands.add('goToStudentQuestions', () => {
+Cypress.Commands.add('goToStudentQuestionsAsStudent', () => {
     cy.server(); // cannot be chained
 
     cy.route('/courses/2/topics').as('getTopics')
@@ -9,6 +9,15 @@ Cypress.Commands.add('goToStudentQuestions', () => {
         .wait(['@getTopics', '@getStudentQuestions']);
 });
 
+Cypress.Commands.add('goToStudentQuestionsAsTeacher', () => {
+    cy.server(); // cannot be chained
+
+    cy.route('/courses/2/questions/student/all').as('getStudentQuestions');
+
+    cy.contains('Student Questions')
+        .click()
+        .wait('@getStudentQuestions');
+});
 
 Cypress.Commands.add('assertListStudentQuestions', (amount) => {
     cy.get('[data-cy="studentQuestionViewTitle"]')

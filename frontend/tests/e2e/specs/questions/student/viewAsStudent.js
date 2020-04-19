@@ -5,7 +5,7 @@ describe('View Student Question details as Student walkthrough', () => {
         cy.cleanupStudentQuestions();
         cy.initStudentQuestions({ amount: 1, offset: 3 });
 
-        cy.goToStudentQuestions();
+        cy.goToStudentQuestionsAsStudent();
     });
 
     afterEach(() => {
