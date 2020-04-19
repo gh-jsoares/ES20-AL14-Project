@@ -57,6 +57,36 @@
           </template>
           <span>View Details</span>
         </v-tooltip>
+
+        <template v-if="item.status === 'AWAITING_APPROVAL'">
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on }">
+              <v-icon
+                data-cy="approveStudentQuestion"
+                small
+                class="mr-2 green--text"
+                v-on="on"
+                @click="approveStudentQuestion(item)"
+                >check</v-icon
+              >
+            </template>
+            <span>Approve</span>
+          </v-tooltip>
+
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on }">
+              <v-icon
+                data-cy="rejectStudentQuestion"
+                small
+                class="mr-2 red--text"
+                v-on="on"
+                @click="showStudentQuestionDialog(item)"
+                >close</v-icon
+              >
+            </template>
+            <span>Reject</span>
+          </v-tooltip>
+        </template>
       </template>
     </v-data-table>
     <!-- <edit-student-question-dialog
@@ -161,6 +191,24 @@ export default class StudentQuestionsView extends Vue {
   showStudentQuestionDialog(studentQuestion: StudentQuestion) {
     this.currentStudentQuestion = studentQuestion;
     this.studentQuestionDialog = true;
+  }
+
+  async approveStudentQuestion(studentQuestion: StudentQuestion) {
+    if (confirm('Are you sure you want to approve this student question?')) {
+      try {
+        const newStudentQuestion = await RemoteServices.approveStudentQuestion(
+          studentQuestion
+        );
+
+        this.studentQuestions = this.studentQuestions.filter(
+          sq => sq.id !== studentQuestion.id
+        );
+
+        this.studentQuestions.unshift(newStudentQuestion);
+      } catch (error) {
+        await this.$store.dispatch('error', error);
+      }
+    }
   }
 
   onCloseShowStudentQuestionDialog() {

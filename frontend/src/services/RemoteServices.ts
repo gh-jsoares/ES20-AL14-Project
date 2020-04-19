@@ -136,6 +136,19 @@ export default class RemoteServices {
       });
   }
 
+  static async approveStudentQuestion(
+    studentQuestion: StudentQuestion
+  ): Promise<StudentQuestion> {
+    return httpClient
+      .put(`/questions/student/all/${studentQuestion.id}/approve/`)
+      .then(response => {
+        return new StudentQuestion(response.data);
+      })
+      .catch(async error => {
+        throw Error(await this.errorMessage(error));
+      });
+  }
+
   static async exportCourseQuestions(): Promise<Blob> {
     return httpClient
       .get(
