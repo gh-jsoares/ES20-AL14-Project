@@ -1,7 +1,5 @@
 <template>
-  <v-form
-    data-cy="studentQuestionEditTopics"
-  >
+  <v-form data-cy="studentQuestionEditTopics">
     <v-autocomplete
       v-model="studentQuestionTopics"
       :items="topics"
