@@ -31,90 +31,26 @@ Cypress.Commands.add('demoAdminLogin', () => {
   cy.contains('Manage Courses').click();
 });
 
-Cypress.Commands.add('createCourseExecution', (name, acronym, academicTerm) => {
-  cy.get('[data-cy="createButton"]').click();
-  cy.get('[data-cy="Name"]').type(name);
-  cy.get('[data-cy="Acronym"]').type(acronym);
-  cy.get('[data-cy="AcademicTerm"]').type(academicTerm);
-  cy.get('[data-cy="saveButton"]').click();
+Cypress.Commands.add('demoStudentLogin', () => {
+  cy.visit('/');
+  cy.get('[data-cy="studentButton"]').click();
 });
 
-Cypress.Commands.add('closeErrorMessage', (name, acronym, academicTerm) => {
+Cypress.Commands.add('demoTeacherLogin', () => {
+  cy.visit('/');
+  cy.get('[data-cy="teacherButton"]').click();
+});
+
+Cypress.Commands.add('closeErrorMessage', () => {
   cy.contains('Error')
     .parent()
     .find('button')
     .click();
 });
 
-Cypress.Commands.add('deleteCourseExecution', acronym => {
-  cy.contains(acronym)
-    .parent()
-    .should('have.length', 1)
-    .children()
-    .should('have.length', 7)
-    .find('[data-cy="deleteCourse"]')
-    .click();
-});
-
-Cypress.Commands.add(
-  'createFromCourseExecution',
-  (name, acronym, academicTerm) => {
-    cy.contains(name)
-      .parent()
-      .should('have.length', 1)
-      .children()
-      .should('have.length', 7)
-      .find('[data-cy="createFromCourse"]')
-      .click();
-    cy.get('[data-cy="Acronym"]').type(acronym);
-    cy.get('[data-cy="AcademicTerm"]').type(academicTerm);
-    cy.get('[data-cy="saveButton"]').click();
-  }
-);
-
-// New
-
-const dbUser     = Cypress.env('db_username');
-const dbPassword = Cypress.env('db_password');
-const dbName     = Cypress.env('db_name');
-const dbAccess   = (Cypress.platform === "win32") ?
-  `SET PGPASSWORD=${dbPassword} && psql -U ${dbUser} -d ${dbName}` :
-  `PGPASSWORD=${dbPassword} psql -U ${dbUser} -d ${dbName}`;
-
-Cypress.Commands.add('databaseRunFile', filename => {
-  cy.exec(dbAccess + ' -f ' + filename);
-});
-
-Cypress.Commands.add('queryDatabase', query => {
-  cy.exec(`${dbAccess} -c "${query}"`);
-});
-
-Cypress.Commands.add('demoStudentLogin', () => {
-  cy.visit('/');
-  cy.get('[data-cy="studentButton"]').click();
-});
-
-Cypress.Commands.add('gotoStudentQuestions', () => {
-  cy.contains('Student Questions').click();
-});
-
-Cypress.Commands.add('studentQuestionsInit', (num) => {
-  cy.fixture('questions/student/studentQuestionsData.json').then(data => {
-    for(const i in data.student_questions) {
-      if(num && i == num) break;
-      const studentQuestion = data.student_questions[i];
-      cy.queryDatabase(`INSERT INTO student_questions (id, key, title, content, course_id, student_id, status, creation_date) VALUES ('${studentQuestion.id}', '${studentQuestion.id}', '${studentQuestion.title} ${studentQuestion.id}', '${studentQuestion.content}', '${studentQuestion.course_id}', '${studentQuestion.student_id}', '${studentQuestion.status}', ${studentQuestion.creation_date});`);
-    }
-  });
-})
-
-Cypress.Commands.add('studentQuestionsCleanup', () => {
-  cy.fixture('questions/student/studentQuestionsData.json').then(data => {
-    data.student_questions.forEach(studentQuestion => {
-      cy.queryDatabase(`DELETE FROM student_questions where id = '${studentQuestion.id}';`);
-    });
-  });
-})
+import './database';
+import './admin/commands';
+import './questions/student/commands';
 
 Cypress.Commands.add('goToOpenTournaments', () => {
   cy.contains('Tournaments').click();

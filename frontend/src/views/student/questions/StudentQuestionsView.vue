@@ -25,6 +25,10 @@
         </v-card-title>
       </template>
 
+      <template v-slot:item.title="{ item }">
+        <span data-cy="studentQuestionViewTitle">{{ item.title }}</span>
+      </template>
+
       <template v-slot:item.content="{ item }">
         <p v-html="convertMarkDownNoFigure(item.content, null)" />
       </template>
