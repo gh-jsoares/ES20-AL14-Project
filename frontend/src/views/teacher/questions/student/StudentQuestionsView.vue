@@ -43,7 +43,7 @@
         </v-chip>
       </template>
 
-      <!-- <template v-slot:item.action="{ item }">
+      <template v-slot:item.action="{ item }">
         <v-tooltip bottom>
           <template v-slot:activator="{ on }">
             <v-icon
@@ -57,20 +57,20 @@
           </template>
           <span>View Details</span>
         </v-tooltip>
-      </template> -->
+      </template>
     </v-data-table>
     <!-- <edit-student-question-dialog
       v-if="currentStudentQuestion"
       v-model="editStudentQuestionDialog"
       :studentQuestion="currentStudentQuestion"
       v-on:save-student-question="onSaveStudentQuestion"
-    />
+    /> -->
     <show-student-question-dialog
       v-if="currentStudentQuestion"
       v-model="studentQuestionDialog"
       :studentQuestion="currentStudentQuestion"
       v-on:close-show-student-question-dialog="onCloseShowStudentQuestionDialog"
-    /> -->
+    />
   </v-card>
 </template>
 
@@ -80,18 +80,18 @@ import RemoteServices from '@/services/RemoteServices';
 import { convertMarkDownNoFigure } from '@/services/ConvertMarkdownService';
 import Image from '@/models/management/Image';
 import StudentQuestion from '@/models/management/StudentQuestion';
-/* 
+
 import ShowStudentQuestionDialog from '@/views/student/questions/ShowStudentQuestionDialog.vue';
-import EditStudentQuestionDialog from '@/views/student/questions/EditStudentQuestionDialog.vue';
+/* import EditStudentQuestionDialog from '@/views/student/questions/EditStudentQuestionDialog.vue';
 import EditStudentQuestionTopics from '@/views/student/questions/EditStudentQuestionTopics.vue'; */
 
-@Component /* ({
+@Component({
   components: {
-    'show-student-question-dialog': ShowStudentQuestionDialog,
-    'edit-student-question-dialog': EditStudentQuestionDialog,
-    'edit-student-question-topics': EditStudentQuestionTopics
+    'show-student-question-dialog': ShowStudentQuestionDialog
+    /* 'edit-student-question-dialog': EditStudentQuestionDialog,
+    'edit-student-question-topics': EditStudentQuestionTopics */
   }
-}) */
+})
 export default class StudentQuestionsView extends Vue {
   studentQuestions: StudentQuestion[] = [];
   currentStudentQuestion: StudentQuestion | null = null;
@@ -158,14 +158,14 @@ export default class StudentQuestionsView extends Vue {
     return convertMarkDownNoFigure(text, image);
   }
 
-  /* showStudentQuestionDialog(studentQuestion: StudentQuestion) {
+  showStudentQuestionDialog(studentQuestion: StudentQuestion) {
     this.currentStudentQuestion = studentQuestion;
     this.studentQuestionDialog = true;
   }
 
   onCloseShowStudentQuestionDialog() {
     this.studentQuestionDialog = false;
-  } */
+  }
 }
 </script>
 
