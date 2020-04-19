@@ -1,4 +1,5 @@
-const cleanupFile = 'tests/e2e/support/deleteDiscussionSubmission.sql';
+const cleanupFile =
+  'tests/e2e/support/discussion/deleteDiscussionSubmission.sql';
 
 describe('creating Discussion walkthrough', () => {
   before(() => {

@@ -86,7 +86,7 @@ import StatementCorrectAnswer from '@/models/statement/StatementCorrectAnswer';
 import Image from '@/models/management/Image';
 import CreateDiscussionDialog from '@/views/student/discussion/CreateDiscussionDialog.vue';
 
-@Component( {
+@Component({
   components: {
     'create-discussion-dialog': CreateDiscussionDialog
   }
