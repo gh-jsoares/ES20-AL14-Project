@@ -80,22 +80,5 @@
             "correct": false
         }
     ],
-    "options": [
-        {
-            "content": "Yes",
-            "correct": true
-        },
-        {
-            "content": "No",
-            "correct": false
-        },
-        {
-            "content": "Impossible",
-            "correct": false
-        },
-        {
-            "content": "Preposterous",
-            "correct": false
-        }
-    ]
+    "explanation": "It's missing some context. Make sure the next revision has a more suitable picture."
 }

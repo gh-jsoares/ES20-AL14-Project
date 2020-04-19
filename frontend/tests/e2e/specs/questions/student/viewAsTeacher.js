@@ -1,4 +1,4 @@
-describe('View Student Question details as Student walkthrough', () => {
+describe('View Student Question details as Teacher walkthrough', () => {
     beforeEach(() => {
         cy.demoTeacherLogin();
 

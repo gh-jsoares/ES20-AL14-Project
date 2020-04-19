@@ -76,7 +76,7 @@
           <v-tooltip bottom>
             <template v-slot:activator="{ on }">
               <v-icon
-                data-cy="rejectStudentQuestion"
+                data-cy="rejectStudentQuestionDialog"
                 small
                 class="mr-2 red--text"
                 v-on="on"

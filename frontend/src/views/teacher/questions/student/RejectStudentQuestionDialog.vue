@@ -40,7 +40,7 @@
         <v-btn
           color="red darken-1 white--text"
           @click="rejectStudentQuestion"
-          data-cy="studentQuestionReject"
+          data-cy="rejectStudentQuestion"
         >
           Reject
         </v-btn>
