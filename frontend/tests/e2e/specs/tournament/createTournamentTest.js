@@ -19,7 +19,7 @@ describe('Student creates tournaments walkthrough', () => {
     cy.createNewTournament('CypressTest', ['Chrome', 'Uber'], 25, true, 1, 2);
 
     cy.log('confirm tournament was created');
-    cy.closeTournamentAlert('saved', 'New Tournament Saved');
+    cy.closeTournamentAlert('saved', 'New tournament Saved');
   });
 
   it('try to create tournament with missing required fields', () => {
