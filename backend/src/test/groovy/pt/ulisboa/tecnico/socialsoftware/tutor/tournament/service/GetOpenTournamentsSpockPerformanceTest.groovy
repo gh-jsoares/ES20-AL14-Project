@@ -83,7 +83,7 @@ class GetOpenTournamentsSpockPerformanceTest extends Specification {
 
 
         when: "<NUM_CALLS> service calls"
-        1.upto(NUM_CALLS, {tournService.getOpenTournaments(courseExecution.getId())})
+        1.upto(NUM_CALLS, {tournService.getOpenTournaments(courseExecution.getId(), -1)})
 
         then: true
     }

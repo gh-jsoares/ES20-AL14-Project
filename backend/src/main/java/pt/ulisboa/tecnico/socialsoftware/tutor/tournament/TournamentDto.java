@@ -21,6 +21,7 @@ public class TournamentDto implements Serializable {
     private String conclusionDate = null;
     private boolean scramble;
     private UserDto creator;
+    private boolean userEnrolled = false;
     private Integer numberOfEnrolls;
     private List<TopicDto> topics = new ArrayList<>();
     private QuizDto quiz;
@@ -36,6 +37,15 @@ public class TournamentDto implements Serializable {
     }
 
     public TournamentDto(Tournament tournament){
+        setVariables(tournament);
+    }
+
+    public TournamentDto(Tournament tournament, int userId){
+        setVariables(tournament);
+        setUserEnrolled(tournament.isStudentEnrolled(userId));
+    }
+
+    private void setVariables(Tournament tournament) {
         setId(tournament.getId());
         setTitle(tournament.getTitle());
         setNumberOfQuestions(tournament.getNumberOfQuestions());
@@ -186,5 +196,13 @@ public class TournamentDto implements Serializable {
             return null;
         }
         return LocalDateTime.parse(getConclusionDate(), formatter);
+    }
+
+    public boolean isUserEnrolled() {
+        return userEnrolled;
+    }
+
+    public void setUserEnrolled(boolean enrolled) {
+        userEnrolled = enrolled;
     }
 }

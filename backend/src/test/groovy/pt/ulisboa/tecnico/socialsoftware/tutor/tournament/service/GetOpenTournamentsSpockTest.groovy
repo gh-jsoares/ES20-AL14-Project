@@ -123,7 +123,7 @@ class GetOpenTournamentsSpockTest extends Specification{
         createTournament(tourn2, stack)
 
         when: "service call to get open tournaments"
-        def result = tournService.getOpenTournaments(courseExecution.getId())
+        def result = tournService.getOpenTournaments(courseExecution.getId(), -1)
 
         then: "check number of returned tournaments"
         result.size() == size
@@ -152,7 +152,7 @@ class GetOpenTournamentsSpockTest extends Specification{
         def execId = -1
 
         when: "service call to get open tournaments"
-        tournService.getOpenTournaments(execId)
+        tournService.getOpenTournaments(execId, -1)
 
         then: "exception is thrown"
         def exception = thrown(TutorException)

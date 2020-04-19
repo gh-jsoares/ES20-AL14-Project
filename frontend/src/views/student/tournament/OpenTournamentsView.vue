@@ -46,7 +46,15 @@
               Close
             </v-btn>
             <v-spacer></v-spacer>
-            <v-btn color="success" text>Enroll</v-btn>
+            <v-btn
+              color="success"
+              :disabled="
+                current.userEnrolled || getStatus(current) === 'Started'
+              "
+              @click="enrollTournament(current)"
+              text
+              >Enroll</v-btn
+            >
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -123,7 +131,7 @@
           <div class="col short-col">
             {{ tourn.numberOfQuestions }}
           </div>
-          <div class="col short-col">
+          <div class="col short-col" data-cy="numEnrolls">
             {{ tourn.numberOfEnrolls }}
           </div>
           <div class="col">
@@ -136,7 +144,16 @@
             {{ getStatus(tourn) }}
           </div>
           <div class="col last-col">
-            <i class="fas fa-chevron-circle-right"></i>
+            <v-btn
+              :disabled="tourn.userEnrolled || getStatus(tourn) === 'Started'"
+              color="success"
+              class="enroll"
+              outlined
+              @click="enrollTournament(tourn)"
+              data-cy="enrollBtn"
+            >
+              Enroll
+            </v-btn>
           </div>
         </li>
       </ul>
@@ -154,6 +171,7 @@ import User from '@/models/user/User';
 export default class OpenTournamentsView extends Vue {
   tournaments: Tournament[] = [];
   listTourns: Tournament[] = [];
+  tournamentsEnrolledId: number[] = [];
   search: String = '';
   dialog: boolean = false;
   current: Tournament = new Tournament();
@@ -185,6 +203,20 @@ export default class OpenTournamentsView extends Vue {
       default:
         return '?';
     }
+  }
+
+  async enrollTournament(tournament: Tournament) {
+    let response;
+    await this.$store.dispatch('loading');
+    try {
+      response = await RemoteServices.enrollTournament(tournament.id);
+      tournament.numberOfEnrolls = response.numberOfEnrolls;
+      tournament.userEnrolled = response.userEnrolled;
+      this.tournamentsEnrolledId.push(response.id);
+    } catch (error) {
+      await this.$store.dispatch('error', error);
+    }
+    await this.$store.dispatch('clearLoading');
   }
 
   openDialog(tourn: Tournament) {
