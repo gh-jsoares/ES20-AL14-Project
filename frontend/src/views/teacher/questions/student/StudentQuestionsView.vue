@@ -80,7 +80,7 @@
                 small
                 class="mr-2 red--text"
                 v-on="on"
-                @click="showStudentQuestionDialog(item)"
+                @click="openRejectStudentQuestionDialog(item)"
                 >close</v-icon
               >
             </template>
@@ -89,12 +89,12 @@
         </template>
       </template>
     </v-data-table>
-    <!-- <edit-student-question-dialog
+    <reject-student-question-dialog
       v-if="currentStudentQuestion"
-      v-model="editStudentQuestionDialog"
+      v-model="rejectStudentQuestionDialog"
       :studentQuestion="currentStudentQuestion"
-      v-on:save-student-question="onSaveStudentQuestion"
-    /> -->
+      v-on:reject-student-question="onRejectStudentQuestion"
+    />
     <show-student-question-dialog
       v-if="currentStudentQuestion"
       v-model="studentQuestionDialog"
@@ -112,20 +112,18 @@ import Image from '@/models/management/Image';
 import StudentQuestion from '@/models/management/StudentQuestion';
 
 import ShowStudentQuestionDialog from '@/views/student/questions/ShowStudentQuestionDialog.vue';
-/* import EditStudentQuestionDialog from '@/views/student/questions/EditStudentQuestionDialog.vue';
-import EditStudentQuestionTopics from '@/views/student/questions/EditStudentQuestionTopics.vue'; */
+import RejectStudentQuestionDialog from '@/views/teacher/questions/student/RejectStudentQuestionDialog.vue';
 
 @Component({
   components: {
-    'show-student-question-dialog': ShowStudentQuestionDialog
-    /* 'edit-student-question-dialog': EditStudentQuestionDialog,
-    'edit-student-question-topics': EditStudentQuestionTopics */
+    'show-student-question-dialog': ShowStudentQuestionDialog,
+    'reject-student-question-dialog': RejectStudentQuestionDialog
   }
 })
 export default class StudentQuestionsView extends Vue {
   studentQuestions: StudentQuestion[] = [];
   currentStudentQuestion: StudentQuestion | null = null;
-  editStudentQuestionDialog: boolean = false;
+  rejectStudentQuestionDialog: boolean = false;
   studentQuestionDialog: boolean = false;
   search: string = '';
   statusList = ['AWAITING_APPROVAL', 'ACCEPTED', 'REJECTED'];
@@ -165,9 +163,9 @@ export default class StudentQuestionsView extends Vue {
   }
 
   getStatusColor(status: string) {
-    if (status === 'REJECTED') return 'red';
-    else if (status === 'AWAITING_APPROVAL') return 'orange';
-    else return 'green';
+    if (status === 'REJECTED') return 'red white--text';
+    else if (status === 'AWAITING_APPROVAL') return 'orange white--text';
+    else return 'green white--text';
   }
 
   customFilter(
@@ -193,26 +191,46 @@ export default class StudentQuestionsView extends Vue {
     this.studentQuestionDialog = true;
   }
 
+  onCloseShowStudentQuestionDialog() {
+    this.studentQuestionDialog = false;
+  }
+
   async approveStudentQuestion(studentQuestion: StudentQuestion) {
     if (confirm('Are you sure you want to approve this student question?')) {
       try {
         const newStudentQuestion = await RemoteServices.approveStudentQuestion(
           studentQuestion
         );
-
-        this.studentQuestions = this.studentQuestions.filter(
-          sq => sq.id !== studentQuestion.id
-        );
-
-        this.studentQuestions.unshift(newStudentQuestion);
+        this.updateStudentQuestion(newStudentQuestion);
       } catch (error) {
         await this.$store.dispatch('error', error);
       }
     }
   }
 
-  onCloseShowStudentQuestionDialog() {
-    this.studentQuestionDialog = false;
+  updateStudentQuestion(studentQuestion: StudentQuestion) {
+    this.studentQuestions = this.studentQuestions.filter(
+      q => q.id !== studentQuestion.id
+    );
+    this.studentQuestions.unshift(studentQuestion);
+  }
+
+  @Watch('rejectStudentQuestionDialog')
+  closeError() {
+    if (!this.rejectStudentQuestionDialog) {
+      this.currentStudentQuestion = null;
+    }
+  }
+
+  openRejectStudentQuestionDialog(studentQuestion: StudentQuestion) {
+    this.currentStudentQuestion = studentQuestion;
+    this.rejectStudentQuestionDialog = true;
+  }
+
+  async onRejectStudentQuestion(studentQuestion: StudentQuestion) {
+    this.updateStudentQuestion(studentQuestion);
+    this.rejectStudentQuestionDialog = false;
+    this.currentStudentQuestion = null;
   }
 }
 </script>

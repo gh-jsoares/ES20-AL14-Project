@@ -65,13 +65,13 @@
         <v-spacer />
         <v-btn
           data-cy="cancelButton"
-          color="blue darken-1"
+          color="blue darken-1 white--text"
           @click="$emit('dialog', false)"
         >
           Cancel
         </v-btn>
         <v-btn
-          color="blue darken-1"
+          color="green darken-1 white--text"
           @click="saveStudentQuestion"
           data-cy="studentQuestionNewSave"
         >

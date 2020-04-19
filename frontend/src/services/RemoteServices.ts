@@ -149,6 +149,24 @@ export default class RemoteServices {
       });
   }
 
+  static async rejectStudentQuestion(
+    studentQuestion: StudentQuestion,
+    explanation: string
+  ): Promise<StudentQuestion> {
+    return httpClient
+      .put(
+        `/questions/student/all/${studentQuestion.id}/reject/`,
+        explanation,
+        {}
+      )
+      .then(response => {
+        return new StudentQuestion(response.data);
+      })
+      .catch(async error => {
+        throw Error(await this.errorMessage(error));
+      });
+  }
+
   static async exportCourseQuestions(): Promise<Blob> {
     return httpClient
       .get(
