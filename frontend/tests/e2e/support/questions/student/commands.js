@@ -44,6 +44,11 @@ Cypress.Commands.add('assertEmptyListStudentQuestions', () => {
 });
 
 Cypress.Commands.add('createStudentQuestion', (studentQuestion, options) => {
+    
+    cy.server(); // cannot be chained
+
+    cy.route('post', '/courses/2/questions/student').as('saveStudentQuestion');
+
     cy.get('[data-cy="studentQuestionNew"]')
         .click()
         .get('[data-cy="studentQuestionNewTitle"]')
@@ -63,7 +68,8 @@ Cypress.Commands.add('createStudentQuestion', (studentQuestion, options) => {
     });
     
     cy.get('[data-cy="studentQuestionNewSave"]')
-        .click();
+        .click()
+        .wait('@saveStudentQuestion');
 })
 
 Cypress.Commands.add('showStudentQuestionDetails', (title) => {
