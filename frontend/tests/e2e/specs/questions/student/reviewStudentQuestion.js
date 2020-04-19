@@ -32,7 +32,7 @@ describe('Review Student Question walkthrough', () => {
         });
     });
 
-    it('login reject student question', () => {
+    it('login reject student question with empty explanation', () => {
         cy.fixture('questions/student/studentQuestionsData.json').then(data => {
             const studentQuestion = data.student_questions[0];
             cy.server(); // cannot be chained
