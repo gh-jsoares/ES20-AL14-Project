@@ -25,8 +25,19 @@ Cypress.Commands.add('initStudentQuestions', ({ amount, student_id, course_id, o
                 status_vals += `'${studentQuestion.rejected_explanation}',`;
             }
 
+            const options = data.options.map(option => {
+                return `INSERT INTO options\
+                    (content, correct, student_question_id)\
+                    VALUES\
+                    (\
+                        '${option.content}',\
+                        '${option.correct}',\
+                        '${studentQuestion.id}'\
+                    )`
+            }).join('; ');
+
             cy.queryDatabase(
-                `INSERT INTO student_questions\
+                `START TRANSACTION; INSERT INTO student_questions\
                 (\
                     id,\
                     key,\
@@ -49,34 +60,17 @@ Cypress.Commands.add('initStudentQuestions', ({ amount, student_id, course_id, o
                     '${studentQuestion.status}',\
                      ${status_vals}\
                      ${studentQuestion.creation_date}\
-                );`
+                ); ${options}; COMMIT;`
             );
-            
-            data.options.forEach(option => {
-                cy.queryDatabase(
-                    `INSERT INTO options\
-                    (content, correct, student_question_id)\
-                    VALUES\
-                    (\
-                        '${option.content}',\
-                        '${option.correct}',\
-                        '${studentQuestion.id}'\
-                    );`
-                );
-            });
         }
     });
 });
 
 Cypress.Commands.add('cleanupStudentQuestions', () => {
-    cy.fixture('questions/student/studentQuestionsData.json').then(data => {
-        data.student_questions.forEach(studentQuestion => {
-            cy.queryDatabase(
-                `WITH sq_id AS (\
-                SELECT id FROM student_questions WHERE title LIKE '${studentQuestion.title}%'\
-                ) DELETE FROM options WHERE student_question_id IN (SELECT id FROM sq_id);\
-            `);
-            cy.queryDatabase(`DELETE FROM student_questions WHERE title LIKE '${studentQuestion.title}%';`);
-        });
-    });
+    cy.queryDatabase(
+        `WITH sq_id AS (\
+            SELECT id FROM student_questions WHERE title LIKE 'Student Question Title%'\
+        ) DELETE FROM options WHERE student_question_id IN (SELECT id FROM sq_id);\
+        DELETE FROM student_questions WHERE title LIKE 'Student Question Title%';\
+    `);
 });
