@@ -269,6 +269,16 @@
           </v-list-item>
         </v-list-group>
 
+        <v-list-item
+          to="/management/student/questions"
+          v-if="isTeacher && currentCourse"
+        >
+          <v-list-item-action>
+            <v-icon>question_answer</v-icon>
+          </v-list-item-action>
+          <v-list-item-content>Student Questions</v-list-item-content>
+        </v-list-item>
+
         <!-- Management Group-->
         <v-list-group
           prepend-icon="fas fa-file-alt"
