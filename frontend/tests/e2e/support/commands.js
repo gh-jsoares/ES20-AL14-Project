@@ -26,10 +26,10 @@
 /// <reference types="Cypress" />
 Cypress.Commands.add('demoStudentLogin', () => {
   cy.visit('/');
-  cy.get('[data-cy="studentButton"]').click();
+  cy.get('[data-cy="demoStudentLoginButton"]').click();
 });
 
-Cypress.Commands.add('demoTeacherLogin', () => {
+Cypress.Commands.add('demoTeacherLoginButton', () => {
   cy.visit('/');
   cy.get('[data-cy="teacherButton"]').click();
 });

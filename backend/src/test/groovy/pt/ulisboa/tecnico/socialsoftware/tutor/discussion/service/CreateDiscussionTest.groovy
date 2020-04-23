@@ -250,7 +250,7 @@ class CreateDiscussionTest extends Specification {
 
         then: "discussion question not answered exception"
         def exception = thrown(TutorException)
-        exception.errorMessage == ErrorMessage.USER_NOT_STUDENT
+        exception.errorMessage == ErrorMessage.USER_IS_NOT_STUDENT
     }
 
     @TestConfiguration

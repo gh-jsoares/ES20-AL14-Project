@@ -8,6 +8,7 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.user.User;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -25,6 +26,8 @@ public class StudentQuestion {
     public enum Status {
         AWAITING_APPROVAL, ACCEPTED, REJECTED
     }
+
+    public static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -311,7 +314,7 @@ public class StudentQuestion {
 
     private void populateCreationDate(StudentQuestionDto studentQuestionDto) {
         if (studentQuestionDto.getCreationDate() != null)
-            this.creationDate = LocalDateTime.parse(studentQuestionDto.getCreationDate(), Course.formatter);
+            this.creationDate = LocalDateTime.parse(studentQuestionDto.getCreationDate(), formatter);
         else
             this.creationDate = LocalDateTime.now();
     }

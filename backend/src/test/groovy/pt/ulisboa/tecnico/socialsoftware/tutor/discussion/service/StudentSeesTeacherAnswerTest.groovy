@@ -167,7 +167,7 @@ class StudentSeesTeacherAnswerTest extends Specification {
 
         then: "an exception is thrown"
         def exception = thrown(TutorException)
-        exception.errorMessage == ErrorMessage.USER_NOT_STUDENT
+        exception.errorMessage == ErrorMessage.USER_IS_NOT_STUDENT
     }
 
     def createBasicDiscussion(User student, Question question, DiscussionDto discussionDto) {
