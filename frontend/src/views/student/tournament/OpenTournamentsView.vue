@@ -47,6 +47,16 @@
             </v-btn>
             <v-spacer></v-spacer>
             <v-btn
+              v-if="current.creator.username === $store.state.user.username"
+              right
+              color="red"
+              @click="cancelTournament(current)"
+              text
+            >
+              Delete
+            </v-btn>
+            <v-spacer></v-spacer>
+            <v-btn
               color="success"
               :disabled="
                 current.userEnrolled || getStatus(current) === 'Started'
@@ -105,6 +115,7 @@
           <div class="col">Closes At</div>
           <div class="col">Status</div>
           <div class="col last-col"></div>
+          <div class="col short-col"></div>
         </li>
         <li
           class="list-row"
@@ -154,6 +165,22 @@
             >
               Enroll
             </v-btn>
+          </div>
+          <div class="col short-col">
+              <v-tooltip bottom v-if="tourn.creator.username === $store.state.user.username">
+                <template v-slot:activator="{ on }">
+                  <v-icon
+                    large
+                    color="red"
+                    @click="cancelTournament(tourn)"
+                    data-cy="enrollBtn"
+                    v-on="on"
+                    >
+                    mdi-delete-forever
+                  </v-icon>
+                </template>
+                <span>Delete</span>
+              </v-tooltip>
           </div>
         </li>
       </ul>
@@ -217,6 +244,23 @@ export default class OpenTournamentsView extends Vue {
       await this.$store.dispatch('error', error);
     }
     await this.$store.dispatch('clearLoading');
+  }
+
+  async cancelTournament(tournament: Tournament) {
+    if (
+      tournament.id &&
+      confirm('Are you sure you want to delete this question?')
+    ) {
+      try {
+        await RemoteServices.cancelTournament(tournament.id);
+        this.listTourns = this.listTourns.filter(
+                tour => tour.id != tournament.id
+        );
+        this.dialog = false;
+      } catch (error) {
+        await this.$store.dispatch('error', error);
+      }
+    }
   }
 
   openDialog(tourn: Tournament) {
