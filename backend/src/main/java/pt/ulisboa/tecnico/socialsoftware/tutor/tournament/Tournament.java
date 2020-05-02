@@ -258,12 +258,7 @@ public class Tournament {
     }
 
     public void remove() {
-        if (this.quiz != null) {
-            this.quiz.remove();
-            this.quiz = null;
-        }
-
-        if (this.creator != null) {
+       if (this.creator != null) {
             this.creator.getCreatedTournaments().remove(this);
             this.creator = null;
         }

@@ -13,6 +13,8 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage;
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.TopicDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.TopicRepository;
+import pt.ulisboa.tecnico.socialsoftware.tutor.quiz.QuizService;
+import pt.ulisboa.tecnico.socialsoftware.tutor.quiz.repository.QuizRepository;
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.User;
 
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.UserRepository;
@@ -26,6 +28,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.*;
 
 
 @Service
@@ -41,6 +45,9 @@ public class TournamentService {
 
     @Autowired
     private TopicRepository topicRepository;
+
+    @Autowired
+    private QuizService quizService;
 
     @PersistenceContext
     EntityManager entityManager;
@@ -95,10 +102,16 @@ public class TournamentService {
 
         Tournament tournament = getTournament(tournamentId);
 
-        if (userId != user.getId())
+        if (user.getRole() != User.Role.STUDENT)
+            throw new TutorException(TOURNAMENT_USER_IS_NOT_STUDENT, user.getId());
+        if (tournament.getState() == Tournament.State.CLOSED)
+            throw new TutorException(TOURNAMENT_NOT_OPEN, tournamentId);
+        else if (tournament.getCreator().getId() != userId)
             throw new TutorException(ErrorMessage.TOURNAMENT_USER_IS_NOT_CREATOR, user.getUsername());
-        tournament.remove();
 
+
+        quizService.removeQuiz(tournament.getQuiz().getId());
+        tournament.remove();
         tournamentRepository.delete(tournament);
     }
 
