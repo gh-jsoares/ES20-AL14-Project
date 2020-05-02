@@ -58,6 +58,7 @@ public enum ErrorMessage {
     TOURNAMENT_NOT_OPEN("The tournament with id %d is not open"),
     TOURNAMENT_TOPIC_WRONG_COURSE("The topic with id %d doesn't belong to the same course as the tournament"),
     TOURNAMENT_USER_IS_NOT_CREATOR("The user with username %s is not the creator of the tournament"),
+    TOURNAMENT_HAS_STARTED("The tournament with id %d is no longer in enrollment phase"),
 
     NO_CORRECT_OPTION("Question does not have a correct option"),
     NOT_ENOUGH_QUESTIONS("Not enough questions to create a quiz"),

@@ -4,20 +4,14 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
-import pt.ulisboa.tecnico.socialsoftware.tutor.answer.AnswerService
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.Course
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecution
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecutionRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException
-import pt.ulisboa.tecnico.socialsoftware.tutor.impexp.domain.AnswersXmlImport
-import pt.ulisboa.tecnico.socialsoftware.tutor.question.QuestionService
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Topic
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.TopicRepository
-import pt.ulisboa.tecnico.socialsoftware.tutor.quiz.QuizService
-import pt.ulisboa.tecnico.socialsoftware.tutor.quiz.domain.Quiz
-import pt.ulisboa.tecnico.socialsoftware.tutor.quiz.repository.QuizRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.tournament.Tournament
 import pt.ulisboa.tecnico.socialsoftware.tutor.tournament.TournamentDto
 import pt.ulisboa.tecnico.socialsoftware.tutor.tournament.TournamentRepository
@@ -58,14 +52,10 @@ class CancelTournamentSpockTest extends Specification{
     @Autowired
     TopicRepository topicRepository
 
-    @Autowired
-    QuizRepository quizRepository
-
     def user
     def courseExecution
     def tournament
     def topic
-    def quiz
 
 
     def setup() {
@@ -78,11 +68,9 @@ class CancelTournamentSpockTest extends Specification{
 
         createTopic(course)
 
-        createQuiz(courseExecution)
-
         user = createUser('name', USERNAME, 1, User.Role.STUDENT)
 
-        createTournament(courseExecution, topic, quiz)
+        createTournament(courseExecution, topic)
 
     }
 
@@ -101,45 +89,7 @@ class CancelTournamentSpockTest extends Specification{
         when:
         tournamentService.cancelTournament(tournament.getId(), user.getId());
 
-        then: "quiz is correctly removed"
-        quizRepository.count() == 0L
-
-        and: "Tournament is correctly removed from the creator"
-        user.getCreatedTournaments().size() == 0
-
-        and: "Tournament is correctly removed from enrolled students"
-        user.getEnrolledTournaments().size() == 0
-
-        and: "Tournament is correctly removed from topic"
-        topic.getTournaments().size() == 0
-
-        and: "Tournament is correctly removed from course execution"
-        courseExecution.getTournaments().size() == 0
-
-        and: "Tournament is removed"
-        tournamentRepository.count() == 0L
-    }
-
-    def "the tournament both exists and has started and the creator cancels the tournament"() {
-        //the tournament is cancelled
-        given: "an enrolled student"
-        tournament.setState(Tournament.State.ENROLL)
-        tournament.addEnrolledStudent(user)
-        user.addEnrolledTournament(tournament)
-
-        and: 'a tournament not closed'
-        tournament.setState(Tournament.State.ONGOING)
-
-        and: "a student who creates the tournament"
-        addCreatorToTournament(user)
-
-        when:
-        tournamentService.cancelTournament(tournament.getId(), user.getId());
-
-        then: "quiz is correctly removed"
-        quizRepository.count() == 0L
-
-        and: "Tournament is correctly removed from the creator"
+        then: "Tournament is correctly removed from the creator"
         user.getCreatedTournaments().size() == 0
 
         and: "Tournament is correctly removed from enrolled students"
@@ -194,7 +144,8 @@ class CancelTournamentSpockTest extends Specification{
         where:
         userRole         | tournamentState          | isUserCreator              || errorMessage
         User.Role.TEACHER| Tournament.State.ENROLL  | false                      || ErrorMessage.TOURNAMENT_USER_IS_NOT_STUDENT
-        User.Role.STUDENT| Tournament.State.CLOSED  | true                       || ErrorMessage.TOURNAMENT_NOT_OPEN
+        User.Role.STUDENT| Tournament.State.CLOSED  | true                       || ErrorMessage.TOURNAMENT_HAS_STARTED
+        User.Role.STUDENT| Tournament.State.ONGOING | true                      || ErrorMessage.TOURNAMENT_HAS_STARTED
         User.Role.STUDENT| Tournament.State.ENROLL  | false                      || ErrorMessage.TOURNAMENT_USER_IS_NOT_CREATOR
     }
 
@@ -206,15 +157,7 @@ class CancelTournamentSpockTest extends Specification{
         topicRepository.save(topic)
     }
 
-    private createQuiz(CourseExecution courseExecution) {
-        quiz = new Quiz()
-        quiz.setKey(1)
-        courseExecution.addQuiz(quiz)
-        quiz.setCourseExecution(courseExecution)
-        quizRepository.save(quiz)
-    }
-
-    private createTournament(CourseExecution courseExecution, Topic topic, Quiz quiz) {
+    private createTournament(CourseExecution courseExecution, Topic topic) {
         tournament = new Tournament();
         tournament.setTitle(TOURNAMENT_NAME)
         tournament.setCreationDate(LocalDateTime.now())
@@ -223,7 +166,6 @@ class CancelTournamentSpockTest extends Specification{
         tournamentRepository.save(tournament)
         tournament.setCourseExecution(courseExecution)
         tournament.addTopic(topic)
-        tournament.setQuiz(quiz)
     }
 
     def createUser(name, username, key, userRole){
@@ -242,26 +184,6 @@ class CancelTournamentSpockTest extends Specification{
 
     @TestConfiguration
     static class TournamentServiceImplTestContextConfiguration {
-
-        @Bean
-        AnswerService answerService() {
-            return new AnswerService()
-        }
-
-        @Bean
-        AnswersXmlImport answersXmlImport() {
-            return new AnswersXmlImport()
-        }
-
-        @Bean
-        QuestionService questionService() {
-            return new QuestionService()
-        }
-
-        @Bean
-        QuizService quizService() {
-            return new QuizService()
-        }
 
         @Bean
         TournamentService tournamentService() {

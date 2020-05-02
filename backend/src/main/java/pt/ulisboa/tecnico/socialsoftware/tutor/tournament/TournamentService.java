@@ -46,9 +46,6 @@ public class TournamentService {
     @Autowired
     private TopicRepository topicRepository;
 
-    @Autowired
-    private QuizService quizService;
-
     @PersistenceContext
     EntityManager entityManager;
 
@@ -102,16 +99,7 @@ public class TournamentService {
 
         Tournament tournament = getTournament(tournamentId);
 
-        if (user.getRole() != User.Role.STUDENT)
-            throw new TutorException(TOURNAMENT_USER_IS_NOT_STUDENT, user.getId());
-        if (tournament.getState() == Tournament.State.CLOSED)
-            throw new TutorException(TOURNAMENT_NOT_OPEN, tournamentId);
-        else if (tournament.getCreator().getId() != userId)
-            throw new TutorException(ErrorMessage.TOURNAMENT_USER_IS_NOT_CREATOR, user.getUsername());
-
-
-        quizService.removeQuiz(tournament.getQuiz().getId());
-        tournament.remove();
+        tournament.cancel(user);
         tournamentRepository.delete(tournament);
     }
 

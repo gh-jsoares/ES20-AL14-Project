@@ -275,4 +275,14 @@ public class Tournament {
         this.topics.clear();
 
     }
+
+    public void cancel(User user) {
+        if (user.getRole() != User.Role.STUDENT)
+            throw new TutorException(TOURNAMENT_USER_IS_NOT_STUDENT, user.getId());
+        if (this.getState() != Tournament.State.ENROLL)
+            throw new TutorException(TOURNAMENT_HAS_STARTED, this.getId());
+        else if (this.getCreator().getId() != user.getId())
+            throw new TutorException(ErrorMessage.TOURNAMENT_USER_IS_NOT_CREATOR, user.getUsername());
+        this.remove();
+    }
 }
