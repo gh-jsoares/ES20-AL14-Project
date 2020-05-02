@@ -57,6 +57,7 @@ public enum ErrorMessage {
     TOURNAMENT_STUDENT_NOT_ENROLLED_IN_TOURNAMENT_COURSE("The user with id %d is not enrolled in the course execution of the tournament"),
     TOURNAMENT_NOT_OPEN("The tournament with id %d is not open"),
     TOURNAMENT_TOPIC_WRONG_COURSE("The topic with id %d doesn't belong to the same course as the tournament"),
+    TOURNAMENT_USER_IS_NOT_CREATOR("The user with username %s is not the creator of the tournament"),
 
     NO_CORRECT_OPTION("Question does not have a correct option"),
     NOT_ENOUGH_QUESTIONS("Not enough questions to create a quiz"),
