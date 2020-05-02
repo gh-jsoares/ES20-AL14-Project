@@ -31,7 +31,7 @@ Cypress.Commands.add('demoStudentLogin', () => {
 
 Cypress.Commands.add('demoTeacherLoginButton', () => {
   cy.visit('/');
-  cy.get('[data-cy="teacherButton"]').click();
+  cy.get('[data-cy="demoTeacherLoginButton"]').click();
 });
 
 Cypress.Commands.add('closeErrorMessage', () => {

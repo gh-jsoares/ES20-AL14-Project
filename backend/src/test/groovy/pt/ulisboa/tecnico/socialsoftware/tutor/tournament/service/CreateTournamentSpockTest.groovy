@@ -162,9 +162,15 @@ class CreateTournamentSpockTest extends Specification{
     }
 
     def "create a tournament invalid topic"() {
-        given: "tournament with invalid topic"
+        given: "a tournamentDto"
         def tournDto = createTournamentDto(TOURN_TITLE, QUEST_NUM, days["+1"], days["+2"])
-        tournDto.getTopics().get(0).setId(-1)
+
+        and: "a topic with invalid id (=null)"
+        def invalidTopic = new TopicDto()
+        invalidTopic.setName("Invalid Topic")
+        invalidTopic.setNumberOfQuestions(10)
+        tournDto.addTopic(invalidTopic)
+
         and: "a student as creator"
         def userId = createUser(User.Role.STUDENT)
 

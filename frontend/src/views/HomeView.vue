@@ -23,11 +23,7 @@
         small
         color="primary"
         @click="demoTeacher"
-<<<<<<< HEAD
-        data-cy="teacherButton"
-=======
         data-cy="demoTeacherLoginButton"
->>>>>>> reference/master
       >
         <i class="fa fa-graduation-cap" />Demo as teacher
       </v-btn>

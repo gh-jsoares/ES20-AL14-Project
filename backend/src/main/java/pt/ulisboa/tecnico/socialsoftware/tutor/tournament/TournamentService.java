@@ -107,6 +107,11 @@ public class TournamentService {
             throw new TutorException(ErrorMessage.TOURNAMENT_NOT_CONSISTENT, "Topics");
         }
 
+        for (TopicDto topicDto : topics) {
+            if (topicDto.getId() == null)
+                throw new TutorException(ErrorMessage.TOPIC_NOT_FOUND, null);
+        }
+
         topics.forEach(topicDto -> tourn.addTopic(topicRepository.findById(topicDto.getId())
                 .orElseThrow(() -> new TutorException(ErrorMessage.TOPIC_NOT_FOUND, topicDto.getId()))));
     }
