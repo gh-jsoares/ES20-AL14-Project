@@ -6,6 +6,7 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
+import pt.ulisboa.tecnico.socialsoftware.tutor.config.DateHandler;
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecution;
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecutionRepository;
@@ -118,7 +119,7 @@ public class TournamentService {
 
     private Tournament buildTournament(TournamentDto tournDto, User user, CourseExecution courseExecution) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-        tournDto.setCreationDate(LocalDateTime.now().format(formatter));
+        tournDto.setCreationDate(DateHandler.toISOString(DateHandler.now()));
 
         Tournament tourn = new Tournament(tournDto);
         tourn.setState(Tournament.State.ENROLL);
