@@ -54,24 +54,61 @@ Cypress.Commands.add(
         .click();
 
     if (!!start) {
-      cy.contains('*Start Date')
-        .parent()
-        .click();
-      cy.selectTournamentDate(start);
+      cy.get('[data-cy="startDate"]').click();
+      cy.selectTournamentDate('startDate', start);
     }
     if (!!end) {
-      cy.contains('*Conclusion Date')
-        .parent()
-        .click();
-      cy.selectTournamentDate(end);
+      cy.get('[data-cy="endDate"]').click();
+      cy.selectTournamentDate('endDate', end);
     }
 
     cy.get('[data-cy="createBtn"]').click();
   }
 );
 
-Cypress.Commands.add('selectTournamentDate', date => {
-  cy.get('.v-dialog--active').within(() => {
+Cypress.Commands.add('selectTournamentDate', (place, date) => {
+  /*let n = Math.abs(date);
+  let arrow = date > 0 ? '{rightarrow}' : '{leftarrow}';
+  for (let i = 0; i < n; i++)
+    cy.get(`[data-cy="${place}"]`)
+      .trigger('mouseover')
+      .root()
+      .type(arrow);
+  cy.get(`[data-cy="${place}"]`)
+    .trigger('mouseover')
+    .root()
+    .type('{enter}');
+  cy.get(`[data-cy="${place}"]`)
+    .parent()
+    .parent()
+    .find('button.validate')
+    .click();*/
+  cy.get(`[data-cy="${place}"]`)
+    .parent()
+    .parent()
+    .find('.datetimepicker')
+    .within((datePicker) => {
+      let n = Math.abs(date);
+      let arrow = date > 0 ? '{rightarrow}' : '{leftarrow}';
+      for (let i = 0; i < n; i++) {
+        if (i === 0) {
+          cy.get('.datepicker-today')
+            .parent()
+            .type(arrow);
+        } else {
+          cy.get('.datepicker-day-keyboard-selected')
+            .parent()
+            .type(arrow);
+        }
+      }
+      let btn =
+        date === 0 ? '.datepicker-today' : '.datepicker-day-keyboard-selected';
+      cy.get(btn)
+        .parent()
+        .click();
+      cy.get('button.validate').click();
+    });
+  /*cy.get('.v-dialog--active').within(() => {
     if (date === 0) cy.get('.v-date-picker-table__current').click();
     else {
       let n = Math.abs(date);
@@ -87,7 +124,7 @@ Cypress.Commands.add('selectTournamentDate', date => {
     cy.get('.v-card__actions')
       .contains('OK')
       .click();
-  });
+  });*/
 });
 
 Cypress.Commands.add('closeTournamentAlert', (type, msg) => {
@@ -103,6 +140,6 @@ Cypress.Commands.add('enrollTournament', () => {
 });
 
 Cypress.Commands.add('checkTournamentEnroll', hasStarted => {
-  cy.get('[data-cy="enrollBtn"]').should('be.disabled')
+  cy.get('[data-cy="enrollBtn"]').should('be.disabled');
   if (!hasStarted) cy.get('[data-cy="numEnrolls"]').contains('1');
 });

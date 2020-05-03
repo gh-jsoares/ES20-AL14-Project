@@ -107,26 +107,22 @@
         <!-- end of mobile -->
         <v-row>
           <v-col>
-            <v-datetime-picker
+            <VueCtkDateTimePicker
               label="*Start Date"
               v-model="startDate"
-              format="yyyy-MM-dd HH:mm"
-              date-format="yyyy-MM-dd"
-              time-format="HH:mm"
+              id="startDateInput"
+              format="YYYY-MM-DDTHH:mm:ssZ"
               data-cy="startDate"
-            >
-            </v-datetime-picker>
+            ></VueCtkDateTimePicker>
           </v-col>
           <v-col>
-            <v-datetime-picker
+            <VueCtkDateTimePicker
               label="*Conclusion Date"
               v-model="endDate"
-              format="yyyy-MM-dd HH:mm"
-              date-format="yyyy-MM-dd"
-              time-format="HH:mm"
+              id="endDateInput"
+              format="YYYY-MM-DDTHH:mm:ssZ"
               data-cy="endDate"
-            >
-            </v-datetime-picker>
+            ></VueCtkDateTimePicker>
           </v-col>
         </v-row>
         <v-row>
