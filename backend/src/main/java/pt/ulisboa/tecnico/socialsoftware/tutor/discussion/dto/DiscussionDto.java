@@ -11,6 +11,8 @@ public class DiscussionDto implements Serializable {
 
     private QuestionDto question;
 
+    private boolean isPublic;
+
     private String messageFromStudent = null;
 
     private String teacherAnswer = null;
@@ -23,6 +25,7 @@ public class DiscussionDto implements Serializable {
 
     public DiscussionDto(Discussion discussion) {
         setId(discussion.getId());
+        setPublic(discussion.isVisibleToOtherStudents());
         setQuestion(new QuestionDto(discussion.getQuestion()));
         setMessageFromStudent(discussion.getMessageFromStudent());
         setTeacherAnswer(discussion.getTeacherAnswer());
@@ -56,4 +59,8 @@ public class DiscussionDto implements Serializable {
     public String getTeacherName() { return teacherName; }
 
     public void setTeacherName(String teacherName) { this.teacherName = teacherName; }
+
+    public boolean isPublic() { return isPublic; }
+
+    public void setPublic(boolean aPublic) { isPublic = aPublic; }
 }

@@ -82,11 +82,11 @@ public class DiscussionService {
     }
 
     private User getTeacherById(Integer teacherId) {
-        User student = userRepository.findById(teacherId).orElseThrow(() -> new TutorException(ErrorMessage.USER_NOT_FOUND, teacherId));
-        if (student.getRole() != User.Role.TEACHER) {
+        User user = userRepository.findById(teacherId).orElseThrow(() -> new TutorException(ErrorMessage.USER_NOT_FOUND, teacherId));
+        if (user.getRole() != User.Role.TEACHER) {
             throw new TutorException(ErrorMessage.USER_IS_NOT_TEACHER, teacherId);
         }
-        return student;
+        return user;
     }
 
     private Question getQuestion(Integer questionId) {
@@ -108,6 +108,18 @@ public class DiscussionService {
         User teacher = getTeacherById(userId);
 
         discussion.updateTeacherAnswer(teacher, discussionDto);
+        return new DiscussionDto(discussion);
+    }
+
+    @Retryable(
+            value = { SQLException.class },
+            backoff = @Backoff(delay = 5000))
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public DiscussionDto openDiscussion(Integer userId, Integer discussionId, DiscussionDto discussionDto) {
+        Discussion discussion = discussionRepository.findById(discussionId).orElseThrow(() -> new TutorException(ErrorMessage.DISCUSSION_NOT_FOUND, discussionId));
+        User teacher = getTeacherById(userId);
+
+        discussion.openDiscussion(teacher);
         return new DiscussionDto(discussion);
     }
 

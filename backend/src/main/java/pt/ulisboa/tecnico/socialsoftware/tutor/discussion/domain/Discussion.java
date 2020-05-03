@@ -23,6 +23,8 @@ public class Discussion {
 
     private String teacherAnswer = null;
 
+    private boolean isVisibleToOtherStudents = false;
+
     @ManyToOne
     @JoinColumn(name = "student_id")
     private User student;
@@ -45,6 +47,7 @@ public class Discussion {
         setQuestion(question);
         setMessageFromStudent(dto.getMessageFromStudent());
         setTeacherAnswer(dto.getTeacherAnswer());
+        setVisibleToOtherStudents(false);
         question.addDiscussion(this);
         student.addDiscussion(this);
     }
@@ -83,6 +86,10 @@ public class Discussion {
 
     public void setTeacher(User teacher) { this.teacher = teacher; }
 
+    public boolean isVisibleToOtherStudents() { return isVisibleToOtherStudents; }
+
+    public void setVisibleToOtherStudents(boolean visibleToOtherStudents) { isVisibleToOtherStudents = visibleToOtherStudents; }
+
     public boolean needsAnswer() { return teacher == null; }
 
     public void updateTeacherAnswer(User teacher, DiscussionDto discussionDto) {
@@ -117,5 +124,14 @@ public class Discussion {
     private void checkIfDiscussionHasBeenAnswered() {
         if (this.getTeacher() != null)
             throw new TutorException(ErrorMessage.DISCUSSION_ALREADY_ANSWERED);
+    }
+
+    public void openDiscussion(User teacher) {
+        if (getTeacher() != teacher)
+            throw new TutorException(ErrorMessage.DISCUSSION_CANT_BE_OPEN);
+        else if(isVisibleToOtherStudents)
+            throw new TutorException(ErrorMessage.DISCUSSION_ALREADY_OPEN);
+        else
+            setVisibleToOtherStudents(true);
     }
 }
