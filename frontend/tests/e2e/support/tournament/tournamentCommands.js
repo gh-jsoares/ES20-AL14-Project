@@ -67,22 +67,6 @@ Cypress.Commands.add(
 );
 
 Cypress.Commands.add('selectTournamentDate', (place, date) => {
-  /*let n = Math.abs(date);
-  let arrow = date > 0 ? '{rightarrow}' : '{leftarrow}';
-  for (let i = 0; i < n; i++)
-    cy.get(`[data-cy="${place}"]`)
-      .trigger('mouseover')
-      .root()
-      .type(arrow);
-  cy.get(`[data-cy="${place}"]`)
-    .trigger('mouseover')
-    .root()
-    .type('{enter}');
-  cy.get(`[data-cy="${place}"]`)
-    .parent()
-    .parent()
-    .find('button.validate')
-    .click();*/
   cy.get(`[data-cy="${place}"]`)
     .parent()
     .parent()
@@ -91,15 +75,11 @@ Cypress.Commands.add('selectTournamentDate', (place, date) => {
       let n = Math.abs(date);
       let arrow = date > 0 ? '{rightarrow}' : '{leftarrow}';
       for (let i = 0; i < n; i++) {
-        if (i === 0) {
-          cy.get('.datepicker-today')
-            .parent()
-            .type(arrow);
-        } else {
-          cy.get('.datepicker-day-keyboard-selected')
-            .parent()
-            .type(arrow);
-        }
+        let btn =
+          i === 0 ? '.datepicker-today' : '.datepicker-day-keyboard-selected';
+        cy.get(btn)
+          .parent()
+          .type(arrow);
       }
       let btn =
         date === 0 ? '.datepicker-today' : '.datepicker-day-keyboard-selected';
@@ -108,23 +88,6 @@ Cypress.Commands.add('selectTournamentDate', (place, date) => {
         .click();
       cy.get('button.validate').click();
     });
-  /*cy.get('.v-dialog--active').within(() => {
-    if (date === 0) cy.get('.v-date-picker-table__current').click();
-    else {
-      let n = Math.abs(date);
-      let btnClass = date > 0 ? '.mdi-chevron-right' : '.mdi-chevron-left';
-      for (let i = 0; i < n; i++) cy.get(btnClass).click();
-
-      cy.wait(500);
-      cy.get('.v-date-picker-table')
-        .contains('1')
-        .click();
-    }
-
-    cy.get('.v-card__actions')
-      .contains('OK')
-      .click();
-  });*/
 });
 
 Cypress.Commands.add('closeTournamentAlert', (type, msg) => {
