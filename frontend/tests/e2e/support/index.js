@@ -19,6 +19,5 @@ import './commands';
 
 import './discussion/discussionCommands';
 import './database';
-import './admin/commands';
 import './questions/student/commands';
 import './tournament/tournamentCommands';
