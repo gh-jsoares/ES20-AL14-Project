@@ -85,10 +85,6 @@ public class Tournament {
         return id;
     }
 
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
     public State getState() {
         return state;
     }
