@@ -78,7 +78,7 @@ update users set enrolled_courses_acronyms=&apos;DemoCourse&apos; where username
 insert into quiz_answers values (100000,&apos;1000-01-01 00:00:00&apos;, false, 5370, 676, false);
 insert into quiz_questions values (100000, 4, 1800, 5370);
 insert into question_answers values (100000, 100000, 7663, 100000, 100000);
-insert into discussions values (1, &apos;???&apos;, &apos;yes&apos;, 1800, 676, 677);</stringProp>
+insert into discussions values (1, &apos;???&apos;, &apos;yes&apos;, 1800, 676, 677, false);</stringProp>
           <stringProp name="queryArguments"></stringProp>
           <stringProp name="queryArgumentsTypes"></stringProp>
           <stringProp name="variableNames"></stringProp>
