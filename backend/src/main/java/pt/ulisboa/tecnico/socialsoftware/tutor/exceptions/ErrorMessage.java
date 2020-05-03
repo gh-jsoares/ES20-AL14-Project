@@ -44,6 +44,8 @@ public enum ErrorMessage {
     COURSE_EXECUTION_MISMATCH("Course Execution %d does not have quiz %d"),
 
     DUPLICATE_DISCUSSION("Duplicate discussion"),
+    DISCUSSION_ALREADY_OPEN("This discussion is already open"),
+    DISCUSSION_CANT_BE_OPEN("You can't open this discussion"),
     DUPLICATE_TOPIC("Duplicate topic: %s"),
     DUPLICATE_USER("Duplicate user: %s"),
     DUPLICATE_COURSE_EXECUTION("Duplicate course execution: %s"),
