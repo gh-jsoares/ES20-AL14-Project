@@ -132,6 +132,7 @@ class StudentGetStudentQuestionSpockTest extends Specification {
             def option = new Option()
             option.setContent(content)
             option.setStudentQuestion(studentQuestion)
+            option.setSequence(i)
             options.add(option)
             studentQuestion.addOption(option)
             optionRepository.save(option)
