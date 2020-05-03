@@ -1,6 +1,7 @@
 package pt.ulisboa.tecnico.socialsoftware.tutor.discussion;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -56,6 +57,19 @@ public class DiscussionController {
         }
 
         return discussionService.getDiscussionTeacher(user.getId());
+    }
+
+    @PostMapping("/discussions/{discussionId}/public")
+    @PreAuthorize("hasRole('ROLE_TEACHER') and hasPermission(#discussionId, 'DISCUSSION.ACCESS')")
+    public ResponseEntity teacherOpensDiscussionToOtherStudents(Principal principal, @PathVariable Integer discussionId) {
+        User user = (User) ((Authentication) principal).getPrincipal();
+
+        if(user == null){
+            throw new TutorException(AUTHENTICATION_ERROR);
+        }
+
+        discussionService.openDiscussionToOtherStudents(user.getId(), discussionId);
+        return ResponseEntity.ok().build();
     }
 
 }
