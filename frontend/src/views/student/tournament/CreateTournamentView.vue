@@ -215,14 +215,6 @@ export default class CreateTournamentView extends Vue {
       created.conclusionDate;
   }
 
-  format(date: string | undefined): string {
-    if (date === undefined) return '';
-    return new Date(date)
-      .toISOString()
-      .replace('T', ' ')
-      .substr(0, 16);
-  }
-
   clear() {
     this.tourn.title = '';
     this.tourn.topics = [];
