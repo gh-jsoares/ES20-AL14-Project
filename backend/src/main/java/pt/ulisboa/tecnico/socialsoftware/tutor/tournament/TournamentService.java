@@ -6,6 +6,7 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
+import pt.ulisboa.tecnico.socialsoftware.tutor.config.DateHandler;
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecution;
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecutionRepository;
@@ -22,8 +23,6 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.user.UserRepository;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.sql.SQLException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 import java.util.Comparator;
 import java.util.List;
@@ -125,13 +124,17 @@ public class TournamentService {
             throw new TutorException(ErrorMessage.TOURNAMENT_NOT_CONSISTENT, "Topics");
         }
 
+        for (TopicDto topicDto : topics) {
+            if (topicDto.getId() == null)
+                throw new TutorException(ErrorMessage.TOPIC_NOT_FOUND, null);
+        }
+
         topics.forEach(topicDto -> tourn.addTopic(topicRepository.findById(topicDto.getId())
                 .orElseThrow(() -> new TutorException(ErrorMessage.TOPIC_NOT_FOUND, topicDto.getId()))));
     }
 
     private Tournament buildTournament(TournamentDto tournDto, User user, CourseExecution courseExecution) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-        tournDto.setCreationDate(LocalDateTime.now().format(formatter));
+        tournDto.setCreationDate(DateHandler.toISOString(DateHandler.now()));
 
         Tournament tourn = new Tournament(tournDto);
         tourn.setState(Tournament.State.ENROLL);

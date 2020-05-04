@@ -13,7 +13,7 @@ describe('Student enrolls in tournaments walkthrough', () => {
   });
 
   afterEach(() => {
-    cy.get('[data-cy=Logout]').click();
+    cy.contains('Logout').click();
   });
 
   after(() => {

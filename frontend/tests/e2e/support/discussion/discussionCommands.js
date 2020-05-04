@@ -6,7 +6,10 @@ Cypress.Commands.add('answerQuiz', name => {
   cy.contains('I\'m sure').click();
 });
 
-Cypress.Commands.add('createDiscussion', discussion => {
+Cypress.Commands.add('createDiscussion', (name, discussion) => {
+  cy.get('[data-cy="quizzesButton"]').click();
+  cy.contains('Solved').click();
+  cy.contains(name).click();
   cy.get('[data-cy="Open Discussion"]').click();
   cy.get('[data-cy="Question Options"]').parent().click();
   cy.get('[data-cy="Your question"]').type(discussion);

@@ -24,7 +24,7 @@ public class TournamentController {
 
     @PostMapping("/tournaments/{tournamentId}/enroll")
     @PreAuthorize("(hasRole('ROLE_STUDENT') or hasRole('ROLE_DEMO_STUDENT')) and hasPermission(#tournamentId, 'TOURNAMENT.ACCESS')")
-    public TournamentDto createTournamentEnroll(Principal principal, @PathVariable int tournamentId) {
+    public TournamentDto enrollTournament(Principal principal, @PathVariable int tournamentId) {
         User user = (User) ((Authentication) principal).getPrincipal();
 
         if(user == null){
@@ -60,7 +60,7 @@ public class TournamentController {
         return tournamentService.getOpenTournaments(executionId, user.getId());
     }
 
-    @DeleteMapping("/student/tournaments/{tournamentId}")
+    @DeleteMapping("tournaments/{tournamentId}")
     @PreAuthorize("(hasRole('ROLE_STUDENT') or hasRole('ROLE_DEMO_STUDENT')) and hasPermission(#tournamentId, 'TOURNAMENT.ACCESS')")
     public ResponseEntity cancelTournament(Principal principal, @PathVariable int tournamentId) {
         User user = (User) ((Authentication) principal).getPrincipal();

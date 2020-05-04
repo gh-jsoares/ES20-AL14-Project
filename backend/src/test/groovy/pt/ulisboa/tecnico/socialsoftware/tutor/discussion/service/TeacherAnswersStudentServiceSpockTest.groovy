@@ -60,6 +60,7 @@ class TeacherAnswersStudentServiceSpockTest extends Specification {
     public static final String COURSE_ACADEMIC_TERM = "academic_term_test"
     public static final String TEACHER_ANSWER = "teacher_answer_test"
     public static final String NON_EXISTING_TEACHER = "non_existing_teacher_test"
+    public static final String QUESTION_TITLE = "question_title_test"
     public static final Integer INVALID_ID = 100
 
     Question question
@@ -85,6 +86,7 @@ class TeacherAnswersStudentServiceSpockTest extends Specification {
         question = new Question()
         question.setKey(1)
         question.setCourse(course)
+        question.setTitle(QUESTION_TITLE)
 
         student = new User('student', STUDENT_NAME, 1, User.Role.STUDENT)
         student.getCourseExecutions().add(courseExecution)
@@ -93,7 +95,7 @@ class TeacherAnswersStudentServiceSpockTest extends Specification {
         quiz = new Quiz()
         quiz.setKey(1)
         quiz.setCourseExecution(courseExecution)
-        quiz.setType(Quiz.QuizType.GENERATED)
+        quiz.setType(Quiz.QuizType.GENERATED.toString())
         courseExecution.addQuiz(quiz)
         quizQuestion = new QuizQuestion(quiz, question, 0)
         quizAnswer = new QuizAnswer(student, quiz)
