@@ -100,6 +100,27 @@ public class Question implements DomainEntity {
         }
     }
 
+    public Question(StudentQuestion studentQuestion) {
+        this.title = studentQuestion.getTitle();
+        this.content = studentQuestion.getContent();
+        this.status = Status.AVAILABLE;
+        this.creationDate = LocalDateTime.now();
+
+        this.course = studentQuestion.getCourse();
+        course.addQuestion(this);
+
+        if (studentQuestion.getImage() != null)
+            setImage(studentQuestion.getImage());
+
+        this.options.addAll(studentQuestion.getOptions());
+        studentQuestion.getOptions().forEach(option -> option.setQuestion(this));
+
+        this.topics.addAll(studentQuestion.getTopics());
+        studentQuestion.getTopics().forEach(topic -> topic.addQuestion(this));
+
+        generateKeys();
+    }
+
     @Override
     public void accept(Visitor visitor) {
         visitor.visitQuestion(this);

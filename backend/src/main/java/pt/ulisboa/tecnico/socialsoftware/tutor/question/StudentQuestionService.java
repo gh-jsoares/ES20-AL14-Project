@@ -15,6 +15,7 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.StudentQuestion;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Topic;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.StudentQuestionDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.ImageRepository;
+import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.QuestionRepository;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.StudentQuestionRepository;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.TopicRepository;
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.User;
@@ -35,6 +36,9 @@ public class StudentQuestionService {
 
     @Autowired
     private StudentQuestionRepository studentQuestionRepository;
+
+    @Autowired
+    private QuestionRepository questionRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -144,7 +148,9 @@ public class StudentQuestionService {
         User user = getUserIfExists(userId);
         StudentQuestion studentQuestion = getStudentQuestionIfExists(studentQuestionId);
 
-        studentQuestion.doApprove(user);
+        Question question = studentQuestion.doApprove(user);
+
+        questionRepository.save(question);
 
         return new StudentQuestionDto(studentQuestion);
     }
