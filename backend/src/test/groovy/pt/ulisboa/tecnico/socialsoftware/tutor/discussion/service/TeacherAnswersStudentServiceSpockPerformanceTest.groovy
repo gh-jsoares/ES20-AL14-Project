@@ -5,6 +5,8 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.domain.Discussion
+import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.domain.Message
+import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.dto.MessageDto
 import spock.lang.Specification
 
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.User
@@ -96,11 +98,9 @@ class TeacherAnswersStudentServiceSpockPerformanceTest extends Specification {
         })
         when:
         1.upto(COUNT, {
-            DiscussionDto discussionDto = new DiscussionDto()
-            discussionDto.setTeacherName(teacher.getUsername())
-            discussionDto.setTeacherAnswer(TEACHER_ANSWER)
-            discussionDto.setMessageFromStudent(MESSAGE)
-            discussionService.teacherAnswersStudent(teacher.getId(), discussions[it].getId(), discussionDto)
+            MessageDto messageDto = new MessageDto()
+            messageDto.setMessage(TEACHER_ANSWER)
+            discussionService.teacherAnswersStudent(teacher.getId(), discussions[it].getId(), messageDto)
         })
         then:
         true
@@ -139,13 +139,15 @@ class TeacherAnswersStudentServiceSpockPerformanceTest extends Specification {
     def createDiscussion(it) {
         def discussion = new Discussion()
         discussion.setId(it)
-        discussion.setMessageFromStudent(MESSAGE)
+        Message message = new Message()
+        message.setUser(students[it])
+        message.setMessage(MESSAGE)
+        discussion.addMessage(message)
+        discussion.setNeedsAnswer(true)
         discussion.setQuestion(questions[it])
-        discussion.setStudent(students[it])
 
         discussions[it] = discussion
         discussionRepository.save(discussion)
-
     }
 
     @TestConfiguration

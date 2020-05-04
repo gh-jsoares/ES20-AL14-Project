@@ -14,7 +14,9 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseService
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.DiscussionService
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.domain.Discussion
+import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.domain.Message
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.dto.DiscussionDto
+import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.dto.MessageDto
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.repository.DiscussionRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException
@@ -99,7 +101,11 @@ class TeacherSeesStudentRequestsServiceSpockTest extends Specification {
         questionAnswer = new QuestionAnswer(quizAnswer, quizQuestion,  10, null,  0)
 
         DiscussionDto discussionDto = new DiscussionDto()
-        discussionDto.setMessageFromStudent(MESSAGE)
+        def messages = new ArrayList<MessageDto>()
+        def message = new MessageDto()
+        message.setMessage(MESSAGE)
+        messages.add(message)
+        discussionDto.setMessagesDto(messages)
 
         questionRepository.save(question)
         userRepository.save(student)
@@ -120,8 +126,9 @@ class TeacherSeesStudentRequestsServiceSpockTest extends Specification {
 
         then: "the returned data is correct"
         result.size() == 1
-        result.get(0).studentName == student.getUsername()
-        result.get(0).messageFromStudent == MESSAGE
+        result.get(0).getMessages().size() == 1
+        result.get(0).getMessages().get(0).getUserName() == student.getUsername()
+        result.get(0).getMessages().get(0).getMessage() == MESSAGE
         result.get(0).question.getId() == question.getId()
     }
 
@@ -145,9 +152,11 @@ class TeacherSeesStudentRequestsServiceSpockTest extends Specification {
         userRepository.save(teacher)
 
         and: "an answered discussion"
-        discussion
-        discussion.setTeacher(teacher);
-        discussion.setTeacherAnswer(TEACHER_ANSWER);
+        def message = new Message()
+        message.setUser(teacher)
+        message.setMessage(TEACHER_ANSWER)
+        discussion.addMessage(message)
+        discussion.setNeedsAnswer(false)
 
         when:
         def result = discussionService.getDiscussionTeacher(teacher.getId())
@@ -158,7 +167,7 @@ class TeacherSeesStudentRequestsServiceSpockTest extends Specification {
 
     def "get discussion from non-existing teacher"() {
         when:
-        def result = discussionService.getDiscussionTeacher(NON_EXISTING_ID)
+        discussionService.getDiscussionTeacher(NON_EXISTING_ID)
 
         then: "an exception is thrown"
         def exception = thrown(TutorException)
@@ -170,7 +179,7 @@ class TeacherSeesStudentRequestsServiceSpockTest extends Specification {
         student
 
         when:
-        def result = discussionService.getDiscussionTeacher(student.getId())
+        discussionService.getDiscussionTeacher(student.getId())
 
         then: "an exception is thrown"
         def exception = thrown(TutorException)

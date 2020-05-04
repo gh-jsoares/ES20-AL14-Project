@@ -33,7 +33,8 @@ public class Message {
         setMessage(messageDto.getMessage());
         setDiscussion(discussion);
         setUser(user);
-        setMessage(messageDto.getMessage());
+        discussion.addMessage(this);
+        user.addMessage(this);
     }
 
     public String getMessage() {
@@ -58,7 +59,6 @@ public class Message {
 
     public void setDiscussion(Discussion discussion) {
         this.discussion = discussion;
-        discussion.addMessage(this);
     }
 
     private void checkMessage(String message) {

@@ -41,4 +41,8 @@ public class DiscussionDto implements Serializable {
             .map(MessageDto::new)
             .collect(Collectors.toList());
     }
+
+    public void setMessagesDto(List<MessageDto> messages) {
+        this.messages = messages;
+    }
 }

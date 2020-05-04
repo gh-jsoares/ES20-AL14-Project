@@ -5,6 +5,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.dto.DiscussionDto;
+import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.dto.MessageDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException;
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.User;
 
@@ -29,9 +30,9 @@ public class DiscussionController {
 
     @PostMapping("/discussions/{discussionId}")
     @PreAuthorize("hasRole('ROLE_TEACHER') and hasPermission(#discussionId, 'DISCUSSION.ACCESS')")
-    public DiscussionDto teacherAnswersStudent(Principal principal, @PathVariable Integer discussionId, @Valid @RequestBody DiscussionDto discussionDto) {
+    public DiscussionDto teacherAnswersStudent(Principal principal, @PathVariable Integer discussionId, @Valid @RequestBody MessageDto messageDto) {
         User user = (User) ((Authentication) principal).getPrincipal();
-        return discussionService.teacherAnswersStudent(user.getId(), discussionId, discussionDto);
+        return discussionService.teacherAnswersStudent(user.getId(), discussionId, messageDto);
     }
 
     @GetMapping("/student/discussions/")

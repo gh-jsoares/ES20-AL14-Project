@@ -23,7 +23,7 @@ public class Discussion {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "discussion", fetch = FetchType.EAGER, orphanRemoval=true)
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "discussion", orphanRemoval=true)
     private List<Message> messages = new ArrayList<>();
 
     @ManyToOne
@@ -43,11 +43,10 @@ public class Discussion {
     public Discussion(QuestionAnswer questionAnswer, User student, Question question, DiscussionDto dto) {
         verifyIfAnsweredQuestion(questionAnswer, question.getId(), student.getId());
         checkIfMessages(dto.getMessages());
-        setMessages(dto.getMessages());
         setStudent(student);
         setQuestion(question);
         setNeedsAnswer(true);
-        //setTeacherAnswer(dto.getTeacherAnswer()); why???
+        setMessages(dto.getMessages());
         question.addDiscussion(this);
         student.addDiscussion(this);
     }
@@ -89,11 +88,10 @@ public class Discussion {
             throw new TutorException(ErrorMessage.DISCUSSION_MESSAGE_EMPTY);
     }
 
-    public void updateTeacherAnswer(User teacher, DiscussionDto discussionDto) {
+    public void updateTeacherAnswer(User teacher, MessageDto messageDto) {
         checkIfDiscussionHasBeenAnswered();
         checkIfTeacherIsEnrolledInQuestionCourseExecution(teacher);
-        checkIfMessages(discussionDto.getMessages());
-        discussionDto.getMessages().forEach(messageDto ->  new Message(this, teacher, messageDto));
+        new Message(this, teacher, messageDto);
         setNeedsAnswer(false);
     }
 

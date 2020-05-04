@@ -18,6 +18,7 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.domain.Discussion
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.dto.DiscussionDto
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.repository.DiscussionRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.DiscussionService
+import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.dto.MessageDto
 
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.Course
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseDto
@@ -110,7 +111,11 @@ class CreateDiscussionTest extends Specification {
     def "create a discussion"() {
         given: "the definition of the discussion"
         def discussionDto = new DiscussionDto()
-        discussionDto.setMessageFromStudent(MESSAGE)
+        def messages = new ArrayList<MessageDto>()
+        def message = new MessageDto()
+        message.setMessage(MESSAGE)
+        messages.add(message)
+        discussionDto.setMessagesDto(messages)
         discussionDto.setId(questionAnswer.getId())
 
         when: "create discussion in the repository"
@@ -123,6 +128,10 @@ class CreateDiscussionTest extends Specification {
         result.getStudent().getKey() == student.getKey()
         result.getQuestion().getId() == question.getId()
         result.getQuestion().getDiscussions().contains(result)
+        result.getMessages().size() == 1
+        result.getMessages().get(0).getMessage() == MESSAGE
+        result.getMessages().get(0).getUser() == student
+        student.messages.contains(result.getMessages().get(0))
         question.getDiscussions().contains(result)
         student.getDiscussions().contains(result)
 
@@ -146,7 +155,11 @@ class CreateDiscussionTest extends Specification {
         discussionRepository.save(discussion)
         and: "the creation of the DiscussionDto"
         def discussionDto = new DiscussionDto()
-        discussionDto.setMessageFromStudent("TEST")
+        def messages = new ArrayList<MessageDto>()
+        def message = new MessageDto()
+        message.setMessage(MESSAGE)
+        messages.add(message)
+        discussionDto.setMessagesDto(messages)
         discussionDto.setId(questionAnswer.getId())
 
         when: "create another discussion with the same student and question"
@@ -161,7 +174,11 @@ class CreateDiscussionTest extends Specification {
     def "create a discussion with an empty message is #msg"() {
         given: "the creation of the discussionDto"
         def discussionDto = new DiscussionDto()
-        discussionDto.setMessageFromStudent(msg)
+        def messages = new ArrayList<MessageDto>()
+        def message = new MessageDto()
+        message.setMessage(msg)
+        messages.add(message)
+        discussionDto.setMessagesDto(messages)
         discussionDto.setId(questionAnswer.getId())
 
         when: "create the discussion"
@@ -178,7 +195,6 @@ class CreateDiscussionTest extends Specification {
     def "create a discussion with invalid user"() {
         given: "the creation of the discussionDto"
         def discussionDto = new DiscussionDto()
-        discussionDto.setMessageFromStudent(MESSAGE)
         discussionDto.setId(questionAnswer.getId())
 
         when: "creating the discussion"
@@ -192,7 +208,6 @@ class CreateDiscussionTest extends Specification {
     def "create a discussion with invalid question"() {
         given: "the creation of the discussionDto"
         def discussionDto = new DiscussionDto()
-        discussionDto.setMessageFromStudent(MESSAGE)
         discussionDto.setId(questionAnswer.getId())
 
         when: "creating the discussion"
@@ -206,7 +221,6 @@ class CreateDiscussionTest extends Specification {
     def "create a discussion with invalid questionAnswer"() {
         given: "the creation of the discussionDto"
         def discussionDto = new DiscussionDto()
-        discussionDto.setMessageFromStudent(MESSAGE)
         discussionDto.setId(INVALID_ID)
 
         when: "creating the discussion"
@@ -220,7 +234,11 @@ class CreateDiscussionTest extends Specification {
     def "create a discussion before student submitting answer"() {
         given: "the definition of the discussion"
         def discussionDto = new DiscussionDto()
-        discussionDto.setMessageFromStudent(MESSAGE)
+        def messages = new ArrayList<MessageDto>()
+        def message = new MessageDto()
+        message.setMessage(MESSAGE)
+        messages.add(message)
+        discussionDto.setMessagesDto(messages)
         discussionDto.setId(questionAnswer.getId())
         and: "the definition of the invalid user"
         User invalidStudent = new User('student2', "invalid student", 2, User.Role.STUDENT)
@@ -239,7 +257,11 @@ class CreateDiscussionTest extends Specification {
     def "create a discussion with invalid user type"() {
         given: "the definition of the discussion"
         def discussionDto = new DiscussionDto()
-        discussionDto.setMessageFromStudent(MESSAGE)
+        def messages = new ArrayList<MessageDto>()
+        def message = new MessageDto()
+        message.setMessage(MESSAGE)
+        messages.add(message)
+        discussionDto.setMessagesDto(messages)
         discussionDto.setId(questionAnswer.getId())
         and: "the definition of the invalid user"
         User invalidUser = new User('user2', "invalid student", 2, User.Role.TEACHER)
