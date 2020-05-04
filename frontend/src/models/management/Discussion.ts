@@ -7,6 +7,7 @@ export class Discussion {
   teacherAnswer!: string | undefined;
   studentName!: string | undefined;
   teacherName!: string | undefined;
+  visibleToOtherStudents!: boolean | undefined;
 
   constructor(jsonObj?: Discussion) {
     if (jsonObj) {
@@ -16,6 +17,7 @@ export class Discussion {
       this.question = jsonObj.question;
       this.messageFromStudent = jsonObj.messageFromStudent;
       this.teacherAnswer = jsonObj.teacherAnswer;
+      this.visibleToOtherStudents = jsonObj.visibleToOtherStudents;
     }
   }
 }

@@ -26,6 +26,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -173,8 +174,8 @@ public class DiscussionService {
                 .map(QuizQuestion::getQuestion)
                 .map(Question::getDiscussions)
                 .flatMap(Collection::stream)
-                .filter(Discussion::needsAnswer)
                 .distinct()
+                .sorted(Comparator.comparing(Discussion::needsAnswer, Comparator.reverseOrder()))
                 .collect(Collectors.toList());
     }
 }

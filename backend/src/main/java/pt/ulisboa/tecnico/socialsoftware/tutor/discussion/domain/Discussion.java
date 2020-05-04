@@ -23,7 +23,7 @@ public class Discussion {
 
     private String teacherAnswer = null;
 
-    private boolean isVisibleToOtherStudents = false;
+    private boolean isVisibleToOtherStudents;
 
     @ManyToOne
     @JoinColumn(name = "student_id")

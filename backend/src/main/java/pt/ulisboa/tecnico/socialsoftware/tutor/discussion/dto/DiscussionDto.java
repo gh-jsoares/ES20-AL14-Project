@@ -60,5 +60,7 @@ public class DiscussionDto implements Serializable {
 
     public void setTeacherName(String teacherName) { this.teacherName = teacherName; }
 
+    public boolean isVisibleToOtherStudents() { return visibleToOtherStudents; }
+
     public void setVisibleToOtherStudents(boolean visibleToOtherStudents) { this.visibleToOtherStudents = visibleToOtherStudents; }
 }
