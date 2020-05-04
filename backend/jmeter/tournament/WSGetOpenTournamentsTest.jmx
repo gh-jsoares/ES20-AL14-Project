@@ -66,13 +66,12 @@
         </JDBCDataSource>
         <hashTree/>
         <BeanShellSampler guiclass="BeanShellSamplerGui" testclass="BeanShellSampler" testname="BeanShell Sampler store dates" enabled="true">
-          <stringProp name="BeanShellSampler.query">import java.time.LocalDateTime;
+          <stringProp name="BeanShellSampler.query">import java.time.*;
 import java.time.format.DateTimeFormatter;
 
-DateTimeFormatter formatter = DateTimeFormatter.ofPattern(&quot;yyyy-MM-dd HH:mm&quot;);
-String yesterday = LocalDateTime.now().minusDays(1).format(formatter);
-String dayOne = LocalDateTime.now().plusDays(1).format(formatter);
-String dayTwo = LocalDateTime.now().plusDays(2).format(formatter);
+String yesterday = ZonedDateTime.now(ZoneOffset.UTC).minusDays(1).format(DateTimeFormatter.ISO_INSTANT);
+String dayOne = ZonedDateTime.now(ZoneOffset.UTC).plusDays(1).format(DateTimeFormatter.ISO_INSTANT);
+String dayTwo = ZonedDateTime.now(ZoneOffset.UTC).plusDays(2).format(DateTimeFormatter.ISO_INSTANT);
 
 props.put(&quot;creationDate&quot;, yesterday);
 props.put(&quot;availableDate&quot;, dayOne);
