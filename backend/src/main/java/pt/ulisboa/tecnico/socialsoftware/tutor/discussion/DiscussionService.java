@@ -27,6 +27,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -83,11 +84,11 @@ public class DiscussionService {
     }
 
     private User getTeacherById(Integer teacherId) {
-        User student = userRepository.findById(teacherId).orElseThrow(() -> new TutorException(ErrorMessage.USER_NOT_FOUND, teacherId));
-        if (student.getRole() != User.Role.TEACHER) {
+        User user = userRepository.findById(teacherId).orElseThrow(() -> new TutorException(ErrorMessage.USER_NOT_FOUND, teacherId));
+        if (user.getRole() != User.Role.TEACHER) {
             throw new TutorException(ErrorMessage.USER_IS_NOT_TEACHER, teacherId);
         }
-        return student;
+        return user;
     }
 
     private Question getQuestion(Integer questionId) {
@@ -110,6 +111,17 @@ public class DiscussionService {
 
         discussion.updateTeacherAnswer(teacher, messageDto);
         return new DiscussionDto(discussion);
+    }
+
+    @Retryable(
+            value = { SQLException.class },
+            backoff = @Backoff(delay = 5000))
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public void openDiscussionToOtherStudents(Integer userId, Integer discussionId) {
+        Discussion discussion = discussionRepository.findById(discussionId).orElseThrow(() -> new TutorException(ErrorMessage.DISCUSSION_NOT_FOUND, discussionId));
+        User teacher = getTeacherById(userId);
+
+        discussion.openDiscussion(teacher);
     }
 
     @Retryable(
@@ -163,8 +175,8 @@ public class DiscussionService {
                 .map(QuizQuestion::getQuestion)
                 .map(Question::getDiscussions)
                 .flatMap(Collection::stream)
-                .filter(Discussion::needsAnswer)
                 .distinct()
+                .sorted(Comparator.comparing(Discussion::needsAnswer, Comparator.reverseOrder()))
                 .collect(Collectors.toList());
     }
 }

@@ -725,6 +725,16 @@ export default class RemoteServices {
     }
   }
 
+  static async openDiscussion(discussionId: number) {
+    if (discussionId) {
+      return httpClient
+          .post(`/discussions/${discussionId}/public`)
+          .catch(async error => {
+            throw Error(await this.errorMessage(error));
+          });
+    }
+  }
+
   static async exportAll() {
     return httpClient
       .get('/admin/export', {

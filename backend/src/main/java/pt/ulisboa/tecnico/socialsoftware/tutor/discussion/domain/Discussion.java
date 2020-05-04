@@ -26,6 +26,8 @@ public class Discussion {
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "discussion", orphanRemoval=true)
     private List<Message> messages = new ArrayList<>();
 
+    private boolean isVisibleToOtherStudents;
+
     @ManyToOne
     @JoinColumn(name = "student_id")
     private User student;
@@ -45,6 +47,7 @@ public class Discussion {
         checkIfMessages(dto.getMessages());
         setStudent(student);
         setQuestion(question);
+        setVisibleToOtherStudents(false);
         setNeedsAnswer(true);
         setMessages(dto.getMessages());
         question.addDiscussion(this);
@@ -83,11 +86,14 @@ public class Discussion {
 
     public void setNeedsAnswer(boolean needsAnswer) { this.needsAnswer = needsAnswer; }
 
+    public boolean isVisibleToOtherStudents() { return isVisibleToOtherStudents; }
+
+    public void setVisibleToOtherStudents(boolean visibleToOtherStudents) { isVisibleToOtherStudents = visibleToOtherStudents; }
+
     public void checkIfMessages(List<MessageDto> messages) {
         if (messages == null || messages.isEmpty())
             throw new TutorException(ErrorMessage.DISCUSSION_MESSAGE_EMPTY);
     }
-
     public void updateTeacherAnswer(User teacher, MessageDto messageDto) {
         checkIfDiscussionHasBeenAnswered();
         checkIfTeacherIsEnrolledInQuestionCourseExecution(teacher);
@@ -112,5 +118,20 @@ public class Discussion {
     private void checkIfDiscussionHasBeenAnswered() {
         if (!needsAnswer())
             throw new TutorException(ErrorMessage.DISCUSSION_ALREADY_ANSWERED);
+    }
+
+    private boolean verifiesIfATeacherAnsweredTheDiscussion(User teacher) {
+        return messages.stream()
+                .map(Message::getUser)
+                .anyMatch(u -> u.getId().equals(teacher.getId()));
+    }
+
+    public void openDiscussion(User teacher) {
+        if (!verifiesIfATeacherAnsweredTheDiscussion(teacher))
+            throw new TutorException(ErrorMessage.DISCUSSION_CANT_BE_OPEN);
+        else if(isVisibleToOtherStudents)
+            throw new TutorException(ErrorMessage.DISCUSSION_ALREADY_OPEN);
+        else
+            setVisibleToOtherStudents(true);
     }
 }

@@ -64,6 +64,14 @@
                 <b>No teacher has answered yet.</b>
               </p>
             </v-flex>
+            <v-flex xs24 sm12 md8 v-if="seeDiscussion.teacherAnswer">
+              <p v-if="seeDiscussion.visibleToOtherStudents">
+                <b>Discussion status: </b> Visible to other students
+              </p>
+              <p v-else>
+                <b>Discussion status: </b> Not visible to other students
+              </p>
+            </v-flex>
           </v-layout>
         </v-container>
       </v-card-text>

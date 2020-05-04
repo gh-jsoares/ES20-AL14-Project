@@ -9,7 +9,7 @@
     <v-card>
       <v-card-title>
         <span class="headline">
-          Answering Discussion
+          Changing Discussion
         </span>
       </v-card-title>
 
@@ -57,11 +57,22 @@
               </p>
             </v-flex>
             <v-flex xs24 sm12 md8>
-              <v-text-field
+              <p v-if="editDiscussion.teacherAnswer">
+                <b>Your answer:</b> {{ editDiscussion.teacherAnswer }}
+              </p>
+              <v-text-field v-else
                 v-model="editDiscussion.teacherAnswer"
                 label="Your answer"
                 data-cy="teacherAnswer"
               />
+            </v-flex>
+            <v-flex xs24 sm12 md8 v-if="editDiscussion.teacherAnswer">
+              <p v-if="editDiscussion.visibleToOtherStudents === true">
+                <b>Discussion status: </b> Visible to other students
+              </p>
+              <p v-else>
+                <b>Discussion status: </b> Not visible to other students
+              </p>
             </v-flex>
           </v-layout>
         </v-container>
@@ -75,13 +86,20 @@
           data-cy="cancelButton"
           >Cancel</v-btn
         >
-        <v-btn
+        <v-btn v-if="editDiscussion.teacherAnswer === null"
           color="blue darken-1"
           @click="answerDiscussion"
           data-cy="sendButton"
         >
           Send Answer</v-btn
         >
+        <v-btn v-if="editDiscussion.visibleToOtherStudents === false && editDiscussion.teacherAnswer"
+          color="blue darken-1"
+          @click="openDiscussion"
+          data-cy="openDiscussionButton"
+        >
+          Open discussion to other students
+        </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -93,7 +111,7 @@ import RemoteServices from '@/services/RemoteServices';
 import { Discussion } from '@/models/management/Discussion';
 
 @Component
-export default class AnswerDiscussionDialog extends Vue {
+export default class ChangeDiscussionDialog extends Vue {
   @Model('dialog', Boolean) dialog!: boolean;
   @Prop({ type: Discussion, required: true }) readonly discussion!: Discussion;
 
@@ -134,6 +152,18 @@ export default class AnswerDiscussionDialog extends Vue {
           this.editDiscussion
         );
         this.$emit('answer-discussion', result);
+      } catch (error) {
+        await this.$store.dispatch('error', error);
+      }
+    }
+  }
+
+  async openDiscussion() {
+    if (this.editDiscussion.id) {
+      try {
+        await RemoteServices.openDiscussion(this.editDiscussion.id);
+        this.editDiscussion.visibleToOtherStudents = true;
+        this.$emit('change-discussion', this.editDiscussion);
       } catch (error) {
         await this.$store.dispatch('error', error);
       }

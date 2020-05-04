@@ -14,12 +14,15 @@ public class DiscussionDto implements Serializable {
 
     private QuestionDto question;
 
+    private boolean visibleToOtherStudents;
+
     private List<MessageDto> messages;
 
     public DiscussionDto() {}
 
     public DiscussionDto(Discussion discussion) {
         setId(discussion.getId());
+        setVisibleToOtherStudents(discussion.isVisibleToOtherStudents());
         setQuestion(new QuestionDto(discussion.getQuestion()));
         setMessagesWithDomain(discussion.getMessages());
     }
@@ -45,6 +48,10 @@ public class DiscussionDto implements Serializable {
             .map(MessageDto::new)
             .collect(Collectors.toList());
     }
+
+    public boolean isVisibleToOtherStudents() { return visibleToOtherStudents; }
+
+    public void setVisibleToOtherStudents(boolean visibleToOtherStudents) { this.visibleToOtherStudents = visibleToOtherStudents; }
 
     public void setMessagesDto(List<MessageDto> messages) {
         this.messages = messages;

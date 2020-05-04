@@ -162,7 +162,14 @@ class TeacherSeesStudentRequestsServiceSpockTest extends Specification {
         def result = discussionService.getDiscussionTeacher(teacher.getId())
 
         then: "the returned data is correct"
-        result.size() == 0
+
+        result.size() == 1
+        result.get(0).getMessages().size() == 2
+        result.get(0).getMessages().get(0).getUserName() == student.getUsername()
+        result.get(0).getMessages().get(0).getMessage() == MESSAGE
+        result.get(0).getMessages().get(1).getUserName() == teacher.getUsername()
+        result.get(0).getMessages().get(1).getMessage() == TEACHER_ANSWER
+        result.get(0).question.getId() == question.getId()
     }
 
     def "get discussion from non-existing teacher"() {
