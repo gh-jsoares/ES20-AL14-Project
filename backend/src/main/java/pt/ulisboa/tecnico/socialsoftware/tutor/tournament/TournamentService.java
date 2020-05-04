@@ -21,8 +21,6 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.user.UserRepository;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.sql.SQLException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 import java.util.Comparator;
 import java.util.List;
@@ -118,7 +116,6 @@ public class TournamentService {
     }
 
     private Tournament buildTournament(TournamentDto tournDto, User user, CourseExecution courseExecution) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         tournDto.setCreationDate(DateHandler.toISOString(DateHandler.now()));
 
         Tournament tourn = new Tournament(tournDto);

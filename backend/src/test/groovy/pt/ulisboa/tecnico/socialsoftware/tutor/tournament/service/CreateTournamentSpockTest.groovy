@@ -23,8 +23,6 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.user.UserRepository
 import spock.lang.Specification
 import spock.lang.Unroll
 
-import java.time.LocalDateTime
-
 
 @DataJpaTest
 class CreateTournamentSpockTest extends Specification{
@@ -106,7 +104,7 @@ class CreateTournamentSpockTest extends Specification{
         result.isScramble()
         result.getTitle() == TOURN_TITLE
         currentDate.isBefore(result.getCreationDate())
-        result.getCreationDate().isBefore(LocalDateTime.now())
+        result.getCreationDate().isBefore(DateHandler.now())
         DateHandler.toISOString(result.getAvailableDate()) == days["+1"]
         DateHandler.toISOString(result.getConclusionDate()) == days["+2"]
         result.getState() == Tournament.State.ENROLL

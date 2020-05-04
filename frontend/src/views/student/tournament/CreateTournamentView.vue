@@ -109,7 +109,7 @@
           <v-col>
             <VueCtkDateTimePicker
               label="*Start Date"
-              v-model="startDate"
+              v-model="tourn.availableDate"
               id="startDateInput"
               format="YYYY-MM-DDTHH:mm:ssZ"
               data-cy="startDate"
@@ -118,7 +118,7 @@
           <v-col>
             <VueCtkDateTimePicker
               label="*Conclusion Date"
-              v-model="endDate"
+              v-model="tourn.conclusionDate"
               id="endDateInput"
               format="YYYY-MM-DDTHH:mm:ssZ"
               data-cy="endDate"
@@ -149,8 +149,6 @@ export default class CreateTournamentView extends Vue {
   failed: boolean = false;
   successMsg: string = '';
   errorMsg: string = '';
-  startDate: string = '';
-  endDate: string = '';
   async created() {
     await this.$store.dispatch('loading');
     try {
@@ -169,8 +167,6 @@ export default class CreateTournamentView extends Vue {
       this.failed = true;
       return;
     }
-    this.tourn.availableDate = this.format(this.startDate);
-    this.tourn.conclusionDate = this.format(this.endDate);
     try {
       let created = await RemoteServices.createTournament(this.tourn);
       this.show(created);
@@ -184,17 +180,20 @@ export default class CreateTournamentView extends Vue {
     if (
       this.tourn.topics.length <= 0 ||
       !this.tourn.title ||
-      !this.startDate ||
-      !this.endDate
+      !this.tourn.availableDate ||
+      !this.tourn.conclusionDate
     ) {
       this.errorMsg = 'Missing required fields';
       return false;
     }
-    if (Date.parse(this.startDate) < Date.now()) {
+    if (Date.parse(this.tourn.availableDate) < Date.now()) {
       this.errorMsg = 'Start Date must be in the future';
       return false;
     }
-    if (Date.parse(this.startDate) > Date.parse(this.endDate)) {
+    if (
+      Date.parse(this.tourn.availableDate) >
+      Date.parse(this.tourn.conclusionDate)
+    ) {
       this.errorMsg = 'Conclusion Date must be after Start Date';
       return false;
     }
@@ -231,8 +230,6 @@ export default class CreateTournamentView extends Vue {
     this.tourn.scramble = false;
     this.tourn.availableDate = '';
     this.tourn.conclusionDate = '';
-    this.startDate = '';
-    this.endDate = '';
   }
 }
 </script>
