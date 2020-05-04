@@ -21,7 +21,7 @@ public class DiscussionDto implements Serializable {
     public DiscussionDto(Discussion discussion) {
         setId(discussion.getId());
         setQuestion(new QuestionDto(discussion.getQuestion()));
-        setMessages(discussion.getMessages());
+        setMessagesWithDomain(discussion.getMessages());
     }
 
     public Integer getId() {
@@ -36,7 +36,11 @@ public class DiscussionDto implements Serializable {
 
     public List<MessageDto> getMessages() { return messages; }
 
-    public void setMessages(List<Message> messages) {
+    public void setMessages(List<MessageDto> messages) {
+        this.messages = messages;
+    }
+
+    public void setMessagesWithDomain(List<Message> messages) {
         this.messages = messages.stream()
             .map(MessageDto::new)
             .collect(Collectors.toList());
