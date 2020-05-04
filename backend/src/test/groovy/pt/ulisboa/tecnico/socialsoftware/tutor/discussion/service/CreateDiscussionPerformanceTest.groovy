@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
+import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.dto.MessageDto
 import spock.lang.Specification
 
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.User
@@ -89,7 +90,11 @@ class CreateDiscussionPerformanceTest extends Specification {
         1.upto(discNum, {
             DiscussionDto discussionDto = new DiscussionDto()
             discussionDto.setId(questionAnswers[it].getId())
-            discussionDto.setMessageFromStudent(MESSAGE)
+            def messages = new ArrayList<MessageDto>()
+            def message = new MessageDto()
+            message.setMessage(MESSAGE)
+            messages.add(message)
+            discussionDto.setMessagesDto(messages)
             discussionService.createDiscussion(students[it].getId(), questions[it].getId(), discussionDto)
         })
         then:

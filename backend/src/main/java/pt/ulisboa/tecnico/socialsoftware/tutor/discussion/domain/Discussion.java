@@ -1,6 +1,7 @@
 package pt.ulisboa.tecnico.socialsoftware.tutor.discussion.domain;
 
 import pt.ulisboa.tecnico.socialsoftware.tutor.answer.domain.QuestionAnswer;
+import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.dto.MessageDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException;
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Question;
@@ -10,6 +11,9 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.user.User;
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.dto.DiscussionDto;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "discussions")
@@ -19,9 +23,8 @@ public class Discussion {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    private String messageFromStudent = null;
-
-    private String teacherAnswer = null;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "discussion", orphanRemoval=true)
+    private List<Message> messages = new ArrayList<>();
 
     private boolean isVisibleToOtherStudents;
 
@@ -30,24 +33,23 @@ public class Discussion {
     private User student;
 
     @ManyToOne
-    @JoinColumn(name = "teacher_id")
-    private User teacher;
-
-    @ManyToOne
     @JoinColumn(name = "question_id")
     private Question question;
+
+    @Column(nullable = false)
+    private boolean needsAnswer;
 
     public Discussion() {
     }
 
     public Discussion(QuestionAnswer questionAnswer, User student, Question question, DiscussionDto dto) {
-        checkMessage(dto.getMessageFromStudent());
         verifyIfAnsweredQuestion(questionAnswer, question.getId(), student.getId());
+        checkIfMessages(dto.getMessages());
         setStudent(student);
         setQuestion(question);
-        setMessageFromStudent(dto.getMessageFromStudent());
-        setTeacherAnswer(dto.getTeacherAnswer());
         setVisibleToOtherStudents(false);
+        setNeedsAnswer(true);
+        setMessages(dto.getMessages());
         question.addDiscussion(this);
         student.addDiscussion(this);
     }
@@ -58,14 +60,6 @@ public class Discussion {
 
     public void setId(Integer id) { this.id = id; }
 
-    public User getStudent() {
-        return student;
-    }
-
-    public void setStudent(User student) {
-        this.student = student;
-    }
-
     public Question getQuestion() {
         return question;
     }
@@ -74,43 +68,43 @@ public class Discussion {
         this.question = question;
     }
 
-    public String getMessageFromStudent() { return messageFromStudent; }
+    public List<Message> getMessages() { return messages; }
 
-    public void setMessageFromStudent(String messageFromStudent) { this.messageFromStudent = messageFromStudent; }
+    public void setMessages(List<MessageDto> messages) {
+        this.messages = messages.stream()
+                .map(message -> new Message(this, student, message))
+                .collect(Collectors.toList());
+    }
 
-    public String getTeacherAnswer() { return teacherAnswer; }
+    public void addMessage(Message message) { messages.add(message); }
 
-    public void setTeacherAnswer(String teacherAnswer) { this.teacherAnswer = teacherAnswer; }
+    public User getStudent() { return student; }
 
-    public User getTeacher() {return teacher; }
+    public void setStudent(User student) { this.student = student; }
 
-    public void setTeacher(User teacher) { this.teacher = teacher; }
+    public boolean needsAnswer() { return needsAnswer; }
+
+    public void setNeedsAnswer(boolean needsAnswer) { this.needsAnswer = needsAnswer; }
 
     public boolean isVisibleToOtherStudents() { return isVisibleToOtherStudents; }
 
     public void setVisibleToOtherStudents(boolean visibleToOtherStudents) { isVisibleToOtherStudents = visibleToOtherStudents; }
 
-    public boolean needsAnswer() { return teacher == null; }
-
-    public void updateTeacherAnswer(User teacher, DiscussionDto discussionDto) {
+    public void checkIfMessages(List<MessageDto> messages) {
+        if (messages == null || messages.isEmpty())
+            throw new TutorException(ErrorMessage.DISCUSSION_MESSAGE_EMPTY);
+    }
+    public void updateTeacherAnswer(User teacher, MessageDto messageDto) {
         checkIfDiscussionHasBeenAnswered();
         checkIfTeacherIsEnrolledInQuestionCourseExecution(teacher);
-        checkMessage(discussionDto.getTeacherAnswer());
-
-        setTeacherAnswer(discussionDto.getTeacherAnswer());
-        setTeacher(teacher);
+        new Message(this, teacher, messageDto);
+        setNeedsAnswer(false);
     }
 
     private void verifyIfAnsweredQuestion(QuestionAnswer questionAnswer, Integer questionId, Integer studentId) {
         if (!questionAnswer.getQuizQuestion().getQuestion().getId().equals(questionId) ||
                 !questionAnswer.getQuizAnswer().getUser().getId().equals(studentId))
             throw new TutorException(ErrorMessage.DISCUSSION_QUESTION_NOT_ANSWERED, studentId);
-    }
-
-    private void checkMessage(String message) {
-        if (message == null || message.isBlank()) {
-            throw new TutorException(ErrorMessage.DISCUSSION_MESSAGE_EMPTY);
-        }
     }
 
     private void checkIfTeacherIsEnrolledInQuestionCourseExecution(User teacher) {
@@ -122,12 +116,18 @@ public class Discussion {
     }
 
     private void checkIfDiscussionHasBeenAnswered() {
-        if (this.getTeacher() != null)
+        if (!needsAnswer())
             throw new TutorException(ErrorMessage.DISCUSSION_ALREADY_ANSWERED);
     }
 
+    private boolean verifiesIfATeacherAnsweredTheDiscussion(User teacher) {
+        return messages.stream()
+                .map(Message::getUser)
+                .anyMatch(u -> u.getId().equals(teacher.getId()));
+    }
+
     public void openDiscussion(User teacher) {
-        if (getTeacher() != teacher)
+        if (verifiesIfATeacherAnsweredTheDiscussion(teacher))
             throw new TutorException(ErrorMessage.DISCUSSION_CANT_BE_OPEN);
         else if(isVisibleToOtherStudents)
             throw new TutorException(ErrorMessage.DISCUSSION_ALREADY_OPEN);

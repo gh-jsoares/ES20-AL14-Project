@@ -7,6 +7,7 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.answer.domain.QuizAnswer;
 import pt.ulisboa.tecnico.socialsoftware.tutor.config.DateHandler;
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecution;
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.domain.Discussion;
+import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.domain.Message;
 import pt.ulisboa.tecnico.socialsoftware.tutor.impexp.domain.DomainEntity;
 import pt.ulisboa.tecnico.socialsoftware.tutor.impexp.domain.Visitor;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Question;
@@ -62,9 +63,11 @@ public class User implements UserDetails, DomainEntity {
     @ManyToMany
     private Set<CourseExecution> courseExecutions = new HashSet<>();
 
-
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "student", fetch = FetchType.LAZY, orphanRemoval=true)
     private Set<Discussion> discussions = new HashSet<>();
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.LAZY, orphanRemoval=true)
+    private Set<Message> messages = new HashSet<>();
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "student", fetch = FetchType.LAZY, orphanRemoval=true)
     private Set<StudentQuestion> studentQuestions = new HashSet<>();
@@ -194,6 +197,14 @@ public class User implements UserDetails, DomainEntity {
 
     public Set<StudentQuestion> getReviewedStudentQuestions() {
         return reviewedStudentQuestions;
+    }
+
+    public Set<Message> getMessages() {
+        return messages;
+    }
+
+    public void addMessage(Message message) {
+        messages.add(message);
     }
 
     public void addReviewedStudentQuestion(StudentQuestion studentQuestion) {
