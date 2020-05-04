@@ -6,7 +6,6 @@ import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.Course
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseRepository
-import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.StudentQuestionService
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Option
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Question
@@ -18,12 +17,9 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.StudentQuesti
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.User
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.UserRepository
 import spock.lang.Specification
-import spock.lang.Unroll
-
-import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.*
 
 @DataJpaTest
-class TeacherEditStudentQuestionBeforeAproval extends Specification {
+class TeacherEditStudentQuestionBeforeApproval extends Specification {
 
     public static final String USER_NAME = "Alfredo Costa"
     public static final String USER_USERNAME = "alcosta"
@@ -79,7 +75,7 @@ class TeacherEditStudentQuestionBeforeAproval extends Specification {
         studentQuestion.status = StudentQuestion.Status.AWAITING_APPROVAL
 
         and: "the new changes"
-        studentQuestionDto = createEditStudentQuestionDto()
+        def studentQuestionDto = createEditStudentQuestionDto()
 
         when:
         studentQuestionService.approveStudentQuestion(teacher.id, studentQuestionId, studentQuestionDto)
@@ -103,7 +99,7 @@ class TeacherEditStudentQuestionBeforeAproval extends Specification {
         def studentQuestionDto = new StudentQuestionDto(studentQuestion)
         studentQuestionDto.setTitle("New " + QUESTION_TITLE)
         studentQuestionDto.setContent("New " + QUESTION_CONTENT)
-        studentQuestionDto.getOptions().stream().map({ option -> option.setContent("New " + OPTION_CONTENT) })
+        studentQuestionDto.getOptions().forEach({ option -> option.setContent("New " + OPTION_CONTENT) })
         studentQuestionDto
     }
 

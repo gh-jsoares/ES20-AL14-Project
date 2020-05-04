@@ -160,9 +160,18 @@ public class StudentQuestionService {
             backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public StudentQuestionDto approveStudentQuestion(int userId, int studentQuestionId, StudentQuestionDto studentQuestionDto) {
-        return null;
-    }
+        User user = getUserIfExists(userId);
+        StudentQuestion studentQuestion = getStudentQuestionIfExists(studentQuestionId);
 
+        checkUserIsTeacher(user);
+        studentQuestion.updateAsTeacher(user, studentQuestionDto);
+
+        Question question = studentQuestion.doApprove(user);
+
+        questionRepository.save(question);
+
+        return new StudentQuestionDto(studentQuestion);
+    }
 
     @Retryable(
             value = {SQLException.class},

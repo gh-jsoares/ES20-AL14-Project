@@ -78,7 +78,7 @@ public class StudentQuestion implements DomainEntity {
     }
 
     public StudentQuestion(Course course, User user, StudentQuestionDto studentQuestionDto) {
-        checkConsistentStudentQuestion(user, studentQuestionDto);
+        checkConsistentStudentQuestion(user, studentQuestionDto, true);
 
         this.id = studentQuestionDto.getId();
         this.key = studentQuestionDto.getKey();
@@ -284,9 +284,32 @@ public class StudentQuestion implements DomainEntity {
             throw new TutorException(STUDENT_QUESTION_NOT_AWAITING_APPROVAL, getTitle());
     }
 
-    private void checkConsistentStudentQuestion(User user, StudentQuestionDto studentQuestionDto) {
-        if (user.getRole() != User.Role.STUDENT)
+    public void updateAsTeacher(User user, StudentQuestionDto studentQuestionDto) {
+        checkConsistentStudentQuestion(user, studentQuestionDto, false);
+
+        setTitle(studentQuestionDto.getTitle());
+        setContent(studentQuestionDto.getContent());
+
+        studentQuestionDto.getOptions().forEach(optionDto -> {
+            Option option = getOptionById(optionDto.getId());
+            if (option == null) {
+                throw new TutorException(OPTION_NOT_FOUND, optionDto.getId());
+            }
+            option.setContent(optionDto.getContent());
+            option.setCorrect(optionDto.getCorrect());
+        });
+    }
+
+    private Option getOptionById(Integer id) {
+        return getOptions().stream().filter(option -> option.getId().equals(id)).findAny().orElse(null);
+    }
+
+    private void checkConsistentStudentQuestion(User user, StudentQuestionDto studentQuestionDto, boolean isStudent) {
+        if (user.getRole() != User.Role.STUDENT && isStudent)
             throw new TutorException(STUDENT_QUESTION_NOT_A_STUDENT);
+
+        if(!isStudent)
+            checkUserIsTeacher(user);
 
         if (studentQuestionDto.getTitle() == null || studentQuestionDto.getTitle().trim().length() == 0)
             throw new TutorException(STUDENT_QUESTION_TITLE_IS_EMPTY);
