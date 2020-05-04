@@ -6,14 +6,23 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
+import pt.ulisboa.tecnico.socialsoftware.tutor.answer.domain.QuizAnswer;
 import pt.ulisboa.tecnico.socialsoftware.tutor.config.DateHandler;
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecution;
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecutionRepository;
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage;
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException;
+import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Assessment;
+import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Question;
+import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.TopicConjunction;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.TopicDto;
+import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.QuestionRepository;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.TopicRepository;
+import pt.ulisboa.tecnico.socialsoftware.tutor.quiz.QuizService;
+import pt.ulisboa.tecnico.socialsoftware.tutor.quiz.domain.Quiz;
+import pt.ulisboa.tecnico.socialsoftware.tutor.statement.StatementService;
+import pt.ulisboa.tecnico.socialsoftware.tutor.statement.dto.StatementCreationDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.User;
 
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.UserRepository;
@@ -22,6 +31,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.sql.SQLException;
 
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -40,6 +50,15 @@ public class TournamentService {
 
     @Autowired
     private TopicRepository topicRepository;
+
+    @Autowired
+    private QuestionRepository questionRepository;
+
+    @Autowired
+    private QuizService quizService;
+
+    @Autowired
+    private StatementService statementService;
 
     @PersistenceContext
     EntityManager entityManager;
@@ -140,10 +159,108 @@ public class TournamentService {
     public List<TournamentDto> getOpenTournaments(int executionId, int userId) {
         CourseExecution courseExecution = getCourseExecution(executionId);
 
+        courseExecution.getTournaments().forEach(tourn -> {
+            LocalDateTime now = DateHandler.now();
+            if (tourn.getQuiz() == null &&
+                    tourn.getEnrolledStudents().size() > 1 &&
+                    tourn.getAvailableDate().isAfter(now)) {
+                generateTournamentQuiz(tourn.getId());
+                tourn.setState(Tournament.State.ONGOING);
+            }
+            if (tourn.getConclusionDate().isAfter(now)) {
+                tourn.setState(Tournament.State.CLOSED);
+            }
+        });
+
         return courseExecution.getTournaments().stream()
                 .filter(tourn -> !tourn.getState().equals(Tournament.State.CLOSED))
                 .sorted(Comparator.comparing(Tournament::getId).reversed())
                 .map(tournament -> new TournamentDto(tournament, userId))
                 .collect(Collectors.toList());
+    }
+
+    @Retryable(
+            value = { SQLException.class },
+            backoff = @Backoff(delay = 5000))
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public void generateTournamentQuiz(int tournId) {
+        Tournament tourn = tournamentRepository.findById(tournId)
+                .orElseThrow(() -> new TutorException(ErrorMessage.TOURNAMENT_NOT_FOUND, tournId));
+
+        if (tourn.getQuiz() != null)
+            throw new TutorException(ErrorMessage.TOURNAMENT_QUIZ_ALREADY_GENERATED);
+
+        LocalDateTime now = DateHandler.now();
+
+        if (tourn.getAvailableDate().isAfter(now))
+            throw new TutorException(ErrorMessage.TOURNAMENT_NOT_AVAILABLE, tournId);
+
+        /*if (tourn.getConclusionDate().isBefore(now))
+            throw new TutorException(ErrorMessage.TOURNAMENT_IS_CLOSED, tournId);*/
+
+        if (tourn.getEnrolledStudents().size() <= 1) {
+            throw new TutorException(ErrorMessage.TOURNAMENT_NOT_ENOUGH_ENROLLS, tournId);
+        }
+
+        // create topic conjunction
+        TopicConjunction conjunction = new TopicConjunction();
+        tourn.getTopics().forEach(conjunction::addTopic);
+
+        // create assessment
+        Assessment assessment = new Assessment();
+        assessment.setTitle("Tournament " + tourn.getTitle());
+        assessment.setStatus(Assessment.Status.DISABLED);
+        assessment.setSequence(1);
+        assessment.setCourseExecution(tourn.getCourseExecution());
+        assessment.addTopicConjunction(conjunction);
+
+        // create creation details
+        StatementCreationDto quizDetails = new StatementCreationDto();
+        quizDetails.setNumberOfQuestions(tourn.getNumberOfQuestions());
+        quizDetails.setAssessment(assessment.getId());
+
+        // create quiz
+        Quiz quiz = new Quiz();
+        quiz.setKey(quizService.getMaxQuizKey() + 1);
+        quiz.setType(Quiz.QuizType.TOURNAMENT.toString());
+        quiz.setCreationDate(DateHandler.now());
+        quiz.setScramble(tourn.isScramble());
+
+
+        quiz.setAvailableDate(tourn.getAvailableDate());
+        quiz.setConclusionDate(tourn.getConclusionDate());
+
+
+        CourseExecution courseExecution = tourn.getCourseExecution();
+
+
+        List<Question> availableQuestions = questionRepository.findAvailableQuestions(courseExecution.getCourse().getId());
+
+        if (quizDetails.getAssessment() != null) {
+            availableQuestions = statementService.filterByAssessment(availableQuestions, quizDetails);
+        }
+
+        if (availableQuestions.size() < quizDetails.getNumberOfQuestions()) {
+            assessment.remove();
+            courseExecution.getAssessments().remove(assessment);
+            throw new TutorException(ErrorMessage.NOT_ENOUGH_QUESTIONS);
+        }
+
+        quiz.generate(availableQuestions);
+
+
+        quiz.setCourseExecution(courseExecution);
+        courseExecution.addQuiz(quiz);
+
+        tourn.setQuiz(quiz);
+
+        tourn.getEnrolledStudents().forEach(user -> {
+            QuizAnswer quizAnswer = new QuizAnswer(user, quiz);
+            entityManager.persist(quizAnswer);
+        });
+
+        entityManager.persist(conjunction);
+        entityManager.persist(assessment);
+        entityManager.persist(quiz);
     }
 }
