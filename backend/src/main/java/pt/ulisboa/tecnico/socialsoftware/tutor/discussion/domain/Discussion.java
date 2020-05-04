@@ -127,7 +127,7 @@ public class Discussion {
     }
 
     public void openDiscussion(User teacher) {
-        if (verifiesIfATeacherAnsweredTheDiscussion(teacher))
+        if (!verifiesIfATeacherAnsweredTheDiscussion(teacher))
             throw new TutorException(ErrorMessage.DISCUSSION_CANT_BE_OPEN);
         else if(isVisibleToOtherStudents)
             throw new TutorException(ErrorMessage.DISCUSSION_ALREADY_OPEN);
