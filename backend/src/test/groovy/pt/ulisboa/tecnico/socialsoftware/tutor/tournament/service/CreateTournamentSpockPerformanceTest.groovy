@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
+import pt.ulisboa.tecnico.socialsoftware.tutor.config.DateHandler
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.Course
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecution
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecutionRepository
@@ -18,8 +19,6 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.user.User
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.UserRepository
 import spock.lang.Specification
 
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 @DataJpaTest
 class CreateTournamentSpockPerformanceTest extends Specification {
@@ -98,9 +97,8 @@ class CreateTournamentSpockPerformanceTest extends Specification {
     }
 
     def createTournamentTemplate() {
-        def formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
-        def available = (LocalDateTime.now().plusDays(1).format(formatter))
-        def conclusion = (LocalDateTime.now().plusDays(2).format(formatter))
+        def available = (DateHandler.toISOString(DateHandler.now().plusDays(1)))
+        def conclusion = (DateHandler.toISOString(DateHandler.now().plusDays(2)))
 
         tournDto = new TournamentDto()
         tournDto.setTitle(TOURN_TITLE)

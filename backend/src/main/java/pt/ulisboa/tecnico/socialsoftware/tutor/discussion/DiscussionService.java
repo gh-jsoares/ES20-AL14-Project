@@ -2,7 +2,6 @@ package pt.ulisboa.tecnico.socialsoftware.tutor.discussion;
 
 import pt.ulisboa.tecnico.socialsoftware.tutor.answer.domain.QuestionAnswer;
 import pt.ulisboa.tecnico.socialsoftware.tutor.answer.repository.QuestionAnswerRepository;
-import pt.ulisboa.tecnico.socialsoftware.tutor.course.Course;
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecution;
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.repository.DiscussionRepository;
@@ -30,7 +29,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException;
 
@@ -78,7 +76,7 @@ public class DiscussionService {
     private User getStudentById(Integer studentId) {
         User student = userRepository.findById(studentId).orElseThrow(() -> new TutorException(ErrorMessage.USER_NOT_FOUND, studentId));
         if (student.getRole() != User.Role.STUDENT) {
-            throw new TutorException(ErrorMessage.USER_NOT_STUDENT, studentId);
+            throw new TutorException(ErrorMessage.USER_IS_NOT_STUDENT, studentId);
         }
         return student;
     }
