@@ -159,6 +159,15 @@ public class StudentQuestionService {
             value = {SQLException.class},
             backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public StudentQuestionDto approveStudentQuestion(int userId, int studentQuestionId, StudentQuestionDto studentQuestionDto) {
+        return null;
+    }
+
+
+    @Retryable(
+            value = {SQLException.class},
+            backoff = @Backoff(delay = 5000))
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
     public StudentQuestionDto rejectStudentQuestion(int userId, int studentQuestionId, String explanation) {
         User user = getUserIfExists(userId);
         StudentQuestion studentQuestion = getStudentQuestionIfExists(studentQuestionId);
@@ -169,7 +178,7 @@ public class StudentQuestionService {
     }
 
     @Retryable(
-            value = { SQLException.class },
+            value = {SQLException.class},
             backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public void uploadImage(Integer studentQuestionId, String type) {
@@ -190,7 +199,7 @@ public class StudentQuestionService {
     }
 
     @Retryable(
-            value = { SQLException.class },
+            value = {SQLException.class},
             backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public void updateStudentQuestionTopics(Integer studentQuestionId, Integer[] topicIds) {
@@ -198,12 +207,12 @@ public class StudentQuestionService {
 
         studentQuestion.updateTopics(
                 Arrays.stream(topicIds)
-                    .map(topicId -> getTopicIfExists(studentQuestion.getCourse().getId(), topicId))
+                        .map(topicId -> getTopicIfExists(studentQuestion.getCourse().getId(), topicId))
                         .collect(Collectors.toSet()));
     }
 
     @Retryable(
-            value = { SQLException.class },
+            value = {SQLException.class},
             backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public boolean canAccessStudentQuestion(int userId, int studentQuestionId) {
