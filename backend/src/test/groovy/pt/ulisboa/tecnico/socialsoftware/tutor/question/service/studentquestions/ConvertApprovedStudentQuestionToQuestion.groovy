@@ -8,8 +8,10 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.course.Course
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.StudentQuestionService
-import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.StudentQuestion
+import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Option
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Question
+import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.StudentQuestion
+import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.OptionRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.QuestionRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.StudentQuestionRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.User
@@ -17,8 +19,7 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.user.UserRepository
 import spock.lang.Specification
 import spock.lang.Unroll
 
-import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_NOT_AWAITING_APPROVAL
-import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.STUDENT_QUESTION_NOT_FOUND
+import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.*
 
 @DataJpaTest
 class ConvertApprovedStudentQuestionToQuestion extends Specification {
@@ -45,6 +46,9 @@ class ConvertApprovedStudentQuestionToQuestion extends Specification {
     QuestionRepository questionRepository
 
     @Autowired
+    OptionRepository optionRepository
+
+    @Autowired
     CourseRepository courseRepository
 
     User user
@@ -63,6 +67,7 @@ class ConvertApprovedStudentQuestionToQuestion extends Specification {
         courseRepository.save(course)
 
         studentQuestion = createStudentQuestion(QUESTION_TITLE, QUESTION_CONTENT, StudentQuestion.Status.AWAITING_APPROVAL.name())
+        createOptions(studentQuestion, OPTION_CONTENT)
     }
 
     def "convert existing student question to question"() {
@@ -91,21 +96,29 @@ class ConvertApprovedStudentQuestionToQuestion extends Specification {
     }
 
     @Unroll
-    def "invalid data: studentQuestion=#isStudentQuestion | topic=#isAwaitingApproval || errorMessage=#errorMessage"() {
+    def "invalid data: user=#isTeacher | studentQuestion=#isStudentQuestion | status=#isAwaitingApproval || errorMessage=#errorMessage"() {
         given: "a student question"
         def studentQuestionId = createStudentQuestion(isStudentQuestion, isAwaitingApproval)
 
+        and: "a user"
+        def teacherId = createTeacher(isTeacher)
+
         when:
-        studentQuestionService.updateStudentQuestionTopics(studentQuestionId, [topicId] as Integer[])
+        studentQuestionService.approveStudentQuestion(teacherId, studentQuestionId)
 
         then:
         def error = thrown(TutorException)
         error.errorMessage == errorMessage
 
         where:
-        isStudentQuestion | isAwaitingApproval || errorMessage
-        false             | true               || STUDENT_QUESTION_NOT_FOUND
-        true              | false              || STUDENT_QUESTION_NOT_AWAITING_APPROVAL
+        isStudentQuestion | isAwaitingApproval | isTeacher || errorMessage
+        false             | true               | true      || STUDENT_QUESTION_NOT_FOUND
+        true              | false              | true      || STUDENT_QUESTION_NOT_AWAITING_APPROVAL
+        true              | true               | false     || STUDENT_QUESTION_NOT_A_TEACHER
+    }
+
+    private int createTeacher(boolean isTeacher) {
+        return isTeacher ? teacher.getId() : user.getId()
     }
 
     private int createStudentQuestion(boolean isStudentQuestion, boolean isAwaitingApproval) {
@@ -130,6 +143,20 @@ class ConvertApprovedStudentQuestionToQuestion extends Specification {
         studentQuestion.setCourse(course)
         course.addStudentQuestion(studentQuestion)
         studentQuestion
+    }
+
+    private createOptions(StudentQuestion studentQuestion, String content) {
+        def options = new HashSet<Option>()
+
+        for (int i = 0; i < 4; i++) {
+            def option = new Option()
+            option.setContent(content)
+            option.setStudentQuestion(studentQuestion)
+            options.add(option)
+            studentQuestion.addOption(option)
+            optionRepository.save(option)
+        }
+        options.first().setCorrect(true)
     }
 
     @TestConfiguration

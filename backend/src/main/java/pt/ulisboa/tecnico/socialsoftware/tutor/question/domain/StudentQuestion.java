@@ -2,6 +2,8 @@ package pt.ulisboa.tecnico.socialsoftware.tutor.question.domain;
 
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.Course;
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException;
+import pt.ulisboa.tecnico.socialsoftware.tutor.impexp.domain.DomainEntity;
+import pt.ulisboa.tecnico.socialsoftware.tutor.impexp.domain.Visitor;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.OptionDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.StudentQuestionDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.User;
@@ -19,7 +21,7 @@ import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.*;
         indexes = {
                 @Index(name = "student_question_indx_0", columnList = "key")
         })
-public class StudentQuestion {
+public class StudentQuestion implements DomainEntity {
 
     @SuppressWarnings("unused")
     public enum Status {
@@ -223,7 +225,7 @@ public class StudentQuestion {
         return rejectedExplanation;
     }
 
-    public void doApprove(User user) {
+    public Question doApprove(User user) {
         checkUserIsTeacher(user);
         checkAwaitingApproval();
 
@@ -232,6 +234,8 @@ public class StudentQuestion {
         this.status = Status.ACCEPTED;
 
         this.lastReviewer.addReviewedStudentQuestion(this);
+
+        return new Question(this);
     }
 
     public void doAwait() {
@@ -340,4 +344,10 @@ public class StudentQuestion {
         getTopics().forEach(topic -> topic.removeStudentQuestion(this));
         getTopics().clear();
     }
+
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visitStudentQuestion(this);
+    }
+
 }
