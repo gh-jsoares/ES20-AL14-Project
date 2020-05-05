@@ -134,6 +134,7 @@ class TeacherSeesStudentRequestServiceSpockPerformanceTest extends Specification
         def discussion = new Discussion()
         discussion.setId(it)
         Message message = new Message()
+        message.setCounter(0)
         message.setUser(students[it])
         message.setMessage(MESSAGE)
         discussion.addMessage(message)
