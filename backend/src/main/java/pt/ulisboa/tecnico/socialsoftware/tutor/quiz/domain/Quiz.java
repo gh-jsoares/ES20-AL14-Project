@@ -276,6 +276,14 @@ public class Quiz implements DomainEntity {
         this.quizAnswers.add(quizAnswer);
     }
 
+    public Tournament getTournament() {
+        return this.tournament;
+    }
+
+    public void setTournament(Tournament tournament) {
+        this.tournament = tournament;
+    }
+
     @Override
     public String toString() {
         return "Quiz{" +

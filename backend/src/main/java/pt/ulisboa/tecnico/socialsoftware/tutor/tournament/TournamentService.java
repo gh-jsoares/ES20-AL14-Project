@@ -32,8 +32,10 @@ import javax.persistence.PersistenceContext;
 import java.sql.SQLException;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 
@@ -163,11 +165,12 @@ public class TournamentService {
             LocalDateTime now = DateHandler.now();
             if (tourn.getQuiz() == null &&
                     tourn.getEnrolledStudents().size() > 1 &&
-                    tourn.getAvailableDate().isAfter(now)) {
+                    tourn.getAvailableDate().isBefore(now)) {
                 generateTournamentQuiz(tourn.getId());
                 tourn.setState(Tournament.State.ONGOING);
             }
-            if (tourn.getConclusionDate().isAfter(now)) {
+            if (!tourn.getState().equals(Tournament.State.CLOSED) &&
+                    (tourn.getConclusionDate().isBefore(now) || tourn.getEnrolledStudents().size() <= 1)) {
                 tourn.setState(Tournament.State.CLOSED);
             }
         });
@@ -205,6 +208,7 @@ public class TournamentService {
         // create topic conjunction
         TopicConjunction conjunction = new TopicConjunction();
         tourn.getTopics().forEach(conjunction::addTopic);
+        tourn.getTopics().forEach(topic -> topic.addTopicConjunction(conjunction));
 
         // create assessment
         Assessment assessment = new Assessment();
@@ -213,6 +217,10 @@ public class TournamentService {
         assessment.setSequence(1);
         assessment.setCourseExecution(tourn.getCourseExecution());
         assessment.addTopicConjunction(conjunction);
+        conjunction.setAssessment(assessment);
+
+        entityManager.persist(conjunction);
+        entityManager.persist(assessment);
 
         // create creation details
         StatementCreationDto quizDetails = new StatementCreationDto();
@@ -222,13 +230,14 @@ public class TournamentService {
         // create quiz
         Quiz quiz = new Quiz();
         quiz.setKey(quizService.getMaxQuizKey() + 1);
-        quiz.setType(Quiz.QuizType.TOURNAMENT.toString());
         quiz.setCreationDate(DateHandler.now());
         quiz.setScramble(tourn.isScramble());
 
 
-        quiz.setAvailableDate(tourn.getAvailableDate());
-        quiz.setConclusionDate(tourn.getConclusionDate());
+        /*quiz.setAvailableDate(tourn.getAvailableDate());
+        if (tourn.getConclusionDate().isAfter(DateHandler.now())) {
+            quiz.setConclusionDate(tourn.getConclusionDate());
+        }*/
 
 
         CourseExecution courseExecution = tourn.getCourseExecution();
@@ -243,15 +252,28 @@ public class TournamentService {
         if (availableQuestions.size() < quizDetails.getNumberOfQuestions()) {
             assessment.remove();
             courseExecution.getAssessments().remove(assessment);
+            entityManager.remove(assessment);
+            entityManager.remove(conjunction);
             throw new TutorException(ErrorMessage.NOT_ENOUGH_QUESTIONS);
         }
+
+        Random rand = new Random(System.currentTimeMillis());
+        List<Question> limitedQuestions = new ArrayList<>();
+        while (limitedQuestions.size() < quizDetails.getNumberOfQuestions()) {
+            int next = rand.nextInt(availableQuestions.size());
+            if (!limitedQuestions.contains(availableQuestions.get(next))) {
+                limitedQuestions.add(availableQuestions.get(next));
+            }
+        }
+        availableQuestions = limitedQuestions;
 
         quiz.generate(availableQuestions);
 
 
         quiz.setCourseExecution(courseExecution);
-        courseExecution.addQuiz(quiz);
 
+        //quiz.setResultsDate(tourn.getConclusionDate());
+        quiz.setType(Quiz.QuizType.TOURNAMENT.toString());
         tourn.setQuiz(quiz);
 
         tourn.getEnrolledStudents().forEach(user -> {
@@ -259,8 +281,6 @@ public class TournamentService {
             entityManager.persist(quizAnswer);
         });
 
-        entityManager.persist(conjunction);
-        entityManager.persist(assessment);
         entityManager.persist(quiz);
     }
 }
