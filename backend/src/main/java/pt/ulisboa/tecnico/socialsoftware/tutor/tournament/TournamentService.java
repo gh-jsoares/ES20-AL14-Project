@@ -6,6 +6,7 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
+import pt.ulisboa.tecnico.socialsoftware.tutor.answer.domain.QuizAnswer;
 import pt.ulisboa.tecnico.socialsoftware.tutor.config.DateHandler;
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecution;
@@ -14,6 +15,7 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage;
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.TopicDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.TopicRepository;
+import pt.ulisboa.tecnico.socialsoftware.tutor.statement.dto.StatementQuizDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.User;
 
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.UserRepository;
@@ -22,6 +24,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.sql.SQLException;
 
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -140,10 +143,27 @@ public class TournamentService {
     public List<TournamentDto> getOpenTournaments(int executionId, int userId) {
         CourseExecution courseExecution = getCourseExecution(executionId);
 
+        LocalDateTime now = DateHandler.now();
+
         return courseExecution.getTournaments().stream()
                 .filter(tourn -> !tourn.getState().equals(Tournament.State.CLOSED))
                 .sorted(Comparator.comparing(Tournament::getId).reversed())
-                .map(tournament -> new TournamentDto(tournament, userId))
+                .map(tourn -> {
+                    TournamentDto tournDto = new TournamentDto(tourn, userId);
+                    if (tourn.getAvailableDate().isBefore(now) &&
+                            tourn.getConclusionDate().isAfter(now) &&
+                            tourn.isStudentEnrolled(userId)) {
+                        tournDto.setStatementQuiz(new StatementQuizDto(getUserQuizAnswer(userId, tourn)));
+                    }
+                    return tournDto;
+                })
                 .collect(Collectors.toList());
+    }
+
+    private QuizAnswer getUserQuizAnswer(int userId, Tournament tourn){
+        return getUser(userId).getQuizAnswers().stream().filter(answer ->
+                    answer.getQuiz().getId().equals(tourn.getQuiz().getId()))
+                    .findFirst()
+                    .orElse(null);
     }
 }
