@@ -60,6 +60,18 @@ public class DiscussionController {
         return discussionService.getDiscussionTeacher(user.getId());
     }
 
+    @GetMapping("/questions/{questionId}/discussions/get")
+    @PreAuthorize("hasRole('ROLE_STUDENT') and hasPermission(#questionId, 'QUESTION.ACCESS')")
+    public List<DiscussionDto> getDiscussionsQuestion(Principal principal, @PathVariable Integer questionId) {
+        User user = (User) ((Authentication) principal).getPrincipal();
+
+        if(user == null){
+            throw new TutorException(AUTHENTICATION_ERROR);
+        }
+
+        return discussionService.getDiscussionsQuestion(user.getId(), questionId);
+    }
+
     @PostMapping("/discussions/{discussionId}/public")
     @PreAuthorize("hasRole('ROLE_TEACHER') and hasPermission(#discussionId, 'DISCUSSION.ACCESS')")
     public ResponseEntity teacherOpensDiscussionToOtherStudents(Principal principal, @PathVariable Integer discussionId) {
