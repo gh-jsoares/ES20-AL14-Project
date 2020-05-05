@@ -26,6 +26,8 @@ public class DiscussionController {
     @PreAuthorize("hasRole('ROLE_STUDENT') and hasPermission(#questionId, 'QUESTION.ACCESS')")
     public DiscussionDto createDiscussion(Principal principal, @PathVariable Integer questionId, @Valid @RequestBody DiscussionDto discussionDto) {
         User user = (User) ((Authentication) principal).getPrincipal();
+        if (user == null)
+            throw new TutorException(AUTHENTICATION_ERROR);
         return this.discussionService.createDiscussion(user.getId(), questionId, discussionDto);
     }
 
@@ -33,6 +35,8 @@ public class DiscussionController {
     @PreAuthorize("hasRole('ROLE_TEACHER') and hasPermission(#discussionId, 'DISCUSSION.ACCESS')")
     public DiscussionDto teacherAnswersStudent(Principal principal, @PathVariable Integer discussionId, @Valid @RequestBody MessageDto messageDto) {
         User user = (User) ((Authentication) principal).getPrincipal();
+        if (user == null)
+            throw new TutorException(AUTHENTICATION_ERROR);
         return discussionService.teacherAnswersStudent(user.getId(), discussionId, messageDto);
     }
 
@@ -85,4 +89,12 @@ public class DiscussionController {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/discussions/newQuestion/{discussionId}")
+    @PreAuthorize("hasRole('ROLE_STUDENT') and hasPermission(#discussionId, 'DISCUSSION.ACCESS')")
+    public DiscussionDto studentMakesNewQuestion(Principal principal, @PathVariable Integer discussionId, @Valid @RequestBody MessageDto messageDto) {
+        User user = (User) ((Authentication) principal).getPrincipal();
+        if (user == null)
+            throw new TutorException(AUTHENTICATION_ERROR);
+        return discussionService.studentMakesNewQuestion(user.getId(), discussionId, messageDto);
+    }
 }
