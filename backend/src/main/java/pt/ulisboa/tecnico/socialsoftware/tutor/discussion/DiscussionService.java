@@ -1,6 +1,7 @@
 package pt.ulisboa.tecnico.socialsoftware.tutor.discussion;
 
 import pt.ulisboa.tecnico.socialsoftware.tutor.answer.domain.QuestionAnswer;
+import pt.ulisboa.tecnico.socialsoftware.tutor.answer.domain.QuizAnswer;
 import pt.ulisboa.tecnico.socialsoftware.tutor.answer.repository.QuestionAnswerRepository;
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecution;
@@ -178,5 +179,36 @@ public class DiscussionService {
                 .distinct()
                 .sorted(Comparator.comparing(Discussion::needsAnswer, Comparator.reverseOrder()))
                 .collect(Collectors.toList());
+    }
+
+    @Retryable(
+            value = { SQLException.class },
+            backoff = @Backoff(delay = 5000))
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public List<DiscussionDto> getDiscussionsQuestion(Integer studentId, Integer questionId) {
+        User student = getStudentById(studentId);
+        Question question = getQuestion(questionId);
+
+        if (!studentHasAnsweredQuestion(student, question)) {
+            throw new TutorException(ErrorMessage.NO_PERMISSION_TO_SEE_QUESTION_DISCUSSIONS);
+        }
+
+        return question.getDiscussions().stream()
+                .map(DiscussionDto::new)
+                .collect(Collectors.toList());
+    }
+
+    @Retryable(
+            value = { SQLException.class },
+            backoff = @Backoff(delay = 5000))
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public boolean studentHasAnsweredQuestion(User student, Question question) {
+        return question.getQuizQuestions().stream()
+                .map(QuizQuestion::getQuestionAnswers)
+                .flatMap(Collection::stream)
+                .map(QuestionAnswer::getQuizAnswer)
+                .map(QuizAnswer::getUser)
+                .anyMatch(userWhoAnsweredQuestion -> userWhoAnsweredQuestion.getId().equals(student.getId()));
+
     }
 }

@@ -103,6 +103,15 @@ class StudentSeesOtherDiscussionsTest extends Specification {
         quizAnswer = new QuizAnswer(student, quiz)
         questionAnswer = new QuestionAnswer(quizAnswer, quizQuestion,  10, null,  0)
 
+        questionRepository.save(question)
+
+        teacher = new User('teacher', TEACHER_NAME, 2, User.Role.TEACHER)
+        teacher.getCourseExecutions().add(courseExecution)
+        courseExecution.addUser(student)
+        userRepository.save(teacher)
+
+        courseExecution.addUser(teacher)
+
         DiscussionDto discussionDto = new DiscussionDto()
         def messages = new ArrayList<MessageDto>()
         def message = new MessageDto()
@@ -112,16 +121,14 @@ class StudentSeesOtherDiscussionsTest extends Specification {
         discussionDto.setMessagesDto(messages)
 
         createBasicDiscussion(student,question, discussionDto)
-
-        questionRepository.save(question)
     }
 
     def "student wants to see questions discussions (1) after he answers question"() {
         given: "a student"
-        User another_student = new User('another_student', ANOTHER_STUDENT_NAME, 2, User.Role.STUDENT)
-        student.getCourseExecutions().add(courseExecution)
-        courseExecution.addUser(student)
-        userRepository.save(student)
+        User another_student = new User('another_student', ANOTHER_STUDENT_NAME, 3, User.Role.STUDENT)
+        another_student.getCourseExecutions().add(courseExecution)
+        courseExecution.addUser(another_student)
+        userRepository.save(another_student)
 
         and: "a quiz answer and question answer"
         quizAnswer = new QuizAnswer(another_student, quiz)
@@ -135,18 +142,17 @@ class StudentSeesOtherDiscussionsTest extends Specification {
 
         then:
         result.get(0).getMessages().get(1).getMessage() == TEACHER_ANSWER
-        result.get(0).getMessages().get(1).getUser() == teacher
-        result.get(0).getMessages().get(1).getUser().getRole() == User.Role.TEACHER
+        result.get(0).getMessages().get(1).getUserName() == TEACHER_NAME
         result.get(0).getMessages().get(0).getMessage() == MESSAGE
-        result.get(0).getMessages().get(0).getUser() == student
+        result.get(0).getMessages().get(0).getUserName() == STUDENT_NAME
     }
 
     def "student wants to see discussions of a question he didn't answer"() {
         given: "a student"
-        User another_student = new User('another_student', ANOTHER_STUDENT_NAME, 2, User.Role.STUDENT)
-        student.getCourseExecutions().add(courseExecution)
-        courseExecution.addUser(student)
-        userRepository.save(student)
+        User another_student = new User('another_student', ANOTHER_STUDENT_NAME, 3, User.Role.STUDENT)
+        another_student.getCourseExecutions().add(courseExecution)
+        courseExecution.addUser(another_student)
+        userRepository.save(another_student)
 
         and: "a discussion related to the question"
         discussion
