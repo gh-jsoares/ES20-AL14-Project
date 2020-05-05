@@ -27,7 +27,7 @@
       </template>
 
       <template v-slot:item.content="{ item }">
-        <p v-html="convertMarkDownNoFigure(item.content, null)" />
+        <p v-html="convertMarkDown(item.content, null)" />
       </template>
 
       <template v-slot:item.topics="{ item }">
@@ -107,7 +107,7 @@
 <script lang="ts">
 import { Component, Vue, Watch } from 'vue-property-decorator';
 import RemoteServices from '@/services/RemoteServices';
-import { convertMarkDownNoFigure } from '@/services/ConvertMarkdownService';
+import { convertMarkDown } from '@/services/ConvertMarkdownService';
 import Image from '@/models/management/Image';
 import StudentQuestion from '@/models/management/StudentQuestion';
 
@@ -182,8 +182,8 @@ export default class StudentQuestionsView extends Vue {
     );
   }
 
-  convertMarkDownNoFigure(text: string, image: Image | null = null): string {
-    return convertMarkDownNoFigure(text, image);
+  convertMarkDown(text: string, image: Image | null = null): string {
+    return convertMarkDown(text, image);
   }
 
   showStudentQuestionDialog(studentQuestion: StudentQuestion) {

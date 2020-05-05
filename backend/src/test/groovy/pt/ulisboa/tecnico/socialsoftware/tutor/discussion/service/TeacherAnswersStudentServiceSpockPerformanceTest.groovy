@@ -60,6 +60,7 @@ class TeacherAnswersStudentServiceSpockPerformanceTest extends Specification {
     public static final String COURSE_NAME = "course_test"
     public static final String COURSE_ACRONYM = "acronym_test"
     public static final String COURSE_ACADEMIC_TERM = "academic_term_test"
+    public static final String QUESTION_TITLE = "question_title_test"
     public static final Integer COUNT = 1;
 
     User[] students = new User[COUNT+1]
@@ -120,11 +121,12 @@ class TeacherAnswersStudentServiceSpockPerformanceTest extends Specification {
         def question = new Question()
         question.setKey(it)
         question.setCourse(course)
+        question.setTitle(QUESTION_TITLE)
 
         Quiz quiz = new Quiz()
         quiz.setKey(it)
         quiz.setCourseExecution(courseExecution)
-        quiz.setType(Quiz.QuizType.GENERATED)
+        quiz.setType(Quiz.QuizType.GENERATED.toString())
         courseExecution.addQuiz(quiz)
         QuizQuestion quizQuestion = new QuizQuestion(quiz, question, 0)
         QuizAnswer quizAnswer = new QuizAnswer(students[it], quiz)

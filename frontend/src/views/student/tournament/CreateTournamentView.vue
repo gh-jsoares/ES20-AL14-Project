@@ -107,26 +107,22 @@
         <!-- end of mobile -->
         <v-row>
           <v-col>
-            <v-datetime-picker
+            <VueCtkDateTimePicker
               label="*Start Date"
-              v-model="startDate"
-              format="yyyy-MM-dd HH:mm"
-              date-format="yyyy-MM-dd"
-              time-format="HH:mm"
+              v-model="tourn.availableDate"
+              id="startDateInput"
+              format="YYYY-MM-DDTHH:mm:ssZ"
               data-cy="startDate"
-            >
-            </v-datetime-picker>
+            ></VueCtkDateTimePicker>
           </v-col>
           <v-col>
-            <v-datetime-picker
+            <VueCtkDateTimePicker
               label="*Conclusion Date"
-              v-model="endDate"
-              format="yyyy-MM-dd HH:mm"
-              date-format="yyyy-MM-dd"
-              time-format="HH:mm"
+              v-model="tourn.conclusionDate"
+              id="endDateInput"
+              format="YYYY-MM-DDTHH:mm:ssZ"
               data-cy="endDate"
-            >
-            </v-datetime-picker>
+            ></VueCtkDateTimePicker>
           </v-col>
         </v-row>
         <v-row>
@@ -153,8 +149,6 @@ export default class CreateTournamentView extends Vue {
   failed: boolean = false;
   successMsg: string = '';
   errorMsg: string = '';
-  startDate: string = '';
-  endDate: string = '';
   async created() {
     await this.$store.dispatch('loading');
     try {
@@ -173,8 +167,6 @@ export default class CreateTournamentView extends Vue {
       this.failed = true;
       return;
     }
-    this.tourn.availableDate = this.format(this.startDate);
-    this.tourn.conclusionDate = this.format(this.endDate);
     try {
       let created = await RemoteServices.createTournament(this.tourn);
       this.show(created);
@@ -188,17 +180,20 @@ export default class CreateTournamentView extends Vue {
     if (
       this.tourn.topics.length <= 0 ||
       !this.tourn.title ||
-      !this.startDate ||
-      !this.endDate
+      !this.tourn.availableDate ||
+      !this.tourn.conclusionDate
     ) {
       this.errorMsg = 'Missing required fields';
       return false;
     }
-    if (Date.parse(this.startDate) < Date.now()) {
+    if (Date.parse(this.tourn.availableDate) < Date.now()) {
       this.errorMsg = 'Start Date must be in the future';
       return false;
     }
-    if (Date.parse(this.startDate) > Date.parse(this.endDate)) {
+    if (
+      Date.parse(this.tourn.availableDate) >
+      Date.parse(this.tourn.conclusionDate)
+    ) {
       this.errorMsg = 'Conclusion Date must be after Start Date';
       return false;
     }
@@ -220,14 +215,6 @@ export default class CreateTournamentView extends Vue {
       created.conclusionDate;
   }
 
-  format(date: string | undefined): string {
-    if (date === undefined) return '';
-    return new Date(date)
-      .toISOString()
-      .replace('T', ' ')
-      .substr(0, 16);
-  }
-
   clear() {
     this.tourn.title = '';
     this.tourn.topics = [];
@@ -235,8 +222,6 @@ export default class CreateTournamentView extends Vue {
     this.tourn.scramble = false;
     this.tourn.availableDate = '';
     this.tourn.conclusionDate = '';
-    this.startDate = '';
-    this.endDate = '';
   }
 }
 </script>

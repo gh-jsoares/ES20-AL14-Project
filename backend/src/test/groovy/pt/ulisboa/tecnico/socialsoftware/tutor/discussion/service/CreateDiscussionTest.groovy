@@ -64,6 +64,7 @@ class CreateDiscussionTest extends Specification {
     public static final String COURSE_NAME = "course_test"
     public static final String COURSE_ACRONYM = "acronym_test"
     public static final String COURSE_ACADEMIC_TERM = "academic_term_test"
+    public static final String QUESTION_TITLE = "question_title_test"
 
     Question question
     User student
@@ -87,6 +88,7 @@ class CreateDiscussionTest extends Specification {
         question = new Question()
         question.setKey(1)
         question.setCourse(course)
+        question.setTitle(QUESTION_TITLE)
 
         student = new User('student', STUDENT_NAME, 1, User.Role.STUDENT)
         student.getCourseExecutions().add(courseExecution)
@@ -95,7 +97,7 @@ class CreateDiscussionTest extends Specification {
         quiz = new Quiz()
         quiz.setKey(1)
         quiz.setCourseExecution(courseExecution)
-        quiz.setType(Quiz.QuizType.GENERATED)
+        quiz.setType(Quiz.QuizType.GENERATED.toString())
         courseExecution.addQuiz(quiz)
         quizQuestion = new QuizQuestion(quiz, question, 0)
         quizAnswer = new QuizAnswer(student, quiz)
@@ -250,7 +252,7 @@ class CreateDiscussionTest extends Specification {
 
         then: "discussion question not answered exception"
         def exception = thrown(TutorException)
-        exception.errorMessage == ErrorMessage.USER_NOT_STUDENT
+        exception.errorMessage == ErrorMessage.USER_IS_NOT_STUDENT
     }
 
     @TestConfiguration

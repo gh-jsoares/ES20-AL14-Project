@@ -1,5 +1,6 @@
 package pt.ulisboa.tecnico.socialsoftware.tutor.tournament;
 
+import pt.ulisboa.tecnico.socialsoftware.tutor.config.DateHandler;
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecution;
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage;
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException;
@@ -74,19 +75,15 @@ public class Tournament {
         setNumberOfQuestions(tournamentDto.getNumberOfQuestions());
         setState(tournamentDto.getState());
         setScramble(tournamentDto.isScramble());
-        setCreationDate(tournamentDto.getCreationDateDate());
-        setAvailableDate(tournamentDto.getAvailableDateDate());
-        setConclusionDate(tournamentDto.getConclusionDateDate());
+        setCreationDate(DateHandler.toLocalDateTime(tournamentDto.getCreationDate()));
+        setAvailableDate(DateHandler.toLocalDateTime(tournamentDto.getAvailableDate()));
+        setConclusionDate(DateHandler.toLocalDateTime(tournamentDto.getConclusionDate()));
         setSeries(tournamentDto.getSeries());
         setVersion(tournamentDto.getVersion());
     }
 
     public Integer getId() {
         return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
     }
 
     public State getState() {

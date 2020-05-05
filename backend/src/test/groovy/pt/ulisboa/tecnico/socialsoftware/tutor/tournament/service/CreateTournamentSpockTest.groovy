@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
+import pt.ulisboa.tecnico.socialsoftware.tutor.config.DateHandler
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.Course
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecution
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecutionRepository
@@ -21,9 +22,6 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.user.User
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.UserRepository
 import spock.lang.Specification
 import spock.lang.Unroll
-
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 
 @DataJpaTest
@@ -59,11 +57,9 @@ class CreateTournamentSpockTest extends Specification{
     def course
     def courseExecution
     def days = [:]
-    def formatter
     def topic
 
     def setup() {
-        formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
 
         // create course
         course = new Course(COURSE_NAME, Course.Type.TECNICO)
@@ -81,10 +77,10 @@ class CreateTournamentSpockTest extends Specification{
         topicRepository.save(topic)
 
         // create dates in different days
-        days["-2"] = (LocalDateTime.now().minusDays(2).format(formatter))
-        days["-1"] = (LocalDateTime.now().minusDays(1).format(formatter))
-        days["+1"] = (LocalDateTime.now().plusDays(1).format(formatter))
-        days["+2"] = (LocalDateTime.now().plusDays(2).format(formatter))
+        days["-2"] = (DateHandler.toISOString(DateHandler.now().minusDays(2)))
+        days["-1"] = (DateHandler.toISOString(DateHandler.now().minusDays(1)))
+        days["+1"] = (DateHandler.toISOString(DateHandler.now().plusDays(1)))
+        days["+2"] = (DateHandler.toISOString(DateHandler.now().plusDays(2)))
 
     }
 
@@ -93,6 +89,8 @@ class CreateTournamentSpockTest extends Specification{
         def tournDto = createTournamentDto(TOURN_TITLE, QUEST_NUM, days["+1"], days["+2"])
         and: "a student as creator"
         def userId = createUser(User.Role.STUDENT)
+        and: "current date"
+        def currentDate = DateHandler.now()
 
         when: "service call to create tournament"
         tournService.createTournament(courseExecution.getId(), tournDto, userId)
@@ -105,9 +103,10 @@ class CreateTournamentSpockTest extends Specification{
         result.getId() != null
         result.isScramble()
         result.getTitle() == TOURN_TITLE
-        result.getCreationDate().format(formatter) == LocalDateTime.now().format(formatter)
-        result.getAvailableDate().format(formatter) == days["+1"]
-        result.getConclusionDate().format(formatter) == days["+2"]
+        currentDate.isBefore(result.getCreationDate())
+        result.getCreationDate().isBefore(DateHandler.now())
+        DateHandler.toISOString(result.getAvailableDate()) == days["+1"]
+        DateHandler.toISOString(result.getConclusionDate()) == days["+2"]
         result.getState() == Tournament.State.ENROLL
         result.getSeries() == 1
         result.getVersion() == VERSION
@@ -162,9 +161,15 @@ class CreateTournamentSpockTest extends Specification{
     }
 
     def "create a tournament invalid topic"() {
-        given: "tournament with invalid topic"
+        given: "a tournamentDto"
         def tournDto = createTournamentDto(TOURN_TITLE, QUEST_NUM, days["+1"], days["+2"])
-        tournDto.getTopics().get(0).setId(-1)
+
+        and: "a topic with invalid id (=null)"
+        def invalidTopic = new TopicDto()
+        invalidTopic.setName("Invalid Topic")
+        invalidTopic.setNumberOfQuestions(10)
+        tournDto.addTopic(invalidTopic)
+
         and: "a student as creator"
         def userId = createUser(User.Role.STUDENT)
 
