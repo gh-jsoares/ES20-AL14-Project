@@ -89,7 +89,7 @@ public class DiscussionController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/discussions/newQuestion/{discussionId}")
+    @PostMapping("/discussions/{discussionId}/message")
     @PreAuthorize("hasRole('ROLE_STUDENT') and hasPermission(#discussionId, 'DISCUSSION.ACCESS')")
     public DiscussionDto studentMakesNewQuestion(Principal principal, @PathVariable Integer discussionId, @Valid @RequestBody MessageDto messageDto) {
         User user = (User) ((Authentication) principal).getPrincipal();
