@@ -194,6 +194,7 @@ public class DiscussionService {
         }
 
         return question.getDiscussions().stream()
+                .filter(Discussion::isVisibleToOtherStudents)
                 .map(DiscussionDto::new)
                 .collect(Collectors.toList());
     }

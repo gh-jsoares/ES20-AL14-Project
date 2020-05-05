@@ -118,12 +118,12 @@ class StudentSeesOtherDiscussionsTest extends Specification {
         message.setMessage(MESSAGE)
         message.setUserName(STUDENT_NAME)
         messages.add(message)
-        discussionDto.setMessagesDto(messages)
+        discussionDto.setMessages(messages)
 
         createBasicDiscussion(student,question, discussionDto)
     }
 
-    def "student wants to see questions discussions (1) after he answers question"() {
+    def "student wants to see questions discussions (1 public discussion) after he answers question"() {
         given: "a student"
         User another_student = new User('another_student', ANOTHER_STUDENT_NAME, 3, User.Role.STUDENT)
         another_student.getCourseExecutions().add(courseExecution)
@@ -134,8 +134,8 @@ class StudentSeesOtherDiscussionsTest extends Specification {
         quizAnswer = new QuizAnswer(another_student, quiz)
         questionAnswer = new QuestionAnswer(quizAnswer, quizQuestion,  10, null,  0)
 
-        and: "a discussion related to this question"
-        discussion
+        and: "a public discussion related to this question"
+        discussion.setVisibleToOtherStudents(true)
 
         when: "student wants to see question discussions"
         def result = discussionService.getDiscussionsQuestion(another_student.getId(), question.getId())
