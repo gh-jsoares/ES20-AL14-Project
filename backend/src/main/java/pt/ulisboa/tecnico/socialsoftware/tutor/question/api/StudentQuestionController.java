@@ -89,8 +89,8 @@ public class StudentQuestionController {
 
     @PutMapping("/questions/student/all/{studentQuestionId}/approve")
     @PreAuthorize("hasRole('ROLE_TEACHER') and hasPermission(#studentQuestionId, 'STUDENTQUESTION.ACCESS')")
-    public StudentQuestionDto studentQuestionApprove(Principal principal, @PathVariable Integer studentQuestionId) {
-        return this.studentQuestionService.approveStudentQuestion(getAuthUser(principal).getId(), studentQuestionId);
+    public StudentQuestionDto studentQuestionApprove(Principal principal, @PathVariable Integer studentQuestionId, @Valid @RequestBody(required = false) StudentQuestionDto studentQuestion) {
+        return this.studentQuestionService.approveStudentQuestion(getAuthUser(principal).getId(), studentQuestionId, studentQuestion);
     }
 
     @PutMapping("/questions/student/all/{studentQuestionId}/reject")

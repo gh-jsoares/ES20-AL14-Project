@@ -160,6 +160,9 @@ public class StudentQuestionService {
             backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public StudentQuestionDto approveStudentQuestion(int userId, int studentQuestionId, StudentQuestionDto studentQuestionDto) {
+        if (studentQuestionDto == null)
+            return approveStudentQuestion(userId, studentQuestionId);
+
         User user = getUserIfExists(userId);
         StudentQuestion studentQuestion = getStudentQuestionIfExists(studentQuestionId);
 
