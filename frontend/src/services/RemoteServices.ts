@@ -16,6 +16,7 @@ import { QuizAnswers } from '@/models/management/QuizAnswers';
 import { Discussion } from '@/models/management/Discussion';
 import StudentQuestion from '@/models/management/StudentQuestion';
 import { Tournament } from '@/models/management/Tournament';
+import Message from '@/models/management/Message';
 
 const httpClient = axios.create();
 httpClient.defaults.timeout = 10000;
@@ -703,35 +704,27 @@ export default class RemoteServices {
       });
   }
 
-  static async answerDiscussion(discussion: Discussion): Promise<Discussion> {
-    if (discussion.id) {
-      return httpClient
-        .post(`/discussions/${discussion.id}/`, discussion)
-        .then(response => {
-          return new Discussion(response.data);
-        })
-        .catch(async error => {
-          throw Error(await this.errorMessage(error));
-        });
-    } else {
-      return httpClient
-        .post(`/questions/${discussion.question.id}/discussions/`, discussion)
-        .then(response => {
-          return new Discussion(response.data);
-        })
-        .catch(async error => {
-          throw Error(await this.errorMessage(error));
-        });
-    }
+  static async answerDiscussion(
+    id: number,
+    message: Message
+  ): Promise<Discussion> {
+    return httpClient
+      .post(`/discussions/${id}/`, message)
+      .then(response => {
+        return new Discussion(response.data);
+      })
+      .catch(async error => {
+        throw Error(await this.errorMessage(error));
+      });
   }
 
   static async openDiscussion(discussionId: number) {
     if (discussionId) {
       return httpClient
-          .post(`/discussions/${discussionId}/public`)
-          .catch(async error => {
-            throw Error(await this.errorMessage(error));
-          });
+        .post(`/discussions/${discussionId}/public`)
+        .catch(async error => {
+          throw Error(await this.errorMessage(error));
+        });
     }
   }
 

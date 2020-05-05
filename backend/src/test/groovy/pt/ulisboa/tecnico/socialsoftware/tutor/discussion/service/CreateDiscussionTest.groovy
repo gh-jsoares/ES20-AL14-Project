@@ -115,7 +115,7 @@ class CreateDiscussionTest extends Specification {
         def message = new MessageDto()
         message.setMessage(MESSAGE)
         messages.add(message)
-        discussionDto.setMessagesDto(messages)
+        discussionDto.setMessages(messages)
         discussionDto.setId(questionAnswer.getId())
 
         when: "create discussion in the repository"
@@ -159,7 +159,7 @@ class CreateDiscussionTest extends Specification {
         def message = new MessageDto()
         message.setMessage(MESSAGE)
         messages.add(message)
-        discussionDto.setMessagesDto(messages)
+        discussionDto.setMessages(messages)
         discussionDto.setId(questionAnswer.getId())
 
         when: "create another discussion with the same student and question"
@@ -178,7 +178,7 @@ class CreateDiscussionTest extends Specification {
         def message = new MessageDto()
         message.setMessage(msg)
         messages.add(message)
-        discussionDto.setMessagesDto(messages)
+        discussionDto.setMessages(messages)
         discussionDto.setId(questionAnswer.getId())
 
         when: "create the discussion"
@@ -238,7 +238,7 @@ class CreateDiscussionTest extends Specification {
         def message = new MessageDto()
         message.setMessage(MESSAGE)
         messages.add(message)
-        discussionDto.setMessagesDto(messages)
+        discussionDto.setMessages(messages)
         discussionDto.setId(questionAnswer.getId())
         and: "the definition of the invalid user"
         User invalidStudent = new User('student2', "invalid student", 2, User.Role.STUDENT)
@@ -261,7 +261,7 @@ class CreateDiscussionTest extends Specification {
         def message = new MessageDto()
         message.setMessage(MESSAGE)
         messages.add(message)
-        discussionDto.setMessagesDto(messages)
+        discussionDto.setMessages(messages)
         discussionDto.setId(questionAnswer.getId())
         and: "the definition of the invalid user"
         User invalidUser = new User('user2', "invalid student", 2, User.Role.TEACHER)

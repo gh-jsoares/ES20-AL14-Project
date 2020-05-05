@@ -17,9 +17,6 @@
         <v-container grid-list-md fluid>
           <v-layout column wrap>
             <v-flex xs24 sm12 md8>
-              <p><b>Student Name:</b> {{ editDiscussion.studentName }}</p>
-            </v-flex>
-            <v-flex xs24 sm12 md8>
               <p><b>Question:</b> {{ editDiscussion.question.content }}</p>
             </v-flex>
             <v-flex xs24 sm12 md8>
@@ -51,22 +48,36 @@
                 </v-list-item>
               </v-list>
             </v-flex>
+            <v-list-item
+              v-for="item in editDiscussion.messages"
+              :key="item.sequence"
+            >
+              <v-flex
+                v-if="item.userName === $store.getters.getUser.username"
+                xs24
+                sm12
+                md8
+              >
+                <p><b>Your Answer:</b> {{ item.message }}</p>
+              </v-flex>
+              <v-flex v-else xs24 sm12 md8>
+                <p>
+                  <b> {{ item.userName }} Answer:</b> {{ item.message }}
+                </p>
+              </v-flex>
+            </v-list-item>
             <v-flex xs24 sm12 md8>
-              <p>
-                <b>Student Question:</b> {{ editDiscussion.messageFromStudent }}
+              <p v-if="message.message">
+                <b>Your answer:</b> {{ message.message }}
               </p>
-            </v-flex>
-            <v-flex xs24 sm12 md8>
-              <p v-if="editDiscussion.teacherAnswer">
-                <b>Your answer:</b> {{ editDiscussion.teacherAnswer }}
-              </p>
-              <v-text-field v-else
-                v-model="editDiscussion.teacherAnswer"
+              <v-text-field
+                v-else
+                v-model="message.message"
                 label="Your answer"
                 data-cy="teacherAnswer"
               />
             </v-flex>
-            <v-flex xs24 sm12 md8 v-if="editDiscussion.teacherAnswer">
+            <v-flex xs24 sm12 md8 v-if="message.message">
               <p v-if="editDiscussion.visibleToOtherStudents === true">
                 <b>Discussion status: </b> Visible to other students
               </p>
@@ -86,14 +97,19 @@
           data-cy="cancelButton"
           >Cancel</v-btn
         >
-        <v-btn v-if="editDiscussion.teacherAnswer === null"
+        <v-btn
+          v-if="message.message === null"
           color="blue darken-1"
           @click="answerDiscussion"
           data-cy="sendButton"
         >
           Send Answer</v-btn
         >
-        <v-btn v-if="editDiscussion.visibleToOtherStudents === false && editDiscussion.teacherAnswer"
+        <v-btn
+          v-if="
+            editDiscussion.visibleToOtherStudents === false &&
+              !editDiscussion.needsAnswer
+          "
           color="blue darken-1"
           @click="openDiscussion"
           data-cy="openDiscussionButton"
@@ -109,12 +125,14 @@
 import { Component, Model, Prop, Vue } from 'vue-property-decorator';
 import RemoteServices from '@/services/RemoteServices';
 import { Discussion } from '@/models/management/Discussion';
+import Message from '@/models/management/Message';
 
 @Component
 export default class ChangeDiscussionDialog extends Vue {
   @Model('dialog', Boolean) dialog!: boolean;
   @Prop({ type: Discussion, required: true }) readonly discussion!: Discussion;
 
+  message!: Message;
   editDiscussion!: Discussion;
   isExpanded: boolean = false;
   headers: Object = [
@@ -134,10 +152,11 @@ export default class ChangeDiscussionDialog extends Vue {
 
   created() {
     this.editDiscussion = new Discussion(this.discussion);
+    this.message = new Message();
   }
 
   async answerDiscussion() {
-    if (this.editDiscussion && !this.editDiscussion.teacherAnswer) {
+    if (this.editDiscussion && !this.message.message) {
       await this.$store.dispatch(
         'error',
         'You need to answer the question from the student.'
@@ -147,9 +166,9 @@ export default class ChangeDiscussionDialog extends Vue {
 
     if (this.editDiscussion) {
       try {
-        this.editDiscussion.teacherName = this.$store.getters.getUser.username;
         const result = await RemoteServices.answerDiscussion(
-          this.editDiscussion
+          this.editDiscussion.id,
+          this.message
         );
         this.$emit('answer-discussion', result);
       } catch (error) {

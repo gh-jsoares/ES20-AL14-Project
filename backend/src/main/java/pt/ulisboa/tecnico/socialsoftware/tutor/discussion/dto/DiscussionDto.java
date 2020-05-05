@@ -5,6 +5,7 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.domain.Message;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.QuestionDto;
 
 import java.io.Serializable;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -16,6 +17,8 @@ public class DiscussionDto implements Serializable {
 
     private boolean visibleToOtherStudents;
 
+    private boolean needsAnswer;
+
     private List<MessageDto> messages;
 
     public DiscussionDto() {}
@@ -23,6 +26,7 @@ public class DiscussionDto implements Serializable {
     public DiscussionDto(Discussion discussion) {
         setId(discussion.getId());
         setVisibleToOtherStudents(discussion.isVisibleToOtherStudents());
+        setNeedsAnswer(discussion.needsAnswer());
         setQuestion(new QuestionDto(discussion.getQuestion()));
         setMessagesWithDomain(discussion.getMessages());
     }
@@ -45,6 +49,7 @@ public class DiscussionDto implements Serializable {
 
     public void setMessagesWithDomain(List<Message> messages) {
         this.messages = messages.stream()
+            .sorted(Comparator.comparingInt(Message::getCounter))
             .map(MessageDto::new)
             .collect(Collectors.toList());
     }
@@ -53,7 +58,11 @@ public class DiscussionDto implements Serializable {
 
     public void setVisibleToOtherStudents(boolean visibleToOtherStudents) { this.visibleToOtherStudents = visibleToOtherStudents; }
 
-    public void setMessagesDto(List<MessageDto> messages) {
-        this.messages = messages;
+    public boolean isNeedsAnswer() {
+        return needsAnswer;
+    }
+
+    public void setNeedsAnswer(boolean needsAnswer) {
+        this.needsAnswer = needsAnswer;
     }
 }
