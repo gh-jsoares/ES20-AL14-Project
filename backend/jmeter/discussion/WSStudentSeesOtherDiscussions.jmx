@@ -78,9 +78,9 @@ update users set enrolled_courses_acronyms=&apos;DemoCourse&apos; where username
 insert into quiz_answers values (100000,&apos;1000-01-01 00:00:00&apos;, false, 5370, 676, false);
 insert into quiz_questions values (100000, 4, 1800, 5370);
 insert into question_answers values (100000, 100000, 7663, 100000, 100000);
-insert into discussions values (1, false, false, 1800, 676);
-insert into messages values (1, &apos;student_question&apos;, 1, 676);
-insert into messages values (2, &apos;teacher_answer&apos;, 1, 677);</stringProp>
+insert into discussions values (1, true, false, 1800, 676);
+insert into messages values (1, 1, &apos;student_question&apos;, 1, 676);
+insert into messages values (2, 2, &apos;teacher_answer&apos;, 1, 677);</stringProp>
           <stringProp name="queryArguments"></stringProp>
           <stringProp name="queryArgumentsTypes"></stringProp>
           <stringProp name="variableNames"></stringProp>
@@ -222,6 +222,15 @@ insert into messages values (2, &apos;teacher_answer&apos;, 1, 677);</stringProp
             <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="Assert message from student" enabled="true">
               <stringProp name="JSON_PATH">$[0].messages[0]</stringProp>
               <stringProp name="EXPECTED_VALUE">{&quot;message&quot;:&quot;student_question&quot;,&quot;userName&quot;:&quot;Demo-Student&quot;}</stringProp>
+              <boolProp name="JSONVALIDATION">true</boolProp>
+              <boolProp name="EXPECT_NULL">false</boolProp>
+              <boolProp name="INVERT">false</boolProp>
+              <boolProp name="ISREGEX">false</boolProp>
+            </JSONPathAssertion>
+            <hashTree/>
+            <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="Assert message from teacher" enabled="true">
+              <stringProp name="JSON_PATH">$[0].messages[1]</stringProp>
+              <stringProp name="EXPECTED_VALUE">{&quot;message&quot;:&quot;teacher_answer&quot;,&quot;userName&quot;:&quot;Demo-Teacher&quot;}</stringProp>
               <boolProp name="JSONVALIDATION">true</boolProp>
               <boolProp name="EXPECT_NULL">false</boolProp>
               <boolProp name="INVERT">false</boolProp>

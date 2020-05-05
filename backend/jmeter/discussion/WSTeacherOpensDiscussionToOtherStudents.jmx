@@ -79,8 +79,8 @@ insert into quiz_answers values (100000,&apos;1000-01-01 00:00:00&apos;, false, 
 insert into quiz_questions values (100000, 4, 1800, 5370);
 insert into question_answers values (100000, 100000, 7663, 100000, 100000);
 insert into discussions values (1, false, false, 1800, 676);
-insert into messages values (1, &apos;student_question&apos;, 1, 676);
-insert into messages values (2, &apos;teacher_answer&apos;, 1, 677);</stringProp>
+insert into messages values (1, 1, &apos;student_question&apos;, 1, 676);
+insert into messages values (2, 2, &apos;teacher_answer&apos;, 1, 677);</stringProp>
           <stringProp name="queryArguments"></stringProp>
           <stringProp name="queryArgumentsTypes"></stringProp>
           <stringProp name="variableNames"></stringProp>
