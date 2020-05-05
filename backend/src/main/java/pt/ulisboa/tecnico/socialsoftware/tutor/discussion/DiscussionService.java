@@ -210,7 +210,6 @@ public class DiscussionService {
                 .map(QuestionAnswer::getQuizAnswer)
                 .map(QuizAnswer::getUser)
                 .anyMatch(userWhoAnsweredQuestion -> userWhoAnsweredQuestion.getId().equals(student.getId()));
-
     }
 
     @Retryable(
@@ -221,7 +220,7 @@ public class DiscussionService {
         Discussion discussion = discussionRepository.findById(discussionId).orElseThrow(() -> new TutorException(ErrorMessage.DISCUSSION_NOT_FOUND, discussionId));
         User student = getStudentById(userId);
 
-        discussion.updateStudentAnswer(student, messageDto);
+        discussion.updateStudentQuestion(student, messageDto);
         return new DiscussionDto(discussion);
     }
 }

@@ -114,7 +114,6 @@ class StudentMakesAdditionalRequestTest extends Specification {
 
         teacher = new User('teacher', TEACHER_NAME, 2, User.Role.TEACHER)
         teacher.getCourseExecutions().add(courseExecution)
-        courseExecution.addUser(student)
         userRepository.save(teacher)
 
         courseExecution.addUser(teacher)
@@ -124,20 +123,20 @@ class StudentMakesAdditionalRequestTest extends Specification {
         discussionRepository.save(discussion)
     }
 
-    def "student answers new question"() {
-        given: "a messageDto with an answer from a teacher from the same course execution"
+    def "student sends new question"() {
+        given: "a messageDto with a question from a student"
         def messageDto = messageDtoCreation(STUDENT_NAME, MESSAGE)
 
-        when: "adding the answer from the teacher to the discussion"
+        when: "adding the question from the student to the discussion"
         discussionService.studentMakesNewQuestion(student.getId(), discussion.getId(), messageDto)
 
         then: "the data is correct"
         discussionRepository.count() == 1L
         def result = discussionRepository.findAll().get(0)
         result.getMessages().size() == 3
-        result.getMessages().get(2).getMessage() == TEACHER_ANSWER
-        result.getMessages().get(2).getUser() == teacher
-        result.getMessages().get(2).getUser().getRole() == User.Role.TEACHER
+        result.getMessages().get(2).getMessage() == MESSAGE
+        result.getMessages().get(2).getUser() == student
+        result.getMessages().get(2).getUser().getRole() == User.Role.STUDENT
     }
 
     @Unroll
@@ -165,7 +164,7 @@ class StudentMakesAdditionalRequestTest extends Specification {
 
         then: "an exception is thrown"
         def exception = thrown(TutorException)
-        exception.errorMessage == ErrorMessage.USER_IS_NOT_STUDENT
+        exception.errorMessage == ErrorMessage.USER_NOT_FOUND
     }
 
     def "new question with invalid user type"() {
@@ -183,10 +182,10 @@ class StudentMakesAdditionalRequestTest extends Specification {
     def "new question with invalid student"() {
         given: "the creation of the message"
         def messageDto = messageDtoCreation(STUDENT_NAME, MESSAGE)
-        User student2 = new User('student2', STUDENT_NAME + "2", 2, User.Role.STUDENT)
-        student.getCourseExecutions().add(courseExecution)
-        courseExecution.addUser(student)
-        userRepository.save(student)
+        User student2 = new User('student2', "2", 3, User.Role.STUDENT)
+        student2.getCourseExecutions().add(courseExecution)
+        courseExecution.addUser(student2)
+        userRepository.save(student2)
 
         when:
         discussionService.studentMakesNewQuestion(student2.getId(), discussion.getId(), messageDto)

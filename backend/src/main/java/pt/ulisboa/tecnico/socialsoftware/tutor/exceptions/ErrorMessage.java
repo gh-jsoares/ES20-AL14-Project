@@ -82,7 +82,7 @@ public enum ErrorMessage {
     DISCUSSION_MESSAGE_EMPTY("The message is an empty or blank string."),
     DISCUSSION_NOT_FOUND("Discussion not found with id %d"),
     DISCUSSION_QUESTION_NOT_ANSWERED("Student with id %d tried to create a discussion about a question he didn't answer"),
-    INVALID_STUDENT("Student with id: %d doesnt belont to this discussion"),
+    INVALID_STUDENT("Student with id: %d doesn't belong to this discussion"),
 
     TOURNAMENT_NOT_FOUND("Tournament not found with id %d"),
     TOURNAMENT_NOT_CONSISTENT("Field %s of tournament is not consistent"),

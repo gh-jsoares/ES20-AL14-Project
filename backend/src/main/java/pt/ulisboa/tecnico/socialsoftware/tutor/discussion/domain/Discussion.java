@@ -135,4 +135,11 @@ public class Discussion {
         else
             setVisibleToOtherStudents(true);
     }
+
+    public void updateStudentQuestion(User student, MessageDto messageDto) {
+        if (!student.getId().equals(this.student.getId()))
+            throw new TutorException(ErrorMessage.INVALID_STUDENT, student.getId());
+        new Message(this, student, messageDto);
+        setNeedsAnswer(true);
+    }
 }
