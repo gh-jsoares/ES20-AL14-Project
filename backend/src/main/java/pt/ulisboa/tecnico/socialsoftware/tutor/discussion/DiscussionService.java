@@ -212,4 +212,16 @@ public class DiscussionService {
                 .anyMatch(userWhoAnsweredQuestion -> userWhoAnsweredQuestion.getId().equals(student.getId()));
 
     }
+
+    @Retryable(
+            value = { SQLException.class },
+            backoff = @Backoff(delay = 5000))
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public DiscussionDto studentMakesNewQuestion(Integer userId, Integer discussionId, MessageDto messageDto) {
+        Discussion discussion = discussionRepository.findById(discussionId).orElseThrow(() -> new TutorException(ErrorMessage.DISCUSSION_NOT_FOUND, discussionId));
+        User student = getStudentById(userId);
+
+        discussion.updateStudentAnswer(student, messageDto);
+        return new DiscussionDto(discussion);
+    }
 }
