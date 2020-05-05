@@ -1,5 +1,5 @@
 export default class Message {
-  message!: string;
+  message: string | null = null;
   userName: string | null = null;
 
   constructor(jsonObj?: Message) {

@@ -16,6 +16,9 @@ public class Message {
     private Integer id;
 
     @Column(nullable = false)
+    private Integer counter;
+
+    @Column(nullable = false)
     private String message;
 
     @ManyToOne
@@ -33,8 +36,25 @@ public class Message {
         setMessage(messageDto.getMessage());
         setDiscussion(discussion);
         setUser(user);
+        setCounter(discussion.getMessages().size());
         discussion.addMessage(this);
         user.addMessage(this);
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public Integer getCounter() {
+        return counter;
+    }
+
+    public void setCounter(Integer counter) {
+        this.counter = counter;
     }
 
     public String getMessage() {

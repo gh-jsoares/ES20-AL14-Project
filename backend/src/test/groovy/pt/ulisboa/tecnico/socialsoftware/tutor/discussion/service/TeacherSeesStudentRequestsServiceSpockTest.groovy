@@ -105,7 +105,7 @@ class TeacherSeesStudentRequestsServiceSpockTest extends Specification {
         def message = new MessageDto()
         message.setMessage(MESSAGE)
         messages.add(message)
-        discussionDto.setMessagesDto(messages)
+        discussionDto.setMessages(messages)
 
         questionRepository.save(question)
         userRepository.save(student)

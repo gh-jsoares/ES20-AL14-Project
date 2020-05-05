@@ -17,8 +17,8 @@
           {{ discussion.question.title }}
         </div>
         <div class="col last-col">
-          <i v-if="discussion.teacherAnswer" class="fas fa-chevron-circle-right"></i>
-          <i v-else class="fas fa-exclamation"></i>
+          <i v-if="discussion.needsAnswer" class="fas fa-exclamation"></i>
+          <i v-else class="fas fa-chevron-circle-right"></i>
         </div>
       </li>
     </ul>
@@ -89,7 +89,8 @@ export default class DiscussionsView extends Vue {
 
   async onChangingDiscussion(discussion: Discussion) {
     if (this.currentDiscussion)
-      this.currentDiscussion.visibleToOtherStudents = discussion.visibleToOtherStudents;
+      this.currentDiscussion.visibleToOtherStudents =
+        discussion.visibleToOtherStudents;
     this.editDiscussionDialog = false;
     this.currentDiscussion = null;
   }
@@ -101,7 +102,10 @@ export default class DiscussionsView extends Vue {
 
   async onAnsweringDiscussion(discussion: Discussion) {
     if (this.currentDiscussion) {
-      this.currentDiscussion.teacherAnswer = discussion.teacherAnswer;
+      this.currentDiscussion.needsAnswer = discussion.needsAnswer;
+      this.currentDiscussion.visibleToOtherStudents =
+        discussion.visibleToOtherStudents;
+      this.currentDiscussion.messages = discussion.messages;
     }
     this.editDiscussionDialog = false;
     this.currentDiscussion = null;
@@ -112,7 +116,6 @@ export default class DiscussionsView extends Vue {
     this.editDiscussionDialog = true;
   }
 }
-
 </script>
 
 <style lang="scss" scoped>

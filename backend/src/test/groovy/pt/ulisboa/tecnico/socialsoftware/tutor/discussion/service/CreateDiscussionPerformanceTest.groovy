@@ -94,7 +94,7 @@ class CreateDiscussionPerformanceTest extends Specification {
             def message = new MessageDto()
             message.setMessage(MESSAGE)
             messages.add(message)
-            discussionDto.setMessagesDto(messages)
+            discussionDto.setMessages(messages)
             discussionService.createDiscussion(students[it].getId(), questions[it].getId(), discussionDto)
         })
         then:
