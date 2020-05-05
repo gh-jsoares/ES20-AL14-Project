@@ -49,6 +49,7 @@ public enum ErrorMessage {
     DUPLICATE_TOPIC("Duplicate topic: %s"),
     DUPLICATE_USER("Duplicate user: %s"),
     DUPLICATE_COURSE_EXECUTION("Duplicate course execution: %s"),
+    NO_PERMISSION_TO_SEE_QUESTION_DISCUSSIONS("You don't have permission to see discussions of this question"),
 
     USERS_IMPORT_ERROR("Error importing users: %s"),
     QUESTIONS_IMPORT_ERROR("Error importing questions: %s"),
