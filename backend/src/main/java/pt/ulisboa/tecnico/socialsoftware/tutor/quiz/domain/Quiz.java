@@ -345,4 +345,12 @@ public class Quiz implements DomainEntity {
         setType(QuizType.GENERATED.toString());
         setTitle("Generated Quiz");
     }
+
+    public Tournament getTournament() {
+        return tournament;
+    }
+
+    public void setTournament(Tournament tournament) {
+        this.tournament = tournament;
+    }
 }

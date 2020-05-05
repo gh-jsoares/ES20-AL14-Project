@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
+import pt.ulisboa.tecnico.socialsoftware.tutor.answer.domain.QuizAnswer
+import pt.ulisboa.tecnico.socialsoftware.tutor.answer.repository.QuizAnswerRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.config.DateHandler
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.Course
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecution
@@ -13,6 +15,8 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Topic
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.TopicRepository
+import pt.ulisboa.tecnico.socialsoftware.tutor.quiz.domain.Quiz
+import pt.ulisboa.tecnico.socialsoftware.tutor.quiz.repository.QuizRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.tournament.Tournament
 import pt.ulisboa.tecnico.socialsoftware.tutor.tournament.TournamentDto
 import pt.ulisboa.tecnico.socialsoftware.tutor.tournament.TournamentRepository
@@ -49,6 +53,12 @@ class GetOpenTournamentsSpockTest extends Specification{
 
     @Autowired
     TopicRepository topicRepository
+
+    @Autowired
+    QuizRepository quizRepository
+
+    @Autowired
+    QuizAnswerRepository quizAnswerRepository
 
     @Autowired
     TournamentService tournService
@@ -152,6 +162,78 @@ class GetOpenTournamentsSpockTest extends Specification{
         def exception = thrown(TutorException)
         exception.getErrorMessage() == ErrorMessage.COURSE_EXECUTION_NOT_FOUND
     }
+
+    @Unroll
+    def "check correct display of quiz answer: #isUserEnrolled | #tournamentState || #size | #shouldHaveQuizAnswer"() {
+        given: "a tournament"
+        def stack = []
+        createTournament(Tournament.State.ENROLL, stack)
+        def tournament = stack[0]
+        and: "an enrolled user"
+        enrollUserInTournament(tournament, isUserEnrolled)
+        and: "a quiz for the tournament"
+        def quiz = createTournamentQuiz(tournament)
+        and: "a quiz answer for the user"
+        def quizAnswer = new QuizAnswer(user,quiz)
+        quizAnswerRepository.save(quizAnswer)
+        user.addQuizAnswer(quizAnswer)
+        and: "the tournament state"
+        setTournamentState(tournament, tournamentState)
+
+        when:
+        def result = tournService.getOpenTournaments(courseExecution.getId(), user.getId())
+
+        then: "only one tournament returned"
+        result.size() == size
+        and: "the correct quiz answer is returned"
+        if (shouldHaveQuizAnswer)
+            result.get(0).getStatementQuiz().getId() == quizAnswer.getId()
+        else
+            !shouldHaveQuizAnswer
+
+        where:
+
+        isUserEnrolled          | tournamentState           || size | shouldHaveQuizAnswer
+        true                    | Tournament.State.ENROLL   || 1    | false
+        false                   | Tournament.State.ENROLL   || 1    | false
+        true                    | Tournament.State.ONGOING  || 1    | true
+        false                   | Tournament.State.ONGOING  || 1    | false
+        true                    | Tournament.State.CLOSED   || 0    | false
+        false                   | Tournament.State.CLOSED   || 0    | false
+    }
+
+    Quiz createTournamentQuiz(tournament){
+        def quiz = new Quiz()
+        quizRepository.save(quiz)
+        tournament.setQuiz(quiz)
+        quiz.setTournament(tournament)
+        return quiz
+    }
+
+    def enrollUserInTournament(tournament, isUserEnrolled){
+        if (isUserEnrolled) {
+            tournament.addEnrolledStudent(user)
+            user.addEnrolledTournament(tournament)
+        }
+    }
+
+    def setTournamentState(tournament, tournamentState){
+        switch (tournamentState) {
+            case Tournament.State.ONGOING:
+                tournament.setState(Tournament.State.ONGOING)
+                tournament.setAvailableDate(DateHandler.now())
+                break
+            case Tournament.State.CLOSED:
+                tournament.setCreationDate(DateHandler.now().minusHours(2))
+                tournament.setAvailableDate(DateHandler.now().minusHours(1))
+                tournament.setConclusionDate(DateHandler.now())
+                tournament.setState(Tournament.State.CLOSED)
+                break
+            default:
+                tournament.setState(Tournament.State.ENROLL)
+        }
+    }
+
 
 
     @TestConfiguration
