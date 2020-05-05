@@ -153,6 +153,7 @@ class TeacherSeesStudentRequestsServiceSpockTest extends Specification {
 
         and: "an answered discussion"
         def message = new Message()
+        message.setCounter(0)
         message.setUser(teacher)
         message.setMessage(TEACHER_ANSWER)
         discussion.addMessage(message)

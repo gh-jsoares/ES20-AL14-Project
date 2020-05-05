@@ -118,7 +118,7 @@ class StudentSeesOtherDiscussionsTest extends Specification {
         message.setMessage(MESSAGE)
         message.setUserName(STUDENT_NAME)
         messages.add(message)
-        discussionDto.setMessagesDto(messages)
+        discussionDto.setMessages(messages)
 
         createBasicDiscussion(student,question, discussionDto)
     }
