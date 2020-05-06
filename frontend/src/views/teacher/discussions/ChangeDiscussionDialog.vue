@@ -17,6 +17,9 @@
         <v-container grid-list-md fluid>
           <v-layout column wrap>
             <v-flex xs24 sm12 md8>
+              <p><b>Question Title:</b> {{ editDiscussion.question.title }}</p>
+            </v-flex>
+            <v-flex xs24 sm12 md8>
               <p><b>Question:</b> {{ editDiscussion.question.content }}</p>
             </v-flex>
             <v-flex xs24 sm12 md8>
@@ -30,6 +33,7 @@
                 <v-list-item
                   v-for="item in editDiscussion.question.options"
                   :key="item.sequence"
+                  class="mb-n4"
                 >
                   <v-list-item-icon>
                     <v-icon class="mr-n3" v-if="item.correct">
@@ -41,49 +45,69 @@
                   </v-list-item-icon>
 
                   <v-list-item-content>
-                    <v-list-item-title
+                    <v-flex
+                      style="opacity: 0.7"
+                      xs24
+                      sm12
+                      md8
                       v-text="item.content"
-                    ></v-list-item-title>
+                    ></v-flex>
                   </v-list-item-content>
                 </v-list-item>
               </v-list>
             </v-flex>
-            <v-list-item
-              v-for="item in editDiscussion.messages"
-              :key="item.sequence"
+            <p
+              class="ml-1"
+              v-if="editDiscussion.visibleToOtherStudents === true"
             >
-              <v-flex
-                v-if="item.userName === $store.getters.getUser.username"
-                xs24
-                sm12
-                md8
+              <b>Discussion status: </b> Visible to other students
+            </p>
+            <p class="ml-1" v-else>
+              <b>Discussion status: </b> Not visible to other students
+            </p>
+            <v-flex xs24 sm12 md8 class="mb-n3">
+              <p><b>Messages:</b></p>
+            </v-flex>
+            <v-container class="mt-n8">
+              <v-list-item-group
+                v-for="item in editDiscussion.messages"
+                :key="item.sequence"
               >
-                <p><b>Your Answer:</b> {{ item.message }}</p>
-              </v-flex>
-              <v-flex v-else xs24 sm12 md8>
-                <p>
-                  <b> {{ item.userName }} Answer:</b> {{ item.message }}
-                </p>
-              </v-flex>
-            </v-list-item>
+                <div
+                  style="width: 100%; display:inline-block"
+                  v-if="item.userName === $store.getters.getUser.username"
+                >
+                  <div style="float:right; width:90%">
+                    <div
+                      class="ma-3 pa-2 grey lighten-4 v-text-field--rounded"
+                      style="float:right"
+                    >
+                      <span style="overflow-wrap: break-word">
+                        {{ item.message }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div v-else style="width: 90%">
+                  <div
+                    style="display: inline-block"
+                    class="ma-3 pa-2 blue darken-2 white--text v-text-field--rounded"
+                  >
+                    <span>
+                      <b>{{ item.userName }}:</b> {{ item.message }}
+                    </span>
+                  </div>
+                </div>
+              </v-list-item-group>
+            </v-container>
             <v-flex xs24 sm12 md8>
-              <p v-if="message.message">
-                <b>Your answer:</b> {{ message.message }}
-              </p>
               <v-text-field
-                v-else
                 v-model="message.message"
+                counter="250"
+                maxlength="250"
                 label="Your answer"
                 data-cy="teacherAnswer"
               />
-            </v-flex>
-            <v-flex xs24 sm12 md8 v-if="message.message">
-              <p v-if="editDiscussion.visibleToOtherStudents === true">
-                <b>Discussion status: </b> Visible to other students
-              </p>
-              <p v-else>
-                <b>Discussion status: </b> Not visible to other students
-              </p>
             </v-flex>
           </v-layout>
         </v-container>
@@ -95,10 +119,9 @@
           color="blue darken-1"
           @click="$emit('close-dialog')"
           data-cy="cancelButton"
-          >Cancel</v-btn
+          >Close</v-btn
         >
         <v-btn
-          v-if="message.message === null"
           color="blue darken-1"
           @click="answerDiscussion"
           data-cy="sendButton"

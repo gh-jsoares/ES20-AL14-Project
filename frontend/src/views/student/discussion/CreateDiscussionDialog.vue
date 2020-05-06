@@ -51,6 +51,8 @@
             <v-flex xs24 sm12 md8>
               <v-text-field
                 v-model="message.message"
+                counter="250"
+                maxlength="250"
                 label="Your question"
                 data-cy="Your question"
               />

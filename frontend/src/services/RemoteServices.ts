@@ -718,6 +718,20 @@ export default class RemoteServices {
       });
   }
 
+  static async makeNewQuestion(
+    id: number,
+    message: Message
+  ): Promise<Discussion> {
+    return httpClient
+      .post(`/discussions/${id}/message`, message)
+      .then(response => {
+        return new Discussion(response.data);
+      })
+      .catch(async error => {
+        throw Error(await this.errorMessage(error));
+      });
+  }
+
   static async openDiscussion(discussionId: number) {
     if (discussionId) {
       return httpClient

@@ -26,6 +26,7 @@
       v-model="seeDiscussionDialog"
       :discussion="currentDiscussion"
       v-on:close-dialog="onCloseDialog"
+      v-on:send-question="madeNewQuestion"
     />
   </div>
 </template>
@@ -57,13 +58,24 @@ export default class DiscussionsView extends Vue {
     await this.$store.dispatch('clearLoading');
   }
 
+  async madeNewQuestion(discussion: Discussion) {
+    if (this.currentDiscussion) {
+      this.currentDiscussion.needsAnswer = discussion.needsAnswer;
+      this.currentDiscussion.visibleToOtherStudents =
+        discussion.visibleToOtherStudents;
+      this.currentDiscussion.messages = discussion.messages;
+    }
+    this.seeDiscussionDialog = false;
+    this.currentDiscussion = null;
+  }
+
   onCloseDialog() {
     this.seeDiscussionDialog = false;
     this.currentDiscussion = null;
   }
 
   async seeDiscussion(discussion: Discussion) {
-    this.currentDiscussion = new Discussion(discussion);
+    this.currentDiscussion = discussion;
     this.seeDiscussionDialog = true;
   }
 }
