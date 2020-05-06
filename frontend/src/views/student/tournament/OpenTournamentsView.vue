@@ -165,14 +165,13 @@
               Enroll
             </v-btn>
             <v-btn
-              v-else-if="
-                getStatus(tourn) === 'Started' && current.statementQuiz
-              "
+              v-else-if="getStatus(tourn) === 'Started'"
+              :disabled="!tourn.userEnrolled || tourn.statementQuiz.completed"
               width="90"
               color="primary"
               class="solveQuiz"
               @click="solveQuiz(tourn.statementQuiz)"
-              data-cy="solveQuiz"
+              data-cy="solveQuizBtn"
             >
               Solve
             </v-btn>

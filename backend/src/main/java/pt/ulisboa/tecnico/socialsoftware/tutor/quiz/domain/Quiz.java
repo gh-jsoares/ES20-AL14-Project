@@ -354,4 +354,8 @@ public class Quiz implements DomainEntity {
         setTitle("Generated Quiz");
     }
 
+    public boolean isTournament(){
+        return this.type == QuizType.TOURNAMENT;
+    }
+
 }

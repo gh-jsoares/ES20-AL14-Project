@@ -103,6 +103,24 @@ Cypress.Commands.add('enrollTournament', () => {
 });
 
 Cypress.Commands.add('checkTournamentEnroll', hasStarted => {
-  cy.get('[data-cy="enrollBtn"]').should('be.disabled');
-  if (!hasStarted) cy.get('[data-cy="numEnrolls"]').contains('1');
+  if (!hasStarted) {
+    cy.get('[data-cy="enrollBtn"]').should('be.disabled');
+    cy.get('[data-cy="numEnrolls"]').contains('1');
+  } else {
+    cy.get('[data-cy="enrollBtn"]').should('not.exist');
+  }
+});
+
+Cypress.Commands.add( 'startQuiz',  type => {
+  if (type === 'SUCCESS')
+    cy.get('[data-cy="solveQuizBtn"]').click();
+  else if (type == 'FAIL')
+    cy.get('[data-cy="solveQuizBtn"]').should('be.disabled');
+  else
+    cy.get('[data-cy="solveQuizBtn"]').should('not.exist');
+});
+
+Cypress.Commands.add('concludeQuiz', () => {
+  cy.get('[data-cy="endQuizBtn"]').click();
+  cy.get('[data-cy="concludeQuizBtn"]').click()
 });
