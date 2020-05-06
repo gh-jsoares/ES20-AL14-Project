@@ -6,6 +6,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.dto.DiscussionDto;
+import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.dto.DiscussionStatsDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.dto.MessageDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException;
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.User;
@@ -83,6 +84,18 @@ public class DiscussionController {
 
         discussionService.openDiscussionToOtherStudents(user.getId(), discussionId);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/discussions/stats")
+    @PreAuthorize("hasRole('ROLE_STUDENT')")
+    public DiscussionStatsDto getDiscussionsStats(Principal principal) {
+        User user = (User) ((Authentication) principal).getPrincipal();
+
+        if(user == null){
+            throw new TutorException(AUTHENTICATION_ERROR);
+        }
+
+        return discussionService.getDiscussionStats(user.getId());
     }
 
 }
