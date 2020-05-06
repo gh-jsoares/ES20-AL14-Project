@@ -159,7 +159,7 @@ public class TournamentService {
             }
             if (!tourn.getState().equals(Tournament.State.CLOSED) &&
                     (tourn.getConclusionDate().isBefore(now) ||
-                        tourn.getAvailableDate().isBefore(now) && tourn.getEnrolledStudents().size() <= 1)) {
+                            tourn.getAvailableDate().isBefore(now) && tourn.getEnrolledStudents().size() <= 1)) {
                 tourn.setState(Tournament.State.CLOSED);
             }
         });
