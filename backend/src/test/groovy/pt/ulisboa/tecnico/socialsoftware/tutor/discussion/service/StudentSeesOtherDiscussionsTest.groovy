@@ -6,6 +6,7 @@ import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
 import pt.ulisboa.tecnico.socialsoftware.tutor.answer.domain.QuestionAnswer
 import pt.ulisboa.tecnico.socialsoftware.tutor.answer.domain.QuizAnswer
+import pt.ulisboa.tecnico.socialsoftware.tutor.answer.repository.QuestionAnswerRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.Course
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseDto
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecution
@@ -51,6 +52,9 @@ class StudentSeesOtherDiscussionsTest extends Specification {
 
     @Autowired
     CourseExecutionRepository courseExecutionRepository
+
+    @Autowired
+    QuestionAnswerRepository questionAnswerRepository
 
     public static final Integer INVALID_ID = -1
     public static final String MESSAGE = "message"
@@ -102,7 +106,7 @@ class StudentSeesOtherDiscussionsTest extends Specification {
         quizQuestion = new QuizQuestion(quiz, question, 0)
         quizAnswer = new QuizAnswer(student, quiz)
         questionAnswer = new QuestionAnswer(quizAnswer, quizQuestion,  10, null,  0)
-
+        questionAnswerRepository.save(questionAnswer)
         questionRepository.save(question)
 
         teacher = new User('teacher', TEACHER_NAME, 2, User.Role.TEACHER)
@@ -133,12 +137,13 @@ class StudentSeesOtherDiscussionsTest extends Specification {
         and: "a quiz answer and question answer"
         quizAnswer = new QuizAnswer(another_student, quiz)
         questionAnswer = new QuestionAnswer(quizAnswer, quizQuestion,  10, null,  0)
+        questionAnswerRepository.save(questionAnswer)
 
         and: "a public discussion related to this question"
         discussion.setVisibleToOtherStudents(true)
 
         when: "student wants to see question discussions"
-        def result = discussionService.getDiscussionsQuestion(another_student.getId(), question.getId())
+        def result = discussionService.getDiscussionsQuestion(another_student.getId(), question.getId(), questionAnswer.getId())
 
         then:
         result.get(0).getMessages().get(1).getMessage() == TEACHER_ANSWER
@@ -158,11 +163,11 @@ class StudentSeesOtherDiscussionsTest extends Specification {
         discussion
 
         when: "student wants to see question discussions"
-        discussionService.getDiscussionsQuestion(another_student.getId(), question.getId())
+        discussionService.getDiscussionsQuestion(another_student.getId(), question.getId(), questionAnswer.getId())
 
         then: "an exception is thrown"
         def exception = thrown(TutorException)
-        exception.errorMessage == ErrorMessage.NO_PERMISSION_TO_SEE_QUESTION_DISCUSSIONS;
+        exception.errorMessage == ErrorMessage.DISCUSSION_QUESTION_NOT_ANSWERED;
     }
 
     def "non-student wants to see discussions of a question"() {
@@ -170,7 +175,7 @@ class StudentSeesOtherDiscussionsTest extends Specification {
         teacher
 
         when: "teacher wants to see question discussions"
-        discussionService.getDiscussionsQuestion(teacher.getId(), question.getId())
+        discussionService.getDiscussionsQuestion(teacher.getId(), question.getId(), questionAnswer.getId())
 
         then: "an exception is thrown"
         def exception = thrown(TutorException)
@@ -182,11 +187,23 @@ class StudentSeesOtherDiscussionsTest extends Specification {
         student
 
         when: "student wants to see discussions of a non existent question"
-        discussionService.getDiscussionsQuestion(student.getId(), INVALID_ID)
+        discussionService.getDiscussionsQuestion(student.getId(), INVALID_ID, questionAnswer.getId())
 
         then: "an exception is thrown"
         def exception = thrown(TutorException)
         exception.errorMessage == ErrorMessage.QUESTION_NOT_FOUND;
+    }
+
+    def "student wants to see question discussions with a non-existent question answer"() {
+        given: "a student"
+        student
+
+        when: "student wants to see discussions of a non existent question"
+        discussionService.getDiscussionsQuestion(student.getId(), question.getId(), INVALID_ID)
+
+        then: "an exception is thrown"
+        def exception = thrown(TutorException)
+        exception.errorMessage == ErrorMessage.QUESTION_ANSWER_NOT_FOUND;
     }
 
     def createBasicDiscussion(User student, Question question, DiscussionDto discussionDto) {

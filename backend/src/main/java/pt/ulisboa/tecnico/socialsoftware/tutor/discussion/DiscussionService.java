@@ -65,6 +65,7 @@ public class DiscussionService {
         QuestionAnswer questionAnswer = getQuestionAnswer(discussionDto.getId());
 
         checkDuplicates(student.getId(), questionId);
+        verifyIfAnsweredQuestion(questionAnswer, questionId, userId);
 
         Discussion discussion = new Discussion(questionAnswer, student, question, discussionDto);
         this.entityManager.persist(discussion);
@@ -181,17 +182,22 @@ public class DiscussionService {
                 .collect(Collectors.toList());
     }
 
+    private void verifyIfAnsweredQuestion(QuestionAnswer questionAnswer, Integer questionId, Integer studentId) {
+        if (!questionAnswer.getQuizQuestion().getQuestion().getId().equals(questionId) ||
+                !questionAnswer.getQuizAnswer().getUser().getId().equals(studentId))
+            throw new TutorException(ErrorMessage.DISCUSSION_QUESTION_NOT_ANSWERED, studentId);
+    }
+
     @Retryable(
             value = { SQLException.class },
             backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
-    public List<DiscussionDto> getDiscussionsQuestion(Integer studentId, Integer questionId) {
-        User student = getStudentById(studentId);
+    public List<DiscussionDto> getDiscussionsQuestion(Integer userId, Integer questionId, Integer questionAnswerId) {
+        getStudentById(userId);
         Question question = getQuestion(questionId);
+        QuestionAnswer questionAnswer = getQuestionAnswer(questionAnswerId);
 
-        if (!studentHasAnsweredQuestion(student, question)) {
-            throw new TutorException(ErrorMessage.NO_PERMISSION_TO_SEE_QUESTION_DISCUSSIONS);
-        }
+        verifyIfAnsweredQuestion(questionAnswer, questionId, userId);
 
         return question.getDiscussions().stream()
                 .filter(Discussion::isVisibleToOtherStudents)

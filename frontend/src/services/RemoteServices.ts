@@ -728,6 +728,21 @@ export default class RemoteServices {
     }
   }
 
+  static async getQuestionDiscussions(questionId: number, questionAnswerId:number) {
+    if (questionId && questionAnswerId) {
+      return httpClient
+          .get(`/questions/${questionId}/${questionAnswerId}/discussions/get`)
+          .then(response => {
+            return response.data.map((discussion: any) => {
+              return new Discussion(discussion);
+            });
+          })
+          .catch(async error => {
+            throw Error(await this.errorMessage(error));
+          });
+    }
+  }
+
   static async exportAll() {
     return httpClient
       .get('/admin/export', {
