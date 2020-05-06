@@ -2,6 +2,9 @@ import User from '@/models/user/User';
 import Topic from '@/models/management/Topic';
 import { Quiz } from '@/models/management/Quiz';
 import { ISOtoString } from '@/services/ConvertDateService';
+import { QuizAnswer } from '@/models/management/QuizAnswer';
+import StatementAnswer from '@/models/statement/StatementAnswer';
+import StatementQuiz from '@/models/statement/StatementQuiz';
 
 export class Tournament {
   id!: number;
@@ -19,7 +22,7 @@ export class Tournament {
 
   topics: Topic[] = [];
   creator: User | undefined;
-  quiz: Quiz | undefined;
+  statementQuiz: StatementQuiz | undefined;
 
   constructor(jsonObj?: Tournament) {
     if (jsonObj) {
@@ -37,7 +40,7 @@ export class Tournament {
       this.conclusionDate = ISOtoString(jsonObj.conclusionDate);
       this.userEnrolled = jsonObj.userEnrolled;
       this.creator = jsonObj.creator;
-      this.quiz = jsonObj.quiz;
+      this.statementQuiz = jsonObj.statementQuiz;
 
       if (jsonObj.topics) {
         this.topics = jsonObj.topics.map((topic: Topic) => new Topic(topic));

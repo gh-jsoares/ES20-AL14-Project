@@ -162,7 +162,7 @@ public class TournamentService {
 
     private QuizAnswer getUserQuizAnswer(int userId, Tournament tourn){
         return getUser(userId).getQuizAnswers().stream().filter(answer ->
-                    answer.getQuiz().getId().equals(tourn.getQuiz().getId()))
+                    answer.getQuiz().getId().equals(tourn.getQuiz().getId()) && !answer.isCompleted())
                     .findFirst()
                     .orElse(null);
     }
