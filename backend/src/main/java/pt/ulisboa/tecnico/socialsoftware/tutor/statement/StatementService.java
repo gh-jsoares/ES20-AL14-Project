@@ -31,9 +31,7 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.user.UserRepository;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.*;
@@ -72,12 +70,21 @@ public class StatementService {
     public StatementQuizDto generateStudentQuiz(int userId, int executionId, StatementCreationDto quizDetails) {
         User user = userRepository.findById(userId).orElseThrow(() -> new TutorException(USER_NOT_FOUND, userId));
 
+        CourseExecution courseExecution = courseExecutionRepository.findById(executionId).orElseThrow(() -> new TutorException(COURSE_EXECUTION_NOT_FOUND, executionId));
+
+        Quiz quiz = generateQuiz(courseExecution, user, quizDetails);
+
+        QuizAnswer quizAnswer = new QuizAnswer(user, quiz);
+        quizAnswerRepository.save(quizAnswer);
+
+        return new StatementQuizDto(quizAnswer);
+    }
+
+    public Quiz generateQuiz(CourseExecution courseExecution, User user, StatementCreationDto quizDetails) {
         Quiz quiz = new Quiz();
         quiz.setKey(quizService.getMaxQuizKey() + 1);
         quiz.setType(Quiz.QuizType.GENERATED.toString());
         quiz.setCreationDate(DateHandler.now());
-
-        CourseExecution courseExecution = courseExecutionRepository.findById(executionId).orElseThrow(() -> new TutorException(COURSE_EXECUTION_NOT_FOUND, executionId));
 
         List<Question> availableQuestions = questionRepository.findAvailableQuestions(courseExecution.getCourse().getId());
 
@@ -90,19 +97,26 @@ public class StatementService {
             throw new TutorException(NOT_ENOUGH_QUESTIONS);
         }
 
-        availableQuestions = user.filterQuestionsByStudentModel(quizDetails.getNumberOfQuestions(), availableQuestions);
+        if (user == null) {
+            Random rand = new Random(System.currentTimeMillis());
+            List<Question> limitedQuestions = new ArrayList<>();
+            while (limitedQuestions.size() < quizDetails.getNumberOfQuestions()) {
+                int next = rand.nextInt(availableQuestions.size());
+                if (!limitedQuestions.contains(availableQuestions.get(next))) {
+                    limitedQuestions.add(availableQuestions.get(next));
+                }
+            }
+            availableQuestions = limitedQuestions;
+        } else {
+            availableQuestions = user.filterQuestionsByStudentModel(quizDetails.getNumberOfQuestions(), availableQuestions);
+        }
 
         quiz.generate(availableQuestions);
 
-        QuizAnswer quizAnswer = new QuizAnswer(user, quiz);
-
         quiz.setCourseExecution(courseExecution);
-        courseExecution.addQuiz(quiz);
-
         quizRepository.save(quiz);
-        quizAnswerRepository.save(quizAnswer);
 
-        return new StatementQuizDto(quizAnswer);
+        return quiz;
     }
 
     @Retryable(
@@ -165,6 +179,7 @@ public class StatementService {
         quizRepository.findQuizzes(executionId).stream()
                 .filter(quiz -> !quiz.isQrCodeOnly())
                 .filter(quiz -> !quiz.getType().equals(Quiz.QuizType.GENERATED))
+                .filter(quiz -> !quiz.getType().equals(Quiz.QuizType.TOURNAMENT))
                 .filter(quiz -> quiz.getAvailableDate() == null || quiz.getAvailableDate().isBefore(now))
                 .filter(quiz -> !studentQuizIds.contains(quiz.getId()))
                 .forEach(quiz ->  {
@@ -176,6 +191,7 @@ public class StatementService {
 
         return user.getQuizAnswers().stream()
                 .filter(quizAnswer -> !quizAnswer.isCompleted())
+                .filter(quizAnswer -> !quizAnswer.getQuiz().getType().equals(Quiz.QuizType.TOURNAMENT))
                 .filter(quizAnswer -> !quizAnswer.getQuiz().isOneWay() || quizAnswer.getCreationDate() == null)
                 .filter(quizAnswer -> quizAnswer.getQuiz().getCourseExecution().getId() == executionId)
                 .filter(quizAnswer -> quizAnswer.getQuiz().getConclusionDate() == null || DateHandler.now().isBefore(quizAnswer.getQuiz().getConclusionDate()))
@@ -193,6 +209,7 @@ public class StatementService {
         User user = userRepository.findById(userId).orElseThrow(() -> new TutorException(USER_NOT_FOUND, userId));
 
         return user.getQuizAnswers().stream()
+                .filter(quizAnswer -> !quizAnswer.getQuiz().getType().equals(Quiz.QuizType.TOURNAMENT))
                 .filter(quizAnswer -> quizAnswer.canResultsBePublic(executionId))
                 .map(SolvedQuizDto::new)
                 .sorted(Comparator.comparing(SolvedQuizDto::getAnswerDate))

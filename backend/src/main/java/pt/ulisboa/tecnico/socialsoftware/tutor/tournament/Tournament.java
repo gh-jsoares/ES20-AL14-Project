@@ -185,6 +185,7 @@ public class Tournament {
     }
 
     public void setQuiz(Quiz quiz) {
+        quiz.setTournament(this);
         this.quiz = quiz;
     }
 
