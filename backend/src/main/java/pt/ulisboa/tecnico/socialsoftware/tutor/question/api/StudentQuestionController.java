@@ -47,11 +47,11 @@ public class StudentQuestionController {
     }
 
     @PutMapping("/questions/student/{studentQuestionId}/image")
-    @PreAuthorize("hasRole('ROLE_STUDENT') and hasPermission(#studentQuestionId, 'STUDENTQUESTION.ACCESS')")
+    @PreAuthorize("hasAnyRole('ROLE_STUDENT', 'ROLE_TEACHER') and hasPermission(#studentQuestionId, 'STUDENTQUESTION.ACCESS')")
     public String uploadImage(Principal principal, @PathVariable Integer studentQuestionId, @RequestParam("file") MultipartFile file) throws IOException {
         logger.debug("uploadImage  studentQuestionId: {}: , filename: {}", studentQuestionId, file.getContentType());
 
-        StudentQuestionDto studentQuestionDto = studentQuestionService.getStudentQuestion(getAuthUser(principal).getId(), studentQuestionId);
+        StudentQuestionDto studentQuestionDto = getStudentQuestion(principal, studentQuestionId);
         String url = studentQuestionDto.getImage() != null ? studentQuestionDto.getImage().getUrl() : null;
         if (url != null && Files.exists(getTargetLocation(url))) {
             Files.delete(getTargetLocation(url));
@@ -62,14 +62,22 @@ public class StudentQuestionController {
 
         studentQuestionService.uploadImage(studentQuestionId, type);
 
-        url = studentQuestionService.getStudentQuestion(getAuthUser(principal).getId(), studentQuestionId).getImage().getUrl();
+        url = getStudentQuestion(principal, studentQuestionId).getImage().getUrl();
+
         Files.copy(file.getInputStream(), getTargetLocation(url), StandardCopyOption.REPLACE_EXISTING);
 
         return url;
     }
 
+    private StudentQuestionDto getStudentQuestion(Principal principal, Integer studentQuestionId) {
+        if(getAuthUser(principal).getRole() == User.Role.STUDENT)
+            return studentQuestionService.getStudentQuestion(getAuthUser(principal).getId(), studentQuestionId);
+        else
+            return studentQuestionService.getStudentQuestionAsTeacher(getAuthUser(principal).getId(), studentQuestionId);
+    }
+
     @PutMapping("/questions/student/{studentQuestionId}/topics")
-    @PreAuthorize("hasRole('ROLE_STUDENT') and hasPermission(#studentQuestionId, 'STUDENTQUESTION.ACCESS')")
+    @PreAuthorize("hasAnyRole('ROLE_STUDENT', 'ROLE_TEACHER') and hasPermission(#studentQuestionId, 'STUDENTQUESTION.ACCESS')")
     public ResponseEntity updateQuestionTopics(@PathVariable Integer studentQuestionId, @RequestBody Integer[] topics) {
         studentQuestionService.updateStudentQuestionTopics(studentQuestionId, topics);
         return ResponseEntity.ok().build();
@@ -110,6 +118,7 @@ public class StudentQuestionController {
     public StudentQuestionDto getStudentQuestionAsStudent(Principal principal, @PathVariable Integer studentQuestionId) {
         return this.studentQuestionService.getStudentQuestion(getAuthUser(principal).getId(), studentQuestionId);
     }
+
 
     private Path getTargetLocation(String url) {
         String fileLocation = figuresDir + url;

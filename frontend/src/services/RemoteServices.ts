@@ -141,7 +141,10 @@ export default class RemoteServices {
     studentQuestion: StudentQuestion
   ): Promise<StudentQuestion> {
     return httpClient
-      .put(`/questions/student/all/${studentQuestion.id}/approve/`)
+      .put(
+        `/questions/student/all/${studentQuestion.id}/approve/`,
+        studentQuestion
+      )
       .then(response => {
         return new StudentQuestion(response.data);
       })
