@@ -156,8 +156,9 @@ class StudentGetsDiscussionsStatsTest extends Specification {
 
     def "non-student user wants to see discussions stats"() {
         given: "a teacher"
+        teacher
 
-        when:
+        when: "teacher wants to see his discussion stats"
         discussionService.getDiscussionStats(teacher.getId())
 
         then: "an exception is thrown"
@@ -166,8 +167,6 @@ class StudentGetsDiscussionsStatsTest extends Specification {
     }
 
     def "non-existent user wants to see discussions stats"() {
-        given: "a teacher"
-
         when:
         discussionService.getDiscussionStats(INVALID_ID)
 

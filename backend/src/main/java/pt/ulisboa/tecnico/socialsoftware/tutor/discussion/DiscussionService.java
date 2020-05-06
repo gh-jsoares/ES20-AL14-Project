@@ -5,6 +5,7 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.answer.domain.QuizAnswer;
 import pt.ulisboa.tecnico.socialsoftware.tutor.answer.repository.QuestionAnswerRepository;
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecution;
+import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.dto.DiscussionStatsDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.dto.MessageDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.repository.DiscussionRepository;
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.dto.DiscussionDto;
@@ -217,5 +218,25 @@ public class DiscussionService {
                 .map(QuizAnswer::getUser)
                 .anyMatch(userWhoAnsweredQuestion -> userWhoAnsweredQuestion.getId().equals(student.getId()));
 
+    }
+
+    @Retryable(
+            value = { SQLException.class },
+            backoff = @Backoff(delay = 5000))
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public DiscussionStatsDto getDiscussionStats(Integer userId) {
+        User student = getStudentById(userId);
+
+        DiscussionStatsDto discussionStatsDto = new DiscussionStatsDto();
+
+        int discussionsNumber = student.getDiscussions().size();
+
+        int publicDiscussionsNumber = (int) student.getDiscussions().stream()
+                .filter(Discussion::isVisibleToOtherStudents)
+                .count();
+
+        discussionStatsDto.setDiscussionsNumber(discussionsNumber);
+        discussionStatsDto.setPublicDiscussionsNumber(publicDiscussionsNumber);
+        return discussionStatsDto;
     }
 }
