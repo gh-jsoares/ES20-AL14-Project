@@ -31,7 +31,6 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.user.UserRepository
 import spock.lang.Specification
 import spock.lang.Unroll
 
-import java.time.LocalDateTime
 
 @DataJpaTest
 class GetOpenTournamentsSpockTest extends Specification{
@@ -75,8 +74,7 @@ class GetOpenTournamentsSpockTest extends Specification{
     def courseExecution
     def days = []
     def topic
-    def user
-    def user2
+    def users = []
 
     def setup() {
         // create course
@@ -95,15 +93,15 @@ class GetOpenTournamentsSpockTest extends Specification{
         topicRepository.save(topic)
 
         // create user
-        user = new User(USER_NAME, USER_USERNAME, 1, User.Role.STUDENT)
-        user.addCourse(courseExecution)
-        courseExecution.addUser(user)
-        userRepository.save(user)
+        users[0] = new User(USER_NAME, USER_USERNAME, 1, User.Role.STUDENT)
+        users[0].addCourse(courseExecution)
+        courseExecution.addUser(users[0] as User)
+        userRepository.save(users[0] as User)
 
-        user2 = new User(USER_NAME2, USER_USERNAME2, 2, User.Role.STUDENT)
-        user2.addCourse(courseExecution)
-        courseExecution.addUser(user2)
-        userRepository.save(user2)
+        users[1] = new User(USER_NAME2, USER_USERNAME2, 2, User.Role.STUDENT)
+        users[1].addCourse(courseExecution)
+        courseExecution.addUser(users[1] as User)
+        userRepository.save(users[1] as User)
 
         // create question
         def question = new Question()
@@ -121,15 +119,14 @@ class GetOpenTournamentsSpockTest extends Specification{
 
     }
 
-    def createTournament(state, stack) {
+    def createTournament(state, enrolls, stack) {
         if (state == null)
             return
         def tourn = new Tournament()
 
-        tourn.setCourseExecution(courseExecution)
+        tourn.setCourseExecution(courseExecution as CourseExecution)
         tourn.setState(Tournament.State.ENROLL)
-        tourn.addEnrolledStudent(user as User)
-        tourn.addEnrolledStudent(user2 as User)
+        1.upto(enrolls, {tourn.addEnrolledStudent(users[it-1 as int])})
 
         tourn.setCreationDate(DateHandler.now().minusDays(3))
         if (state == Tournament.State.ENROLL) {
@@ -149,8 +146,8 @@ class GetOpenTournamentsSpockTest extends Specification{
         tourn.setScramble(true)
         tourn.setSeries(1)
         tourn.setVersion(VERSION)
-        tourn.addTopic(topic)
-        tourn.setCreator(user)
+        tourn.addTopic(topic as Topic)
+        tourn.setCreator(users[0] as User)
         tournRepository.save(tourn)
 
         if (state != Tournament.State.CLOSED) {
@@ -164,11 +161,11 @@ class GetOpenTournamentsSpockTest extends Specification{
     def "layout of existing tournaments: #tourn1 | #tourn2 => #size"() {
         given: "existing tournaments"
         def stack = []
-        createTournament(tourn1, stack)
-        createTournament(tourn2, stack)
+        createTournament(tourn1, 2, stack)
+        createTournament(tourn2, 2, stack)
 
         when: "service call to get open tournaments"
-        def result = tournService.getOpenTournaments(courseExecution.getId(), user.getId())
+        def result = tournService.getOpenTournaments(courseExecution.getId(), users[1].getId())
 
         then: "check number of returned tournaments"
         result.size() == size
@@ -193,83 +190,45 @@ class GetOpenTournamentsSpockTest extends Specification{
 
     def "course execution doesn't exist"() {
         given: "open tournaments but courseExecution doesn't exist"
-        createTournament(Tournament.State.ENROLL, [])
+        createTournament(Tournament.State.ENROLL, 2, [])
         def execId = -1
 
         when: "service call to get open tournaments"
-        tournService.getOpenTournaments(execId, user.getId())
+        tournService.getOpenTournaments(execId, users[1].getId())
 
         then: "exception is thrown"
         def exception = thrown(TutorException)
         exception.getErrorMessage() == ErrorMessage.COURSE_EXECUTION_NOT_FOUND
     }
 
-    def "first call after available date generates quiz"() {
-        given: "tournament after available before first call"
-        def tourn = createTournament(Tournament.State.ONGOING, [])
-        tourn.setState(Tournament.State.ENROLL)
+    @Unroll
+    def "quiz generation and status update: hasQuiz=#hasQuiz | enroll=#enroll | datesState=#datesState | startState=#startState || endStatus=#endStatus | generates=#generates"() {
+        given: "tournament with certain dates layout and initial state"
+        def tourn = createTournament(datesState, enroll, [])
+        tourn.setState(startState)
+        if (hasQuiz) {
+            def quiz = new Quiz()
+            quizRepository.save(quiz)
+            tourn.setQuiz(quiz)
+        }
 
         when: "service call to get open tournaments"
-        tournService.getOpenTournaments(courseExecution.getId(), user.getId())
+        tournService.getOpenTournaments(courseExecution.getId(), users[1].getId())
 
-        then: "quiz generated"
+        then: "quiz generated?"
         def tournament = tournRepository.findAll().get(0)
-        tournament.getQuiz() != null
+        if (generates || hasQuiz) assert tournament.getQuiz() != null
+        else assert tournament.getQuiz() == null
 
-        and: "status updated"
-        tournament.getState() == Tournament.State.ONGOING
-    }
+        and: "final status"
+        tournament.getState() == endStatus
 
-    def "first call only after conclusion date can also generate quiz"() {
-        given: "tournament after conclusion before first call"
-        def tourn = createTournament(Tournament.State.CLOSED, [])
-        tourn.setState(Tournament.State.ENROLL)
-
-        when: "service call to get open tournaments"
-        tournService.getOpenTournaments(courseExecution.getId(), user.getId())
-
-        then: "quiz generated"
-        def tournament = tournRepository.findAll().get(0)
-        tournament.getQuiz() != null
-
-        and: "status updated"
-        tournament.getState() == Tournament.State.CLOSED
-    }
-
-    def "doesn't try to generate quiz if already generated"() {
-        given: "tournament with only one enroll"
-        def tourn = createTournament(Tournament.State.ONGOING, [])
-        def quiz = new Quiz();
-        quizRepository.save(quiz)
-        tourn.setQuiz(quiz)
-
-        when: "service call to get open tournaments"
-        tournService.getOpenTournaments(courseExecution.getId(), user.getId())
-
-        then: "quiz generated"
-        def tournament = tournRepository.findAll().get(0)
-        tournament.getQuiz() == quiz
-
-        and: "status unchanged"
-        tournament.getState() == Tournament.State.ONGOING
-    }
-
-    def "doesn't try to generate quiz if not enough students"() {
-        given: "tournament with only one enroll"
-        def tourn = createTournament(Tournament.State.ONGOING, [])
-        tourn.setState(Tournament.State.ENROLL)
-        tourn.getEnrolledStudents().remove(user2)
-        user2.getEnrolledTournaments().clear()
-
-        when: "service call to get open tournaments"
-        tournService.getOpenTournaments(courseExecution.getId(), user.getId())
-
-        then: "quiz generated"
-        def tournament = tournRepository.findAll().get(0)
-        tournament.getQuiz() == null
-
-        and: "status updated"
-        tournament.getState() == Tournament.State.CLOSED
+        where:
+        hasQuiz | enroll    | datesState                | startState                || endStatus                | generates
+        true    | 2         | Tournament.State.ONGOING  | Tournament.State.ONGOING  || Tournament.State.ONGOING | false     // already has quiz generated
+        false   | 1         | Tournament.State.ONGOING  | Tournament.State.ENROLL   || Tournament.State.CLOSED  | false     // not enough enrolls
+        false   | 2         | Tournament.State.ONGOING  | Tournament.State.ENROLL   || Tournament.State.ONGOING | true      // first call while available generates
+        false   | 2         | Tournament.State.CLOSED   | Tournament.State.ENROLL   || Tournament.State.CLOSED  | true      // first call only after conclusion still generates
     }
 
 

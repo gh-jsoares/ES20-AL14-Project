@@ -193,86 +193,31 @@ public class TournamentService {
         if (tourn.getQuiz() != null)
             throw new TutorException(ErrorMessage.TOURNAMENT_QUIZ_ALREADY_GENERATED);
 
-        LocalDateTime now = DateHandler.now();
-
-        if (tourn.getAvailableDate().isAfter(now))
+        if (tourn.getAvailableDate().isAfter(DateHandler.now()))
             throw new TutorException(ErrorMessage.TOURNAMENT_NOT_AVAILABLE, tournId);
-
-        /*if (tourn.getConclusionDate().isBefore(now))
-            throw new TutorException(ErrorMessage.TOURNAMENT_IS_CLOSED, tournId);*/
 
         if (tourn.getEnrolledStudents().size() <= 1) {
             throw new TutorException(ErrorMessage.TOURNAMENT_NOT_ENOUGH_ENROLLS, tournId);
         }
 
-        // create topic conjunction
-        TopicConjunction conjunction = new TopicConjunction();
-        tourn.getTopics().forEach(conjunction::addTopic);
-        tourn.getTopics().forEach(topic -> topic.addTopicConjunction(conjunction));
-
-        // create assessment
-        Assessment assessment = new Assessment();
-        assessment.setTitle("Tournament " + tourn.getTitle());
-        assessment.setStatus(Assessment.Status.DISABLED);
-        assessment.setSequence(1);
-        assessment.setCourseExecution(tourn.getCourseExecution());
-        assessment.addTopicConjunction(conjunction);
-        conjunction.setAssessment(assessment);
-
-        entityManager.persist(conjunction);
-        entityManager.persist(assessment);
-
-        // create creation details
-        StatementCreationDto quizDetails = new StatementCreationDto();
-        quizDetails.setNumberOfQuestions(tourn.getNumberOfQuestions());
-        quizDetails.setAssessment(assessment.getId());
-
-        // create quiz
-        Quiz quiz = new Quiz();
-        quiz.setKey(quizService.getMaxQuizKey() + 1);
-        quiz.setCreationDate(DateHandler.now());
-        quiz.setScramble(tourn.isScramble());
+        TopicConjunction conjunction = createConjunction(tourn);
+        Assessment assessment = createAssessment(tourn, conjunction);
+        StatementCreationDto quizDetails = createDetails(tourn, assessment);
 
 
-        /*quiz.setAvailableDate(tourn.getAvailableDate());
-        if (tourn.getConclusionDate().isAfter(DateHandler.now())) {
-            quiz.setConclusionDate(tourn.getConclusionDate());
-        }*/
-
-
-        CourseExecution courseExecution = tourn.getCourseExecution();
-
-
-        List<Question> availableQuestions = questionRepository.findAvailableQuestions(courseExecution.getCourse().getId());
-
-        if (quizDetails.getAssessment() != null) {
-            availableQuestions = statementService.filterByAssessment(availableQuestions, quizDetails);
-        }
-
-        if (availableQuestions.size() < quizDetails.getNumberOfQuestions()) {
+        CourseExecution execution = tourn.getCourseExecution();
+        Quiz quiz;
+        try {
+            quiz = statementService.generateQuiz(execution, null, quizDetails);
+        } catch (TutorException e) {
             assessment.remove();
-            courseExecution.getAssessments().remove(assessment);
+            execution.getAssessments().remove(assessment);
             entityManager.remove(assessment);
             entityManager.remove(conjunction);
-            throw new TutorException(ErrorMessage.NOT_ENOUGH_QUESTIONS);
+            throw e;
         }
 
-        Random rand = new Random(System.currentTimeMillis());
-        List<Question> limitedQuestions = new ArrayList<>();
-        while (limitedQuestions.size() < quizDetails.getNumberOfQuestions()) {
-            int next = rand.nextInt(availableQuestions.size());
-            if (!limitedQuestions.contains(availableQuestions.get(next))) {
-                limitedQuestions.add(availableQuestions.get(next));
-            }
-        }
-        availableQuestions = limitedQuestions;
-
-        quiz.generate(availableQuestions);
-
-
-        quiz.setCourseExecution(courseExecution);
-
-        //quiz.setResultsDate(tourn.getConclusionDate());
+        quiz.setScramble(tourn.isScramble());
         quiz.setType(Quiz.QuizType.TOURNAMENT.toString());
         tourn.setQuiz(quiz);
 
@@ -280,7 +225,35 @@ public class TournamentService {
             QuizAnswer quizAnswer = new QuizAnswer(user, quiz);
             entityManager.persist(quizAnswer);
         });
+    }
 
-        entityManager.persist(quiz);
+    private TopicConjunction createConjunction(Tournament tourn) {
+        TopicConjunction conjunction = new TopicConjunction();
+        tourn.getTopics().forEach(conjunction::addTopic);
+        tourn.getTopics().forEach(topic -> topic.addTopicConjunction(conjunction));
+        entityManager.persist(conjunction);
+
+        return conjunction;
+    }
+
+    private Assessment createAssessment(Tournament tourn, TopicConjunction conjunction) {
+        Assessment assessment = new Assessment();
+        assessment.setTitle("Tournament " + tourn.getTitle());
+        assessment.setStatus(Assessment.Status.DISABLED);
+        assessment.setSequence(1);
+        assessment.setCourseExecution(tourn.getCourseExecution());
+        assessment.addTopicConjunction(conjunction);
+        conjunction.setAssessment(assessment);
+        entityManager.persist(assessment);
+
+        return assessment;
+    }
+
+    private StatementCreationDto createDetails(Tournament tourn, Assessment assessment) {
+        StatementCreationDto quizDetails = new StatementCreationDto();
+        quizDetails.setNumberOfQuestions(tourn.getNumberOfQuestions());
+        quizDetails.setAssessment(assessment.getId());
+
+        return quizDetails;
     }
 }
