@@ -56,7 +56,7 @@
           <stringProp name="driver">org.postgresql.Driver</stringProp>
           <stringProp name="initQuery"></stringProp>
           <boolProp name="keepAlive">true</boolProp>
-          <stringProp name="password">123</stringProp>
+          <stringProp name="password"></stringProp>
           <stringProp name="poolMax">0</stringProp>
           <boolProp name="preinit">false</boolProp>
           <stringProp name="timeout">10000</stringProp>
@@ -90,8 +90,14 @@ INSERT INTO course_executions(academic_term, acronym, status, course_id, type)
 	
 INSERT INTO topics(name, course_id) VALUES(&apos;Jmeter Topic&apos;, (SELECT id FROM courses WHERE name=&apos;Jmeter Course&apos;));
 
+INSERT INTO users(name, username) VALUES (&apos;Jmeter Test&apos;, &apos;JmeterTest&apos;);
+
 INSERT INTO users_course_executions VALUES(
 	(SELECT id FROM users WHERE name=&apos;Demo Student&apos;), 
+	(SELECT id FROM course_executions WHERE acronym=&apos;JMC1&apos;));
+
+INSERT INTO users_course_executions VALUES(
+	(SELECT id FROM users WHERE name=&apos;Jmeter Test&apos;), 
 	(SELECT id FROM course_executions WHERE acronym=&apos;JMC1&apos;));
 	
 INSERT INTO quizzes(title) VALUES (&apos;Jmeter Quiz&apos;);
@@ -112,6 +118,8 @@ INSERT INTO topics_tournaments VALUES(
 	(SELECT id FROM tournaments WHERE title=&apos;Jmeter Tournament&apos;));
 
 INSERT INTO tournaments_enrolled_students(enrolled_tournaments_id, enrolled_students_id) VALUES ((SELECT id FROM tournaments WHERE title=&apos;Jmeter Tournament&apos;), (SELECT id FROM users WHERE name=&apos;Demo Student&apos;));
+
+INSERT INTO tournaments_enrolled_students(enrolled_tournaments_id, enrolled_students_id) VALUES ((SELECT id FROM tournaments WHERE title=&apos;Jmeter Tournament&apos;), (SELECT id FROM users WHERE name=&apos;Jmeter Test&apos;));
 
 INSERT INTO tournaments(available_date, conclusion_date, creation_date, number_of_questions, state, title, course_execution_id, creator_id) VALUES 
 	(&apos;2020-02-15 11:23&apos;, &apos;2020-02-20 16:23&apos;, &apos;2020-02-21 16:23&apos;, 
@@ -351,7 +359,7 @@ props.put(&quot;quizId&quot;, &quot;${quizId_1}&quot;);</stringProp>
             <hashTree/>
             <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="Assert number of enrolls" enabled="true">
               <stringProp name="JSON_PATH">$[0].numberOfEnrolls</stringProp>
-              <stringProp name="EXPECTED_VALUE">1</stringProp>
+              <stringProp name="EXPECTED_VALUE">2</stringProp>
               <boolProp name="JSONVALIDATION">true</boolProp>
               <boolProp name="EXPECT_NULL">false</boolProp>
               <boolProp name="INVERT">false</boolProp>
@@ -513,7 +521,7 @@ props.put(&quot;quizId&quot;, &quot;${quizId_1}&quot;);</stringProp>
           <stringProp name="driver">org.postgresql.Driver</stringProp>
           <stringProp name="initQuery"></stringProp>
           <boolProp name="keepAlive">true</boolProp>
-          <stringProp name="password">123</stringProp>
+          <stringProp name="password"></stringProp>
           <stringProp name="poolMax">0</stringProp>
           <boolProp name="preinit">false</boolProp>
           <stringProp name="timeout">10000</stringProp>
@@ -526,11 +534,13 @@ props.put(&quot;quizId&quot;, &quot;${quizId_1}&quot;);</stringProp>
           <stringProp name="dataSource">sampleReq</stringProp>
           <stringProp name="query">DELETE FROM topics_tournaments WHERE topics_id=${__property(topicId)};
 DELETE FROM tournaments_enrolled_students WHERE enrolled_students_id=(SELECT id FROM users WHERE name=&apos;Demo Student&apos;);
+DELETE FROM tournaments_enrolled_students WHERE enrolled_students_id=(SELECT id FROM users WHERE name=&apos;Jmeter Test&apos;);
 DELETE FROM tournaments WHERE title LIKE &apos;Jmeter Tournament%&apos;;
 DELETE FROM topics WHERE name=&apos;Jmeter Topic&apos;;
 DELETE FROM quiz_answers WHERE quiz_id=(SELECT id FROM quizzes WHERE title=&apos;Jmeter Quiz&apos;);
 DELETE FROM quizzes WHERE title=&apos;Jmeter Quiz&apos;;
 DELETE FROM users_course_executions WHERE course_executions_id=${__property(executionId)};
+DELETE FROM users WHERE name=&apos;Jmeter Test&apos;;
 DELETE FROM course_executions WHERE acronym=&apos;JMC1&apos;;
 DELETE FROM courses WHERE name=&apos;Jmeter Course&apos;;</stringProp>
           <stringProp name="queryArguments"></stringProp>

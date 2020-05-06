@@ -30,7 +30,7 @@ import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.*;
         })
 public class Quiz implements DomainEntity {
     public enum QuizType {
-        EXAM, TEST, GENERATED, PROPOSED, IN_CLASS
+        EXAM, TEST, GENERATED, PROPOSED, IN_CLASS, TOURNAMENT
     }
 
     @Id
@@ -276,6 +276,14 @@ public class Quiz implements DomainEntity {
         this.quizAnswers.add(quizAnswer);
     }
 
+    public Tournament getTournament() {
+        return this.tournament;
+    }
+
+    public void setTournament(Tournament tournament) {
+        this.tournament = tournament;
+    }
+
     @Override
     public String toString() {
         return "Quiz{" +
@@ -346,11 +354,4 @@ public class Quiz implements DomainEntity {
         setTitle("Generated Quiz");
     }
 
-    public Tournament getTournament() {
-        return tournament;
-    }
-
-    public void setTournament(Tournament tournament) {
-        this.tournament = tournament;
-    }
 }
