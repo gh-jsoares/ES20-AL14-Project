@@ -17,6 +17,7 @@ import { Discussion } from '@/models/management/Discussion';
 import StudentQuestion from '@/models/management/StudentQuestion';
 import { Tournament } from '@/models/management/Tournament';
 import Message from '@/models/management/Message';
+import { DiscussionsStats } from '@/models/management/DiscussionsStats';
 
 const httpClient = axios.create();
 httpClient.defaults.timeout = 10000;
@@ -741,6 +742,19 @@ export default class RemoteServices {
             throw Error(await this.errorMessage(error));
           });
     }
+  }
+  
+  static async getDiscussionsStats(): Promise<DiscussionsStats> {
+    return httpClient
+        .get(
+            `/discussions/stats`
+        )
+        .then(response => {
+          return new DiscussionsStats(response.data);
+        })
+        .catch(async error => {
+          throw Error(await this.errorMessage(error));
+        });
   }
 
   static async exportAll() {
