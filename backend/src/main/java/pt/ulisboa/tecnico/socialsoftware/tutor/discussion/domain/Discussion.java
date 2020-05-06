@@ -44,7 +44,6 @@ public class Discussion {
     }
 
     public Discussion(QuestionAnswer questionAnswer, User student, Question question, DiscussionDto dto) {
-        verifyIfAnsweredQuestion(questionAnswer, question.getId(), student.getId());
         checkIfMessages(dto.getMessages());
         setStudent(student);
         setQuestion(question);
@@ -100,12 +99,6 @@ public class Discussion {
         checkIfTeacherIsEnrolledInQuestionCourseExecution(teacher);
         new Message(this, teacher, messageDto);
         setNeedsAnswer(false);
-    }
-
-    private void verifyIfAnsweredQuestion(QuestionAnswer questionAnswer, Integer questionId, Integer studentId) {
-        if (!questionAnswer.getQuizQuestion().getQuestion().getId().equals(questionId) ||
-                !questionAnswer.getQuizAnswer().getUser().getId().equals(studentId))
-            throw new TutorException(ErrorMessage.DISCUSSION_QUESTION_NOT_ANSWERED, studentId);
     }
 
     private void checkIfTeacherIsEnrolledInQuestionCourseExecution(User teacher) {

@@ -30,7 +30,7 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.user.UserRepository
 import spock.lang.Specification
 
 @DataJpaTest
-class StudentSeesOtherDiscussionsTest extends Specification {
+class StudentGetsDiscussionsStatsTest extends Specification {
 
     @Autowired
     DiscussionService discussionService
@@ -105,7 +105,7 @@ class StudentSeesOtherDiscussionsTest extends Specification {
         courseExecution.addQuiz(quiz)
         quizQuestion = new QuizQuestion(quiz, question, 0)
         quizAnswer = new QuizAnswer(student, quiz)
-        questionAnswer = new QuestionAnswer(quizAnswer, quizQuestion,  10, null,  0)
+        questionAnswer = new QuestionAnswer(quizAnswer, quizQuestion, 10, null, 0)
         questionAnswerRepository.save(questionAnswer)
         questionRepository.save(question)
 
@@ -124,86 +124,55 @@ class StudentSeesOtherDiscussionsTest extends Specification {
         messages.add(message)
         discussionDto.setMessages(messages)
 
-        createBasicDiscussion(student,question, discussionDto)
+        createBasicDiscussion(student, question, discussionDto)
     }
 
-    def "student wants to see questions discussions (1 public discussion) after he answers question"() {
+    def "student wants to see his discussion stats"() {
         given: "a student"
-        User another_student = new User('another_student', ANOTHER_STUDENT_NAME, 3, User.Role.STUDENT)
-        another_student.getCourseExecutions().add(courseExecution)
-        courseExecution.addUser(another_student)
-        userRepository.save(another_student)
+        student
 
-        and: "a quiz answer and question answer"
-        quizAnswer = new QuizAnswer(another_student, quiz)
-        questionAnswer = new QuestionAnswer(quizAnswer, quizQuestion,  10, null,  0)
-        questionAnswerRepository.save(questionAnswer)
-
-        and: "a public discussion related to this question"
-        discussion.setVisibleToOtherStudents(true)
-
-        when: "student wants to see question discussions"
-        def result = discussionService.getDiscussionsQuestion(another_student.getId(), question.getId(), questionAnswer.getId())
+        when:
+        def result = discussionService.getDiscussionStats(student.getId())
 
         then:
-        result.get(0).getMessages().get(1).getMessage() == TEACHER_ANSWER
-        result.get(0).getMessages().get(1).getUserName() == TEACHER_NAME
-        result.get(0).getMessages().get(0).getMessage() == MESSAGE
-        result.get(0).getMessages().get(0).getUserName() == STUDENT_NAME
+        result.getDiscussionsNumber() == 1
+        result.getPublicDiscussionsNumber() == 0
     }
 
-    def "student wants to see discussions of a question he didn't answer"() {
+    def "student wants to see his discussion stats with a public discussion"() {
         given: "a student"
-        User another_student = new User('another_student', ANOTHER_STUDENT_NAME, 3, User.Role.STUDENT)
-        another_student.getCourseExecutions().add(courseExecution)
-        courseExecution.addUser(another_student)
-        userRepository.save(another_student)
+        student
 
-        and: "a discussion related to the question"
-        discussion
+        and: "a public discussion"
+        discussion.setVisibleToOtherStudents(true)
 
-        when: "student wants to see question discussions"
-        discussionService.getDiscussionsQuestion(another_student.getId(), question.getId(), questionAnswer.getId())
+        when:
+        def result = discussionService.getDiscussionStats(student.getId())
 
-        then: "an exception is thrown"
-        def exception = thrown(TutorException)
-        exception.errorMessage == ErrorMessage.DISCUSSION_QUESTION_NOT_ANSWERED;
+        then:
+        result.getDiscussionsNumber() == 1
+        result.getPublicDiscussionsNumber() == 1
     }
 
-    def "non-student wants to see discussions of a question"() {
+    def "non-student user wants to see discussions stats"() {
         given: "a teacher"
         teacher
 
-        when: "teacher wants to see question discussions"
-        discussionService.getDiscussionsQuestion(teacher.getId(), question.getId(), questionAnswer.getId())
+        when: "teacher wants to see his discussion stats"
+        discussionService.getDiscussionStats(teacher.getId())
 
         then: "an exception is thrown"
         def exception = thrown(TutorException)
         exception.errorMessage == ErrorMessage.USER_IS_NOT_STUDENT;
     }
 
-    def "student wants to see question discussions of a non-existent question"() {
-        given: "a student"
-        student
-
-        when: "student wants to see discussions of a non existent question"
-        discussionService.getDiscussionsQuestion(student.getId(), INVALID_ID, questionAnswer.getId())
+    def "non-existent user wants to see discussions stats"() {
+        when:
+        discussionService.getDiscussionStats(INVALID_ID)
 
         then: "an exception is thrown"
         def exception = thrown(TutorException)
-        exception.errorMessage == ErrorMessage.QUESTION_NOT_FOUND;
-    }
-
-    def "student wants to see question discussions with a non-existent question answer"() {
-        given: "a student"
-        student
-
-        when: "student wants to see discussions of a non existent question"
-        discussionService.getDiscussionsQuestion(student.getId(), question.getId(), INVALID_ID)
-
-        then: "an exception is thrown"
-        def exception = thrown(TutorException)
-        exception.errorMessage == ErrorMessage.QUESTION_ANSWER_NOT_FOUND;
+        exception.errorMessage == ErrorMessage.USER_NOT_FOUND;
     }
 
     def createBasicDiscussion(User student, Question question, DiscussionDto discussionDto) {

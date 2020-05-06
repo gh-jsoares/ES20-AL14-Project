@@ -44,6 +44,7 @@
       :correctAnswer="statementManager.correctAnswers[questionOrder]"
       :question="statementManager.statementQuiz.questions[questionOrder]"
       :questionNumber="statementManager.statementQuiz.questions.length"
+      :discussionDiv="discussionsDiv"
       @increase-order="increaseOrder"
       @decrease-order="decreaseOrder"
     />
@@ -63,6 +64,7 @@ import ResultComponent from '@/views/student/quiz/ResultComponent.vue';
 export default class ResultsView extends Vue {
   statementManager: StatementManager = StatementManager.getInstance;
   questionOrder: number = 0;
+  discussionsDiv: boolean = false;
 
   async created() {
     if (this.statementManager.isEmpty()) {
@@ -84,18 +86,21 @@ export default class ResultsView extends Vue {
     ) {
       this.questionOrder += 1;
     }
+    this.discussionsDiv = false;
   }
 
   decreaseOrder(): void {
     if (this.questionOrder > 0) {
       this.questionOrder -= 1;
     }
+    this.discussionsDiv = false;
   }
 
   changeOrder(n: number): void {
     if (n >= 0 && n < +this.statementManager.statementQuiz!.questions.length) {
       this.questionOrder = n;
     }
+    this.discussionsDiv = false;
   }
 }
 </script>
