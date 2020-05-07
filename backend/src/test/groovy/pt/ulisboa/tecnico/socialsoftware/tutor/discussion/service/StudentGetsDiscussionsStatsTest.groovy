@@ -13,7 +13,7 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecution
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecutionRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseService
-import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.DiscussionService
+import pt.ulisboa.tecnico.socialsoftware.tutor.dashboard.DashboardService
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.domain.Discussion
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.domain.Message
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.dto.DiscussionDto
@@ -33,7 +33,7 @@ import spock.lang.Specification
 class StudentGetsDiscussionsStatsTest extends Specification {
 
     @Autowired
-    DiscussionService discussionService
+    DashboardService dashboardService
 
     @Autowired
     CourseService courseService
@@ -132,7 +132,7 @@ class StudentGetsDiscussionsStatsTest extends Specification {
         student
 
         when:
-        def result = discussionService.getDiscussionStats(student.getId())
+        def result = dashboardService.getDiscussionStats(student.getId())
 
         then:
         result.getDiscussionsNumber() == 1
@@ -147,7 +147,7 @@ class StudentGetsDiscussionsStatsTest extends Specification {
         discussion.setVisibleToOtherStudents(true)
 
         when:
-        def result = discussionService.getDiscussionStats(student.getId())
+        def result = dashboardService.getDiscussionStats(student.getId())
 
         then:
         result.getDiscussionsNumber() == 1
@@ -159,7 +159,7 @@ class StudentGetsDiscussionsStatsTest extends Specification {
         teacher
 
         when: "teacher wants to see his discussion stats"
-        discussionService.getDiscussionStats(teacher.getId())
+        dashboardService.getDiscussionStats(teacher.getId())
 
         then: "an exception is thrown"
         def exception = thrown(TutorException)
@@ -168,7 +168,7 @@ class StudentGetsDiscussionsStatsTest extends Specification {
 
     def "non-existent user wants to see discussions stats"() {
         when:
-        discussionService.getDiscussionStats(INVALID_ID)
+        dashboardService.getDiscussionStats(INVALID_ID)
 
         then: "an exception is thrown"
         def exception = thrown(TutorException)
@@ -187,11 +187,11 @@ class StudentGetsDiscussionsStatsTest extends Specification {
     }
 
     @TestConfiguration
-    static class DiscussionServiceImplTestContextConfiguration {
+    static class DashboardAndCourseServiceImplTestContextConfiguration {
 
         @Bean
-        DiscussionService discussionService() {
-            return new DiscussionService()
+        DashboardService dashboardService() {
+            return new DashboardService()
         }
 
         @Bean

@@ -29,7 +29,7 @@ import CreateQuizzesView from '@/views/student/CreateQuizzesView.vue';
 import CoursesView from '@/views/admin/Courses/CoursesView.vue';
 import DiscussionsView from '@/views/teacher/discussions/DiscussionsView.vue';
 import StudentDiscussionsView from '@/views/student/discussion/StudentDiscussionsView.vue';
-import DiscussionsStatsView from '@/views/student/discussion/DiscussionsStatsView.vue';
+import DiscussionsStatsView from '@/views/student/dashboard/DiscussionsStatsView.vue';
 
 import OpenTournamentsView from '@/views/student/tournament/OpenTournamentsView.vue';
 import CreateTournamentView from '@/views/student/tournament/CreateTournamentView.vue';
