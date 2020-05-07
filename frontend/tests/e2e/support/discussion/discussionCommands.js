@@ -49,3 +49,10 @@ Cypress.Commands.add('seeQuestionDiscussions', (quizTitle) => {
   cy.get('[data-cy="questionDiscussions"]').should('exist');
   cy.get('[data-cy="visibleDiscussion"]').click();
 });
+
+Cypress.Commands.add('seeDiscussionStats', () => {
+  cy.get('[data-cy="dashboardButton"]').click();
+  cy.contains('Discussions').click();
+  cy.get('[data-cy="discussionsNumber"]').should('exist');
+  cy.get('[data-cy="publicDiscussionsNumber"]').should('exist');
+});

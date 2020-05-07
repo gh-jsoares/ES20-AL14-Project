@@ -12,7 +12,8 @@ describe('creating, answering and seeing discussion walkthrough', () => {
     cy.databaseRunFile(cleanupFile);
   });
 
-  it('student logins, creates a discussion, teacher logins, answer discussion, student logins and sees discussion', () => {
+  it('student logins, creates a discussion, teacher logins, answer discussion, student logins ' +
+      'and sees his discussions', () => {
     cy.answerQuiz('Allocation viewtype');
     cy.createDiscussion('Allocation viewtype', 'This is my discussion.');
     cy.contains('Logout').click();

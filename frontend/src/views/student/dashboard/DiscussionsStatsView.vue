@@ -3,7 +3,7 @@
     <h2>Discussion Statistics</h2>
     <div v-if="stats != null" class="stats-container">
       <div class="items">
-        <div class="icon-wrapper" ref="totalQuizzes">
+        <div class="icon-wrapper" ref="totalQuizzes" data-cy="discussionsNumber">
           <animated-number :number="stats.discussionsNumber" />
         </div>
         <div class="project-name">
@@ -11,7 +11,7 @@
         </div>
       </div>
       <div class="items">
-        <div class="icon-wrapper" ref="totalAnswers">
+        <div class="icon-wrapper" ref="totalAnswers" data-cy="publicDiscussionsNumber">
           <animated-number :number="stats.publicDiscussionsNumber" />
         </div>
         <div class="project-name">
