@@ -4,14 +4,20 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
+import pt.ulisboa.tecnico.socialsoftware.tutor.answer.AnswerService
+import pt.ulisboa.tecnico.socialsoftware.tutor.config.DateHandler
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.Course
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecution
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecutionRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException
+import pt.ulisboa.tecnico.socialsoftware.tutor.impexp.domain.AnswersXmlImport
+import pt.ulisboa.tecnico.socialsoftware.tutor.question.QuestionService
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Topic
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.TopicRepository
+import pt.ulisboa.tecnico.socialsoftware.tutor.quiz.QuizService
+import pt.ulisboa.tecnico.socialsoftware.tutor.statement.StatementService
 import pt.ulisboa.tecnico.socialsoftware.tutor.tournament.Tournament
 import pt.ulisboa.tecnico.socialsoftware.tutor.tournament.TournamentDto
 import pt.ulisboa.tecnico.socialsoftware.tutor.tournament.TournamentRepository
@@ -142,11 +148,11 @@ class CancelTournamentSpockTest extends Specification{
         error.getErrorMessage() == errorMessage
 
         where:
-        userRole         | tournamentState          | isUserCreator              || errorMessage
-        User.Role.TEACHER| Tournament.State.ENROLL  | false                      || ErrorMessage.TOURNAMENT_USER_IS_NOT_STUDENT
-        User.Role.STUDENT| Tournament.State.CLOSED  | true                       || ErrorMessage.TOURNAMENT_HAS_STARTED
-        User.Role.STUDENT| Tournament.State.ONGOING | true                      || ErrorMessage.TOURNAMENT_HAS_STARTED
-        User.Role.STUDENT| Tournament.State.ENROLL  | false                      || ErrorMessage.TOURNAMENT_USER_IS_NOT_CREATOR
+        userRole            | tournamentState           | isUserCreator    || errorMessage
+        User.Role.TEACHER   | Tournament.State.ENROLL   | false            || ErrorMessage.TOURNAMENT_USER_IS_NOT_STUDENT
+        User.Role.STUDENT   | Tournament.State.CLOSED   | true             || ErrorMessage.TOURNAMENT_HAS_STARTED
+        User.Role.STUDENT   | Tournament.State.ONGOING  | true             || ErrorMessage.TOURNAMENT_HAS_STARTED
+        User.Role.STUDENT   | Tournament.State.ENROLL   | false            || ErrorMessage.TOURNAMENT_USER_IS_NOT_CREATOR
     }
 
     private createTopic(Course course) {
@@ -160,16 +166,15 @@ class CancelTournamentSpockTest extends Specification{
     private createTournament(CourseExecution courseExecution, Topic topic) {
         tournament = new Tournament();
         tournament.setTitle(TOURNAMENT_NAME)
-        tournament.setCreationDate(LocalDateTime.now())
-        tournament.setAvailableDate(LocalDateTime.now().plusDays(1))
-        tournament.setConclusionDate(LocalDateTime.now().plusDays(2))
+        tournament.setCreationDate(DateHandler.now())
+        tournament.setAvailableDate(DateHandler.now().plusDays(1))
+        tournament.setConclusionDate(DateHandler.now().plusDays(2))
         tournamentRepository.save(tournament)
         tournament.setCourseExecution(courseExecution)
         tournament.addTopic(topic)
     }
 
     def createUser(name, username, key, userRole){
-        System.out.println("HELLO")
         def user2 = new User(name, username, key, userRole)
         user2.addCourse(courseExecution)
         courseExecution.addUser(user2)
@@ -188,6 +193,31 @@ class CancelTournamentSpockTest extends Specification{
         @Bean
         TournamentService tournamentService() {
             return new TournamentService()
+        }
+
+        @Bean
+        StatementService statementService() {
+            return new StatementService()
+        }
+
+        @Bean
+        QuizService quizService() {
+            return new QuizService()
+        }
+
+        @Bean
+        AnswerService answerService() {
+            return new AnswerService()
+        }
+
+        @Bean
+        AnswersXmlImport answersXmlImport() {
+            return new AnswersXmlImport()
+        }
+
+        @Bean
+        QuestionService questionService() {
+            return new QuestionService()
         }
     }
 

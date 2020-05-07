@@ -185,6 +185,7 @@ public class Tournament {
     }
 
     public void setQuiz(Quiz quiz) {
+        quiz.setTournament(this);
         this.quiz = quiz;
     }
 
@@ -255,6 +256,11 @@ public class Tournament {
     }
 
     public void remove() {
+        if (this.quiz != null) {
+            this.quiz.remove();
+            this.quiz = null;
+        }
+
        if (this.creator != null) {
             this.creator.getCreatedTournaments().remove(this);
             this.creator = null;
