@@ -7,8 +7,8 @@ import java.io.Serializable;
 public class StudentQuestionStatsDto implements Serializable {
 
     private final Integer userId;
-
     private final String studentName;
+    private final Boolean visibilitySetting;
 
     private final Long total;
     private final Long approved;
@@ -17,6 +17,7 @@ public class StudentQuestionStatsDto implements Serializable {
     public StudentQuestionStatsDto(User user, long total, long approved, long rejected) {
         this.userId = user.getId();
         this.studentName = user.getUsername();
+        this.visibilitySetting = user.getStudentQuestionStatsVisibility();
         this.total = total;
         this.approved = approved;
         this.rejected = rejected;
@@ -47,5 +48,9 @@ public class StudentQuestionStatsDto implements Serializable {
             return Math.round((getApproved().doubleValue() / getTotal()) * 100L);
         else
             return 0L;
+    }
+
+    public Boolean getVisibilitySetting() {
+        return visibilitySetting;
     }
 }

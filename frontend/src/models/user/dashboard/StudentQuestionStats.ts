@@ -5,6 +5,7 @@ export default class StudentQuestionStats {
   approved!: number;
   rejected!: number;
   percentage!: number;
+  visibilitySetting!: boolean;
 
   constructor(jsonObj?: StudentQuestionStats) {
     if (jsonObj) {
@@ -14,6 +15,7 @@ export default class StudentQuestionStats {
       this.percentage = jsonObj.percentage;
       this.userId = jsonObj.userId;
       this.studentName = jsonObj.studentName;
+      this.visibilitySetting = jsonObj.visibilitySetting;
     }
   }
 }

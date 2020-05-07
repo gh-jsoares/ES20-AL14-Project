@@ -93,6 +93,17 @@ export default class RemoteServices {
       });
   }
 
+  static async toggleStudentQuestionStatsVisibility(): Promise<Boolean> {
+    return httpClient
+      .put('/dashboard/questions/student')
+      .then(response => {
+        return response.data;
+      })
+      .catch(async error => {
+        throw Error(await this.errorMessage(error));
+      });
+  }
+
   static async getUserStats(): Promise<StudentStats> {
     return httpClient
       .get(

@@ -1,6 +1,22 @@
 <template>
   <div class="container">
-    <h2>Student Questions Dashboard</h2>
+    <h2>
+      Student Questions Dashboard
+      <v-card
+        color="white"
+        height="50"
+        outlined
+        raised
+        class="px-3 mx-5 switch-private"
+      >
+        <v-switch
+          v-model="visibilitySetting"
+          class="ma-2"
+          :label="visibilitySetting ? 'Public' : 'Private'"
+          @change="toggleVisibilitySetting"
+        />
+      </v-card>
+    </h2>
     <div v-if="stats != null" class="stats-container">
       <div class="items">
         <div class="icon-wrapper" ref="rejected">
@@ -51,11 +67,23 @@ import AnimatedNumber from '@/components/AnimatedNumber.vue';
 })
 export default class StudentQuestionStatsView extends Vue {
   stats: StudentQuestionStats | null = null;
+  visibilitySetting: Boolean = true;
 
   async created() {
     await this.$store.dispatch('loading');
     try {
       this.stats = await RemoteServices.getStudentQuestionStats();
+      this.visibilitySetting = this.stats.visibilitySetting;
+    } catch (error) {
+      await this.$store.dispatch('error', error);
+    }
+    await this.$store.dispatch('clearLoading');
+  }
+
+  async toggleVisibilitySetting() {
+    await this.$store.dispatch('loading');
+    try {
+      this.visibilitySetting = await RemoteServices.toggleStudentQuestionStatsVisibility();
     } catch (error) {
       await this.$store.dispatch('error', error);
     }
@@ -122,5 +150,9 @@ export default class StudentQuestionStatsView extends Vue {
   & .icon-wrapper i {
     transform: translateY(5px);
   }
+}
+
+.switch-private {
+  display: inline-block;
 }
 </style>
