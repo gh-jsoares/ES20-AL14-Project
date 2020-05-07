@@ -21,7 +21,7 @@
               {{ current.title }}
             </p>
             <p class="subtitle-2 overline mt-1 mb-4">
-              By {{ current.creator.username }}
+              By {{ current.creator == null ? '' : current.creator.username }}
             </p>
             <v-chip
               class="ma-1"
@@ -44,6 +44,19 @@
           <v-card-actions>
             <v-btn color="grey darken-2" @click="dialog = false" text>
               Close
+            </v-btn>
+            <v-spacer></v-spacer>
+            <v-btn
+              v-if="
+                getStatus(current) === 'Not Started' &&
+                  checkIsCreator(current.creator)
+              "
+              right
+              color="red"
+              @click="cancelTournament(current)"
+              text
+            >
+              Delete
             </v-btn>
             <v-spacer></v-spacer>
             <v-btn
@@ -94,7 +107,7 @@
         data-cy="searchBar"
       ></v-text-field>
       <h2>Open Tournaments</h2>
-      <ul>
+      <ul data-cy="tournTable">
         <li class="list-header">
           <div class="col">Title</div>
           <div class="col">Creator</div>
@@ -105,6 +118,7 @@
           <div class="col">Closes At</div>
           <div class="col">Status</div>
           <div class="col last-col"></div>
+          <div class="col short-col"></div>
         </li>
         <li
           class="list-row"
@@ -116,7 +130,7 @@
             {{ tourn.title }}
           </div>
           <div class="col">
-            {{ tourn.creator.username }}
+            {{ tourn.creator == null ? '' : tourn.creator.username }}
           </div>
           <div class="col long-col">
             <v-chip
@@ -143,7 +157,7 @@
           <div class="col">
             {{ getStatus(tourn) }}
           </div>
-          <div class="col last-col">
+          <div class="col">
             <v-btn
               :disabled="tourn.userEnrolled || getStatus(tourn) === 'Started'"
               color="success"
@@ -154,6 +168,28 @@
             >
               Enroll
             </v-btn>
+          </div>
+          <div class="col short-col last-col">
+            <v-tooltip
+              bottom
+              v-if="
+                getStatus(tourn) === 'Not Started' &&
+                  checkIsCreator(tourn.creator)
+              "
+            >
+              <template v-slot:activator="{ on }">
+                <v-icon
+                  large
+                  color="red"
+                  @click="cancelTournament(tourn)"
+                  data-cy="cancelBtn"
+                  v-on="on"
+                >
+                  mdi-delete-forever
+                </v-icon>
+              </template>
+              <span>Delete</span>
+            </v-tooltip>
           </div>
         </li>
       </ul>
@@ -219,6 +255,28 @@ export default class OpenTournamentsView extends Vue {
     await this.$store.dispatch('clearLoading');
   }
 
+  async cancelTournament(tournament: Tournament) {
+    if (
+      tournament.id &&
+      confirm('Are you sure you want to delete this question?')
+    ) {
+      try {
+        await RemoteServices.cancelTournament(tournament.id);
+        this.listTourns = this.listTourns.filter(
+          tour => tour.id != tournament.id
+        );
+        this.dialog = false;
+      } catch (error) {
+        await this.$store.dispatch('error', error);
+      }
+    }
+  }
+
+  checkIsCreator(user: User): boolean {
+    if (this.$store.getters.getUser == null || user == null) return false;
+    return user.username == this.$store.getters.getUser.username;
+  }
+
   openDialog(tourn: Tournament) {
     this.dialog = true;
     this.current = tourn;
@@ -236,7 +294,7 @@ export default class OpenTournamentsView extends Vue {
 }
 
 .container {
-  max-width: 75vw;
+  max-width: 90vw;
   margin-left: auto;
   margin-right: auto;
   padding-left: 10px;
