@@ -11,7 +11,9 @@ Cypress.Commands.add('createDiscussion', (name, discussion) => {
   cy.contains('Solved').click();
   cy.contains(name).click();
   cy.get('[data-cy="Open Discussion"]').click();
-  cy.get('[data-cy="Question Options"]').parent().click();
+  cy.get('[data-cy="Question Options"]')
+    .parent()
+    .click();
   cy.get('[data-cy="Your question"]').type(discussion);
   cy.get('[data-cy="sendButton"]').click();
 });
@@ -40,8 +42,16 @@ Cypress.Commands.add('openDiscussion', () => {
   cy.get('[data-cy="isVisibleToOtherStudents"]').should('exist');
 });
 
+Cypress.Commands.add('makeNewQuestion', newQuestion => {
+  cy.get('[data-cy="quizzesButton"]').click();
+  cy.contains('Discussions').click();
+  cy.contains('Discussion Question Title').click();
+  cy.get('[data-cy="questionTitleButton"]').click();
+  cy.get('[data-cy="Your question"]').type(newQuestion);
+  cy.get('[data-cy="sendButton"]').click();
+});
 
-Cypress.Commands.add('seeQuestionDiscussions', (quizTitle) => {
+Cypress.Commands.add('seeQuestionDiscussions', quizTitle => {
   cy.get('[data-cy="quizzesButton"]').click();
   cy.contains('Solved').click();
   cy.contains(quizTitle).click();
