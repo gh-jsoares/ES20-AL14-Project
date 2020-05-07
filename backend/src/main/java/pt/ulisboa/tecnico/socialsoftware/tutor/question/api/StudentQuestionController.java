@@ -30,7 +30,7 @@ import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.AU
 public class StudentQuestionController {
     private static Logger logger = LoggerFactory.getLogger(StudentQuestionController.class);
 
-    private StudentQuestionService studentQuestionService;
+    private final StudentQuestionService studentQuestionService;
 
     @Value("${figures.dir}")
     private String figuresDir;
@@ -119,6 +119,11 @@ public class StudentQuestionController {
         return this.studentQuestionService.getStudentQuestion(getAuthUser(principal).getId(), studentQuestionId);
     }
 
+    @PutMapping("/questions/student/{studentQuestionId}")
+    @PreAuthorize("hasRole('ROLE_STUDENT') and hasPermission(#studentQuestionId, 'STUDENTQUESTION.ACCESS')")
+    public StudentQuestionDto editStudentQuestion(Principal principal, @PathVariable Integer studentQuestionId, @Valid @RequestBody StudentQuestionDto studentQuestion) {
+        return this.studentQuestionService.editStudentQuestion(getAuthUser(principal).getId(), studentQuestionId, studentQuestion);
+    }
 
     private Path getTargetLocation(String url) {
         String fileLocation = figuresDir + url;
