@@ -4,7 +4,7 @@
     <div v-if="stats != null" class="stats-container">
       <div class="items">
         <div class="icon-wrapper" ref="rejected">
-          <animated-number :number="stats.rejected" />
+          <animated-number data-cy="rejected" :number="stats.rejected" />
         </div>
         <div class="project-name">
           <p>Rejected student questions</p>
@@ -12,7 +12,7 @@
       </div>
       <div class="items">
         <div class="icon-wrapper" ref="approved">
-          <animated-number :number="stats.approved" />
+          <animated-number data-cy="approved" :number="stats.approved" />
         </div>
         <div class="project-name">
           <p>Approved student questions</p>
@@ -20,7 +20,7 @@
       </div>
       <div class="items">
         <div class="icon-wrapper" ref="total">
-          <animated-number :number="stats.total" />
+          <animated-number data-cy="total" :number="stats.total" />
         </div>
         <div class="project-name">
           <p>Total submitted student questions</p>
@@ -28,7 +28,7 @@
       </div>
       <div class="items">
         <div class="icon-wrapper" ref="percentage">
-          <animated-number :number="stats.percentage">%</animated-number>
+          <animated-number data-cy="percentage" :number="stats.percentage">%</animated-number>
         </div>
         <div class="project-name">
           <p>Percentage of approved student questions</p>
