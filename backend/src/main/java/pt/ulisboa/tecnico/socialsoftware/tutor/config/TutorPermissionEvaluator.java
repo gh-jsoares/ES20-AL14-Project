@@ -89,6 +89,8 @@ public class TutorPermissionEvaluator implements PermissionEvaluator {
                     return studentQuestionService.canAccessStudentQuestion(userId, id);
                 case "TOURNAMENT.ACCESS":
                     return userHasThisExecution(userId, tournamentService.findTournamentCourseExecution(id).getCourseExecutionId());
+                case "DASHBOARD.STUDENTQUESTION.ACCESS":
+                    return true;
 
                 default: return false;
             }
