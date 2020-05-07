@@ -51,7 +51,8 @@ public class User implements UserDetails, DomainEntity {
     private Integer numberOfCorrectInClassAnswers;
     private Integer numberOfCorrectStudentAnswers;
 
-    private Boolean areDiscussionsPublic;
+    @Column(columnDefinition = "boolean default false")
+    private boolean areDiscussionsPublic;
 
     @Column(name = "creation_date")
     private LocalDateTime creationDate;
@@ -194,12 +195,12 @@ public class User implements UserDetails, DomainEntity {
         this.discussions.add(discussion);
     }
 
-    public Boolean getDiscussionsPrivacy() {
+    public boolean getDiscussionsPrivacy() {
         return areDiscussionsPublic;
     }
 
-    public void setDiscussionsPrivacy(Boolean areDiscussionsPublic) {
-        this.areDiscussionsPublic = areDiscussionsPublic;
+    public void toggleDiscussionsPrivacy() {
+        areDiscussionsPublic = !areDiscussionsPublic;
     }
 
     public Set<StudentQuestion> getStudentQuestions() {

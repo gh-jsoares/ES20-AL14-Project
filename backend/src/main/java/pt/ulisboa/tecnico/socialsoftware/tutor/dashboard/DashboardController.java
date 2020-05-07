@@ -8,7 +8,6 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.dashboard.dto.DiscussionStatsDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException;
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.User;
 
-import javax.validation.Valid;
 import java.security.Principal;
 
 import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.AUTHENTICATION_ERROR;
@@ -33,13 +32,13 @@ public class DashboardController {
 
     @GetMapping("/discussions/stats/toggle")
     @PreAuthorize("hasRole('ROLE_STUDENT')")
-    public DiscussionStatsDto toggleDiscussionStats(Principal principal, @Valid @RequestBody Boolean bool) {
+    public DiscussionStatsDto toggleDiscussionStats(Principal principal) {
         User user = (User) ((Authentication) principal).getPrincipal();
 
         if(user == null){
             throw new TutorException(AUTHENTICATION_ERROR);
         }
 
-        return dashboardService.toggleDiscussionStats(user.getId(), bool);
+        return dashboardService.toggleDiscussionStats(user.getId());
     }
 }

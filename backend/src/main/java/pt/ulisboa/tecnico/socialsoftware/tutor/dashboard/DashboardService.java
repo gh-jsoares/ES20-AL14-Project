@@ -35,9 +35,9 @@ public class DashboardService {
             value = { SQLException.class },
             backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
-    public DiscussionStatsDto toggleDiscussionStats(Integer userId, Boolean bool){
+    public DiscussionStatsDto toggleDiscussionStats(Integer userId){
         User student = getStudentById(userId);
-        student.setDiscussionsPrivacy(bool);
+        student.toggleDiscussionsPrivacy();
 
         return getDiscussionStatsDto(student);
     }

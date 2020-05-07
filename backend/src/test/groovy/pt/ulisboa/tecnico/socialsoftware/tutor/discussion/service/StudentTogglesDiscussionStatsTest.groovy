@@ -70,29 +70,15 @@ class StudentTogglesDiscussionStatsTest extends Specification {
         userRepository.save(teacher)
     }
 
-    def "student makes discussion stats private"() {
-        given: "a student"
-        student
-        and: "a boolean"
-        Boolean bool = false
-        when:
-        def result = dashboardService.toggleDiscussionStats(student.getId(), bool)
-
-        then:
-        !result.areDiscussionsPublic()
-        !student.getDiscussionsPrivacy()
-    }
-
     def "student makes discussion stats public"() {
         given: "a student"
         student
         and: "a boolean"
-        Boolean bool = true
         when:
-        def result = dashboardService.toggleDiscussionStats(student.getId(), bool)
+        def result = dashboardService.toggleDiscussionStats(student.getId())
 
         then:
-        result.areDiscussionsPublic()
+        result.getAreDiscussionsPublic()
         student.getDiscussionsPrivacy()
     }
 
@@ -100,11 +86,11 @@ class StudentTogglesDiscussionStatsTest extends Specification {
         given: "a student"
         student
         when:
-        DiscussionStatsDto result1 = dashboardService.toggleDiscussionStats(student.getId(), true)
-        DiscussionStatsDto result2 = dashboardService.toggleDiscussionStats(student.getId(), false)
+        DiscussionStatsDto result1 = dashboardService.toggleDiscussionStats(student.getId())
+        DiscussionStatsDto result2 = dashboardService.toggleDiscussionStats(student.getId())
         then:
-        result1.areDiscussionsPublic()
-        !result2.areDiscussionsPublic()
+        result1.getAreDiscussionsPublic()
+        !result2.getAreDiscussionsPublic()
         !student.getDiscussionsPrivacy()
     }
 
@@ -112,13 +98,13 @@ class StudentTogglesDiscussionStatsTest extends Specification {
         given: "a student"
         student
         when:
-        def result1 = dashboardService.toggleDiscussionStats(student.getId(), true)
-        def result2 = dashboardService.toggleDiscussionStats(student.getId(), false)
-        def result3 = dashboardService.toggleDiscussionStats(student.getId(), true)
+        def result1 = dashboardService.toggleDiscussionStats(student.getId())
+        def result2 = dashboardService.toggleDiscussionStats(student.getId())
+        def result3 = dashboardService.toggleDiscussionStats(student.getId())
         then:
-        result1.areDiscussionsPublic()
-        !result2.areDiscussionsPublic()
-        result3.areDiscussionsPublic()
+        result1.getAreDiscussionsPublic()
+        !result2.getAreDiscussionsPublic()
+        result3.getAreDiscussionsPublic()
         student.getDiscussionsPrivacy()
     }
 
@@ -127,7 +113,7 @@ class StudentTogglesDiscussionStatsTest extends Specification {
         teacher
 
         when: "teacher wants to see his discussion stats"
-        dashboardService.toggleDiscussionStats(teacher.getId(), true)
+        dashboardService.toggleDiscussionStats(teacher.getId())
 
         then: "an exception is thrown"
         def exception = thrown(TutorException)
@@ -136,7 +122,7 @@ class StudentTogglesDiscussionStatsTest extends Specification {
 
     def "non-existent user toggles discussion stats"() {
         when:
-        dashboardService.toggleDiscussionStats(INVALID_ID, true)
+        dashboardService.toggleDiscussionStats(INVALID_ID)
 
         then: "an exception is thrown"
         def exception = thrown(TutorException)

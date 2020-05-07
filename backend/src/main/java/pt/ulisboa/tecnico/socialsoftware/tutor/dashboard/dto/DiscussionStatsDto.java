@@ -3,6 +3,7 @@ package pt.ulisboa.tecnico.socialsoftware.tutor.dashboard.dto;
 import java.io.Serializable;
 
 public class DiscussionStatsDto implements Serializable {
+
     private boolean areDiscussionsPublic;
 
     private Integer discussionsNumber;
@@ -19,7 +20,7 @@ public class DiscussionStatsDto implements Serializable {
         this.publicDiscussionsNumber = publicDiscussionsNumber;
     }
 
-    public boolean areDiscussionsPublic() {
+    public boolean getAreDiscussionsPublic() {
         return areDiscussionsPublic;
     }
 
