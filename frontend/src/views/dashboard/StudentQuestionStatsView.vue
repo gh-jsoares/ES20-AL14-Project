@@ -28,7 +28,9 @@
       </div>
       <div class="items">
         <div class="icon-wrapper" ref="percentage">
-          <animated-number data-cy="percentage" :number="stats.percentage">%</animated-number>
+          <animated-number data-cy="percentage" :number="stats.percentage">
+            %
+          </animated-number>
         </div>
         <div class="project-name">
           <p>Percentage of approved student questions</p>

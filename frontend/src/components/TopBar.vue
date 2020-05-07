@@ -135,7 +135,9 @@
                 <v-icon>question_answer</v-icon>
               </v-list-item-action>
               <v-list-item-content>
-                <v-list-item-title data-cy="studentQuestionDashboardLink">Student Questions</v-list-item-title>
+                <v-list-item-title data-cy="studentQuestionDashboardLink">
+                  Student Questions
+                </v-list-item-title>
               </v-list-item-content>
             </v-list-item>
           </v-list>
@@ -465,7 +467,7 @@
           <v-list-item-action>
             <v-icon>fas fa-sign-out-alt</v-icon>
           </v-list-item-action>
-          <v-list-item-content data-cy="logoutButton">Logout</v-list-item-content>
+          <v-list-item-content>Logout</v-list-item-content>
         </v-list-item>
         <v-list-item :href="fenixUrl" v-else>
           <v-list-item-action>
