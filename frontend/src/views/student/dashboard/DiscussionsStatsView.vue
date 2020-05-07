@@ -1,9 +1,28 @@
 <template>
   <div class="container">
     <h2>Discussion Statistics</h2>
+    <v-card
+      color="white"
+      height="58"
+      outlined
+      raised
+      class="px-3 mx-5 switch-private"
+    >
+      <v-switch
+        v-model="stats.areDiscussionsPublic"
+        class="ma-2"
+        :label="stats.areDiscussionsPublic ? 'Make Private' : 'Make Public'"
+        @change="changePrivacySetting"
+        data-cy="privacyToggle"
+      ></v-switch>
+    </v-card>
     <div v-if="stats != null" class="stats-container">
       <div class="items">
-        <div class="icon-wrapper" ref="totalQuizzes" data-cy="discussionsNumber">
+        <div
+          class="icon-wrapper"
+          ref="totalQuizzes"
+          data-cy="discussionsNumber"
+        >
           <animated-number :number="stats.discussionsNumber" />
         </div>
         <div class="project-name">
@@ -11,7 +30,11 @@
         </div>
       </div>
       <div class="items">
-        <div class="icon-wrapper" ref="totalAnswers" data-cy="publicDiscussionsNumber">
+        <div
+          class="icon-wrapper"
+          ref="totalAnswers"
+          data-cy="publicDiscussionsNumber"
+        >
           <animated-number :number="stats.publicDiscussionsNumber" />
         </div>
         <div class="project-name">
@@ -43,10 +66,23 @@ export default class StatsView extends Vue {
     }
     await this.$store.dispatch('clearLoading');
   }
+
+  async changePrivacySetting() {
+    await this.$store.dispatch('loading');
+    try {
+      this.stats = await RemoteServices.toggleDiscussionStats();
+    } catch (error) {
+      await this.$store.dispatch('error', error);
+    }
+    await this.$store.dispatch('clearLoading');
+  }
 }
 </script>
 
 <style lang="scss" scoped>
+.switch-private {
+  float: right;
+}
 .stats-container {
   display: flex;
   flex-direction: row;

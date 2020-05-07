@@ -91,7 +91,8 @@
         v-model="discussion.active"
       >
         <template v-slot:activator>
-          <v-list-item-title data-cy="visibleDiscussion"
+          <v-list-item-title
+            data-cy="visibleDiscussion"
             v-text="
               discussion.messages[0].userName +
                 ' asked ' +

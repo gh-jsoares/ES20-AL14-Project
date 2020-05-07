@@ -772,6 +772,17 @@ export default class RemoteServices {
       });
   }
 
+  static async toggleDiscussionStats(): Promise<DiscussionsStats> {
+    return httpClient
+      .get('/discussions/stats/toggle')
+      .then(response => {
+        return new DiscussionsStats(response.data);
+      })
+      .catch(async error => {
+        throw Error(await this.errorMessage(error));
+      });
+  }
+
   static async exportAll() {
     return httpClient
       .get('/admin/export', {
