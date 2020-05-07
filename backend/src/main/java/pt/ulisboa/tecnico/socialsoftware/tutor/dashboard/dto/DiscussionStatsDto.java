@@ -1,4 +1,4 @@
-package pt.ulisboa.tecnico.socialsoftware.tutor.discussion.dto;
+package pt.ulisboa.tecnico.socialsoftware.tutor.dashboard.dto;
 
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.domain.Discussion;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.QuestionDto;

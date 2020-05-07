@@ -91,7 +91,6 @@
         <v-list-item disabled
                 v-for="message in discussion.messages.slice(1,discussion.messages.length)"
                 :key="message.message"
-                @click=""
         >
           <v-list-item-content>
             <v-list-item-title v-text="message.userName + ' answered ' + message.message"></v-list-item-title>

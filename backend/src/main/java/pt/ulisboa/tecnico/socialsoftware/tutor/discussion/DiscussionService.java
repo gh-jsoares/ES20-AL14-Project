@@ -1,11 +1,9 @@
 package pt.ulisboa.tecnico.socialsoftware.tutor.discussion;
 
 import pt.ulisboa.tecnico.socialsoftware.tutor.answer.domain.QuestionAnswer;
-import pt.ulisboa.tecnico.socialsoftware.tutor.answer.domain.QuizAnswer;
 import pt.ulisboa.tecnico.socialsoftware.tutor.answer.repository.QuestionAnswerRepository;
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecution;
-import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.dto.DiscussionStatsDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.dto.MessageDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.repository.DiscussionRepository;
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.dto.DiscussionDto;
@@ -210,44 +208,11 @@ public class DiscussionService {
             value = { SQLException.class },
             backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
-    public boolean studentHasAnsweredQuestion(User student, Question question) {
-        return question.getQuizQuestions().stream()
-                .map(QuizQuestion::getQuestionAnswers)
-                .flatMap(Collection::stream)
-                .map(QuestionAnswer::getQuizAnswer)
-                .map(QuizAnswer::getUser)
-                .anyMatch(userWhoAnsweredQuestion -> userWhoAnsweredQuestion.getId().equals(student.getId()));
-    }
-
-    @Retryable(
-            value = { SQLException.class },
-            backoff = @Backoff(delay = 5000))
-    @Transactional(isolation = Isolation.REPEATABLE_READ)
     public DiscussionDto studentMakesNewQuestion(Integer userId, Integer discussionId, MessageDto messageDto) {
         Discussion discussion = discussionRepository.findById(discussionId).orElseThrow(() -> new TutorException(ErrorMessage.DISCUSSION_NOT_FOUND, discussionId));
         User student = getStudentById(userId);
 
         discussion.updateStudentQuestion(student, messageDto);
         return new DiscussionDto(discussion);
-    }
-
-    @Retryable(
-            value = { SQLException.class },
-            backoff = @Backoff(delay = 5000))
-    @Transactional(isolation = Isolation.REPEATABLE_READ)
-    public DiscussionStatsDto getDiscussionStats(Integer userId) {
-        User student = getStudentById(userId);
-
-        DiscussionStatsDto discussionStatsDto = new DiscussionStatsDto();
-
-        int discussionsNumber = student.getDiscussions().size();
-
-        int publicDiscussionsNumber = (int) student.getDiscussions().stream()
-                .filter(Discussion::isVisibleToOtherStudents)
-                .count();
-
-        discussionStatsDto.setDiscussionsNumber(discussionsNumber);
-        discussionStatsDto.setPublicDiscussionsNumber(publicDiscussionsNumber);
-        return discussionStatsDto;
     }
 }
