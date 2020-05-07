@@ -1,11 +1,10 @@
 package pt.ulisboa.tecnico.socialsoftware.tutor.dashboard.dto;
 
-import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.domain.Discussion;
-import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.QuestionDto;
-
 import java.io.Serializable;
 
 public class DiscussionStatsDto implements Serializable {
+    private boolean areDiscussionsPublic;
+
     private Integer discussionsNumber;
 
     private Integer publicDiscussionsNumber;
@@ -18,5 +17,13 @@ public class DiscussionStatsDto implements Serializable {
 
     public void setPublicDiscussionsNumber(Integer publicDiscussionsNumber) {
         this.publicDiscussionsNumber = publicDiscussionsNumber;
+    }
+
+    public boolean areDiscussionsPublic() {
+        return areDiscussionsPublic;
+    }
+
+    public void setAreDiscussionsPublic(boolean areDiscussionsPublic) {
+        this.areDiscussionsPublic = areDiscussionsPublic;
     }
 }

@@ -11,6 +11,7 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecutionRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseService
 import pt.ulisboa.tecnico.socialsoftware.tutor.dashboard.DashboardService
+import pt.ulisboa.tecnico.socialsoftware.tutor.dashboard.dto.DiscussionStatsDto
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.User
@@ -78,7 +79,7 @@ class StudentTogglesDiscussionStatsTest extends Specification {
         def result = dashboardService.toggleDiscussionStats(student.getId(), bool)
 
         then:
-        !result
+        !result.areDiscussionsPublic()
         !student.getDiscussionsPrivacy()
     }
 
@@ -91,7 +92,7 @@ class StudentTogglesDiscussionStatsTest extends Specification {
         def result = dashboardService.toggleDiscussionStats(student.getId(), bool)
 
         then:
-        result
+        result.areDiscussionsPublic()
         student.getDiscussionsPrivacy()
     }
 
@@ -99,11 +100,11 @@ class StudentTogglesDiscussionStatsTest extends Specification {
         given: "a student"
         student
         when:
-        def result1 = dashboardService.toggleDiscussionStats(student.getId(), true)
-        def result2 = dashboardService.toggleDiscussionStats(student.getId(), false)
+        DiscussionStatsDto result1 = dashboardService.toggleDiscussionStats(student.getId(), true)
+        DiscussionStatsDto result2 = dashboardService.toggleDiscussionStats(student.getId(), false)
         then:
-        result1
-        !result2
+        result1.areDiscussionsPublic()
+        !result2.areDiscussionsPublic()
         !student.getDiscussionsPrivacy()
     }
 
@@ -115,9 +116,9 @@ class StudentTogglesDiscussionStatsTest extends Specification {
         def result2 = dashboardService.toggleDiscussionStats(student.getId(), false)
         def result3 = dashboardService.toggleDiscussionStats(student.getId(), true)
         then:
-        result1
-        !result2
-        result3
+        result1.areDiscussionsPublic()
+        !result2.areDiscussionsPublic()
+        result3.areDiscussionsPublic()
         student.getDiscussionsPrivacy()
     }
 

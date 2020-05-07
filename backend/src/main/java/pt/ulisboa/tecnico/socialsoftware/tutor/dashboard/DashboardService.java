@@ -28,6 +28,21 @@ public class DashboardService {
     public DiscussionStatsDto getDiscussionStats(Integer userId) {
         User student = getStudentById(userId);
 
+        return getDiscussionStatsDto(student);
+    }
+
+    @Retryable(
+            value = { SQLException.class },
+            backoff = @Backoff(delay = 5000))
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public DiscussionStatsDto toggleDiscussionStats(Integer userId, Boolean bool){
+        User student = getStudentById(userId);
+        student.setDiscussionsPrivacy(bool);
+
+        return getDiscussionStatsDto(student);
+    }
+
+    private DiscussionStatsDto getDiscussionStatsDto(User student) {
         DiscussionStatsDto discussionStatsDto = new DiscussionStatsDto();
 
         int discussionsNumber = student.getDiscussions().size();
@@ -36,19 +51,10 @@ public class DashboardService {
                 .filter(Discussion::isVisibleToOtherStudents)
                 .count();
 
+        discussionStatsDto.setAreDiscussionsPublic(student.getDiscussionsPrivacy());
         discussionStatsDto.setDiscussionsNumber(discussionsNumber);
         discussionStatsDto.setPublicDiscussionsNumber(publicDiscussionsNumber);
         return discussionStatsDto;
-    }
-
-    @Retryable(
-            value = { SQLException.class },
-            backoff = @Backoff(delay = 5000))
-    @Transactional(isolation = Isolation.REPEATABLE_READ)
-    public Boolean toggleDiscussionStats(Integer userId, Boolean bool){
-        User student = getStudentById(userId);
-        student.setDiscussionsPrivacy(bool);
-        return student.getDiscussionsPrivacy();
     }
 
     private User getStudentById(Integer studentId) {
