@@ -2,6 +2,7 @@ describe('Review Student Question walkthrough', () => {
     beforeEach(() => {
         cy.demoTeacherLogin();
 
+        cy.cleanupGeneratedQuestions();
         cy.cleanupStudentQuestion(10000);
         cy.initStudentQuestions({ amount: 1 });
 
@@ -10,7 +11,23 @@ describe('Review Student Question walkthrough', () => {
 
     afterEach(() => {
         cy.contains('Logout').click();
+        cy.cleanupGeneratedQuestions();
         cy.cleanupStudentQuestion(10000);
+    });
+
+    it('login accept student question', () => {
+        cy.fixture('questions/student/studentQuestionsData.json').then(data => {
+            const studentQuestion = data.student_questions[0];
+            cy.acceptStudentQuestion(studentQuestion);
+            cy.get('[data-cy="stepperContinueContent"]')
+                .click()
+                .get('[data-cy="stepperContinueReview"]')
+                .click()
+                .get('[data-cy="stepperApprove"]')
+                .click()
+                .wait('@acceptStudentQuestion')
+                .checkStudentQuestionStatus(studentQuestion, 'ACCEPTED');
+        });
     });
 
     it('login edit topics and accept student question', () => {

@@ -82,3 +82,12 @@ Cypress.Commands.add('cleanupStudentQuestions', () => {
         DELETE FROM student_questions WHERE title LIKE 'Student Question Title%';\
     `);
 });
+
+Cypress.Commands.add('cleanupGeneratedQuestions', () => {
+    cy.queryDatabase(
+        `WITH q_id AS (\
+            SELECT id FROM questions WHERE title LIKE '%Student Question Title%'\
+        ) DELETE FROM options WHERE question_id IN (SELECT id FROM q_id);\
+        DELETE FROM questions WHERE title LIKE '%Student Question Title%';\
+    `);
+});
