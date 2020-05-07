@@ -51,6 +51,8 @@ public class User implements UserDetails, DomainEntity {
     private Integer numberOfCorrectInClassAnswers;
     private Integer numberOfCorrectStudentAnswers;
 
+    private Boolean areDiscussionsPublic;
+
     @Column(name = "creation_date")
     private LocalDateTime creationDate;
 
@@ -68,9 +70,6 @@ public class User implements UserDetails, DomainEntity {
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.LAZY, orphanRemoval=true)
     private Set<Message> messages = new HashSet<>();
-
-    @Column(name = "public_discussions")
-    private Boolean areDiscussionsPublic = false;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "student", fetch = FetchType.LAZY, orphanRemoval=true)
     private Set<StudentQuestion> studentQuestions = new HashSet<>();
@@ -102,6 +101,7 @@ public class User implements UserDetails, DomainEntity {
         this.numberOfCorrectTeacherAnswers = 0;
         this.numberOfCorrectInClassAnswers = 0;
         this.numberOfCorrectStudentAnswers = 0;
+        this.areDiscussionsPublic = false;
     }
 
     @Override
@@ -192,6 +192,14 @@ public class User implements UserDetails, DomainEntity {
 
     public void addDiscussion(Discussion discussion) {
         this.discussions.add(discussion);
+    }
+
+    public Boolean getDiscussionsPrivacy() {
+        return areDiscussionsPublic;
+    }
+
+    public void setDiscussionsPrivacy(Boolean areDiscussionsPublic) {
+        this.areDiscussionsPublic = areDiscussionsPublic;
     }
 
     public Set<StudentQuestion> getStudentQuestions() {
