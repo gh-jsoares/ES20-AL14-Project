@@ -69,29 +69,28 @@ public class DashboardService {
 
         int totalUnranked = totalSolved - (totalFirst + totalSecond + totalThird);
 
-        int correctAnswers = (int) user.getQuizAnswers().stream()
+        List<Option> nonNullOptions = user.getQuizAnswers().stream()
                 .filter(quizAnswer -> quizAnswer.getQuiz().getCourseExecution().getId() == executionId)
                 .filter(quizAnswer -> quizAnswer.getQuiz().getType().equals(Quiz.QuizType.TOURNAMENT))
+                .filter(quizAnswer -> quizAnswer.getQuiz().getTournament().getState().equals(Tournament.State.CLOSED))
                 .map(QuizAnswer::getQuestionAnswers)
                 .flatMap(Collection::stream)
                 .map(QuestionAnswer::getOption)
                 .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+        int correctAnswers = (int) nonNullOptions.stream()
                 .filter(Option::getCorrect)
                 .count();
 
-        int wrongAnswers = (int) user.getQuizAnswers().stream()
-                .filter(quizAnswer -> quizAnswer.getQuiz().getCourseExecution().getId() == executionId)
-                .filter(quizAnswer -> quizAnswer.getQuiz().getType().equals(Quiz.QuizType.TOURNAMENT))
-                .map(QuizAnswer::getQuestionAnswers)
-                .flatMap(Collection::stream)
-                .map(QuestionAnswer::getOption)
-                .filter(Objects::nonNull)
+        int wrongAnswers = (int) nonNullOptions.stream()
                 .filter(opt -> !opt.getCorrect())
                 .count();
 
         int totalPerfect = (int) user.getQuizAnswers().stream()
                 .filter(quizAnswer -> quizAnswer.getQuiz().getCourseExecution().getId() == executionId)
                 .filter(quizAnswer -> quizAnswer.getQuiz().getType().equals(Quiz.QuizType.TOURNAMENT))
+                .filter(quizAnswer -> quizAnswer.getQuiz().getTournament().getState().equals(Tournament.State.CLOSED))
                 .filter(QuizAnswer::isCompleted)
                 .map(QuizAnswer::getQuestionAnswers)
                 .filter(ans -> ans.stream().allMatch(quest -> quest.getOption() != null && quest.getOption().getCorrect()))
