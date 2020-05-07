@@ -34,7 +34,7 @@ public class DashboardController {
 
     @PostMapping("/executions/{executionId}/dashboard/tournaments/changePrivacy")
     @PreAuthorize("(hasRole('ROLE_STUDENT') or hasRole('ROLE_DEMO_STUDENT')) and hasPermission(#executionId, 'EXECUTION.ACCESS')")
-    public ResponseEntity changeTournamentPrivacy(Principal principal, @PathVariable int executionId) {
+    public ResponseEntity changeTournamentStatsPrivacy(Principal principal, @PathVariable int executionId) {
         User user = (User) ((Authentication) principal).getPrincipal();
 
         if (user == null){
