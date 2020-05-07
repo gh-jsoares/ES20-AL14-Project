@@ -52,7 +52,7 @@ public class User implements UserDetails, DomainEntity {
     private Integer numberOfCorrectInClassAnswers;
     private Integer numberOfCorrectStudentAnswers;
 
-    private boolean anonimizeTournamentStats;
+    private boolean anonymizeTournamentStats;
 
     @Column(name = "creation_date")
     private LocalDateTime creationDate;
@@ -100,7 +100,7 @@ public class User implements UserDetails, DomainEntity {
         this.numberOfCorrectTeacherAnswers = 0;
         this.numberOfCorrectInClassAnswers = 0;
         this.numberOfCorrectStudentAnswers = 0;
-        this.anonimizeTournamentStats = false;
+        this.anonymizeTournamentStats = false;
     }
 
     @Override
@@ -449,12 +449,12 @@ public class User implements UserDetails, DomainEntity {
         this.enrolledTournaments.add(tournament);
     }
 
-    public boolean isAnonimizeTournamentStats() { return anonimizeTournamentStats; }
+    public boolean isAnonymizeTournamentStats() { return this.anonymizeTournamentStats; }
 
     public void changeTournamentStatsPrivacy() {
         if (this.role != Role.STUDENT)
             throw new TutorException(ErrorMessage.USER_IS_NOT_STUDENT, this.id);
-        this.anonimizeTournamentStats = !this.anonimizeTournamentStats;
+        this.anonymizeTournamentStats = !this.anonymizeTournamentStats;
     }
 
     @Override
