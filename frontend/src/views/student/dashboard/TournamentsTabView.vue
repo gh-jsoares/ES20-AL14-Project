@@ -6,7 +6,7 @@
         class="items"
         style="background-color: rgba(250,180,30,0.85); color: white"
       >
-        <div class="icon-wrapper" ref="totalQuizzes">
+        <div class="icon-wrapper" ref="totalFirstPlace">
           <animated-number :number="stats.totalFirstPlace" />
         </div>
         <div class="project-name">
@@ -17,7 +17,7 @@
         class="items"
         style="background-color: rgba(127,127,119,0.85); color: white"
       >
-        <div class="icon-wrapper" ref="totalAnswers">
+        <div class="icon-wrapper" ref="totalSecondPlace">
           <animated-number :number="stats.totalSecondPlace" />
         </div>
         <div class="project-name">
@@ -28,7 +28,7 @@
         class="items"
         style="background-color: rgba(205,126,66,0.85); color: white"
       >
-        <div class="icon-wrapper" ref="totalUniqueQuestions">
+        <div class="icon-wrapper" ref="totalThirdPlace">
           <animated-number :number="stats.totalThirdPlace" />
         </div>
         <div class="project-name">
@@ -36,7 +36,7 @@
         </div>
       </div>
       <div class="items">
-        <div class="icon-wrapper" ref="correctAnswers">
+        <div class="icon-wrapper" ref="totalPerfect">
           <animated-number :number="stats.totalPerfect" />
         </div>
         <div class="project-name">
@@ -44,7 +44,7 @@
         </div>
       </div>
       <div class="items">
-        <div class="icon-wrapper" ref="improvedCorrectAnswers">
+        <div class="icon-wrapper" ref="totalSolved">
           <animated-number :number="stats.totalSolved" />
         </div>
         <div class="project-name">
@@ -52,7 +52,7 @@
         </div>
       </div>
       <div class="items">
-        <div class="icon-wrapper" ref="percentageOfSeenQuestions">
+        <div class="icon-wrapper" ref="totalUnsolved">
           <animated-number :number="stats.totalUnsolved" />
         </div>
         <div class="project-name">
@@ -60,7 +60,7 @@
         </div>
       </div>
       <div class="items">
-        <div class="icon-wrapper" ref="percentageOfSeenQuestions">
+        <div class="icon-wrapper" ref="totalCorrectAnswers">
           <animated-number :number="stats.totalCorrectAnswers" />
         </div>
         <div class="project-name">
@@ -71,7 +71,7 @@
         class="items"
         style="background-color: rgba(88,170,58,0.85); color: white"
       >
-        <div class="icon-wrapper" ref="totalQuizzes">
+        <div class="icon-wrapper" ref="score">
           <animated-number :number="stats.score">pt</animated-number>
         </div>
         <div class="project-name">
@@ -79,7 +79,7 @@
         </div>
       </div>
       <div class="items">
-        <div class="icon-wrapper" ref="percentageOfSeenQuestions">
+        <div class="icon-wrapper" ref="totalWrongAnswers">
           <animated-number :number="stats.totalWrongAnswers" />
         </div>
         <div class="project-name">
