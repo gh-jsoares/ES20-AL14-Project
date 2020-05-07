@@ -26,7 +26,7 @@ public class DashboardController {
     }
 
     @GetMapping("/dashboard/{userId}/questions/student")
-    @PreAuthorize("hasRole('ROLE_STUDENT') and hasPermission(#userId, 'DASHBOARD.STUDENTQUESTION.ACCESS')")
+    @PreAuthorize("hasPermission(#userId, 'DASHBOARD.STUDENTQUESTION.ACCESS')")
     public StudentQuestionStatsDto getStudentQuestionStatsForUser(@PathVariable int userId) {
         return this.dashboardService.getStudentQuestionStats(userId);
     }

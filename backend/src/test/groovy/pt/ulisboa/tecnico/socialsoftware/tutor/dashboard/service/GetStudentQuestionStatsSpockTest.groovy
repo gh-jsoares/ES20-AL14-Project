@@ -64,10 +64,10 @@ class GetStudentQuestionStatsSpockTest extends Specification {
         def studentQuestionsStats = dashboardService.getStudentQuestionStats(user.getId())
 
         then:
-        studentQuestionsStats.getTotalStudentQuestions() == total
-        studentQuestionsStats.getApprovedStudentQuestions() == approved
-        studentQuestionsStats.getRejectedStudentQuestions() == rejected
-        studentQuestionsStats.getPercentageOfStudentQuestions() == percentage
+        studentQuestionsStats.getTotal() == total
+        studentQuestionsStats.getApproved() == approved
+        studentQuestionsStats.getRejected() == rejected
+        studentQuestionsStats.getPercentage() == percentage
 
         where:
         awaitingCount | rejectedCount | approvedCount || rejected | approved | percentage | total

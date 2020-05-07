@@ -10,16 +10,16 @@ public class StudentQuestionStatsDto implements Serializable {
 
     private final String studentName;
 
-    private final Long totalStudentQuestions;
-    private final Long approvedStudentQuestions;
-    private final Long rejectedStudentQuestions;
+    private final Long total;
+    private final Long approved;
+    private final Long rejected;
 
     public StudentQuestionStatsDto(User user, long total, long approved, long rejected) {
         this.userId = user.getId();
         this.studentName = user.getUsername();
-        this.totalStudentQuestions = total;
-        this.approvedStudentQuestions = approved;
-        this.rejectedStudentQuestions = rejected;
+        this.total = total;
+        this.approved = approved;
+        this.rejected = rejected;
     }
 
     public Integer getUserId() {
@@ -30,21 +30,21 @@ public class StudentQuestionStatsDto implements Serializable {
         return studentName;
     }
 
-    public Long getTotalStudentQuestions() {
-        return totalStudentQuestions;
+    public Long getTotal() {
+        return total;
     }
 
-    public Long getApprovedStudentQuestions() {
-        return approvedStudentQuestions;
+    public Long getApproved() {
+        return approved;
     }
 
-    public Long getRejectedStudentQuestions() {
-        return rejectedStudentQuestions;
+    public Long getRejected() {
+        return rejected;
     }
 
-    public Long getPercentageOfStudentQuestions() {
-        if(getTotalStudentQuestions() != 0L)
-            return Math.round((getApprovedStudentQuestions().doubleValue() / getTotalStudentQuestions()) * 100L);
+    public Long getPercentage() {
+        if(getTotal() != 0L)
+            return Math.round((getApproved().doubleValue() / getTotal()) * 100L);
         else
             return 0L;
     }
