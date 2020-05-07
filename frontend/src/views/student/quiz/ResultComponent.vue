@@ -182,8 +182,6 @@ export default class ResultComponent extends Vue {
 
   discussionCreated() {
     this.createDiscussionDialog = false;
-    this.createDiscussionDialog = false;
-    this.createDiscussionDialog = false;
   }
 
   async getQuestionDiscussions() {
