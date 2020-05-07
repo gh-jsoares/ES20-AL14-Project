@@ -1,6 +1,5 @@
 package pt.ulisboa.tecnico.socialsoftware.tutor.discussion.domain;
 
-import pt.ulisboa.tecnico.socialsoftware.tutor.answer.domain.QuestionAnswer;
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.dto.MessageDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException;
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage;
@@ -43,7 +42,7 @@ public class Discussion {
     public Discussion() {
     }
 
-    public Discussion(QuestionAnswer questionAnswer, User student, Question question, DiscussionDto dto) {
+    public Discussion(User student, Question question, DiscussionDto dto) {
         checkIfMessages(dto.getMessages());
         setStudent(student);
         setQuestion(question);
@@ -94,8 +93,8 @@ public class Discussion {
         if (messages == null || messages.isEmpty())
             throw new TutorException(ErrorMessage.DISCUSSION_MESSAGE_EMPTY);
     }
+
     public void updateTeacherAnswer(User teacher, MessageDto messageDto) {
-        checkIfDiscussionHasBeenAnswered();
         checkIfTeacherIsEnrolledInQuestionCourseExecution(teacher);
         new Message(this, teacher, messageDto);
         setNeedsAnswer(false);
@@ -107,11 +106,6 @@ public class Discussion {
                 .map(Quiz::getCourseExecution)
                 .noneMatch(courseExecution -> teacher.getCourseExecutions().contains(courseExecution)))
             throw new TutorException(ErrorMessage.TEACHER_NOT_IN_COURSE_EXECUTION);
-    }
-
-    private void checkIfDiscussionHasBeenAnswered() {
-        if (!needsAnswer())
-            throw new TutorException(ErrorMessage.DISCUSSION_ALREADY_ANSWERED);
     }
 
     private boolean verifiesIfATeacherAnsweredTheDiscussion(User teacher) {

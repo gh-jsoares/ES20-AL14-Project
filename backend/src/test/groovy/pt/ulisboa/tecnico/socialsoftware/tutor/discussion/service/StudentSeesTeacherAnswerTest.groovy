@@ -154,7 +154,7 @@ class StudentSeesTeacherAnswerTest extends Specification {
         message.setUserName(STUDENT_NAME)
         messages.add(message)
         discussionDto.setMessages(messages)
-        new Discussion(questionAnswer, student, question, discussionDto)
+        new Discussion(student, question, discussionDto)
 
         when: "search for student discussions"
         def result = discussionService.getDiscussionStudent(student.getId())
@@ -192,7 +192,7 @@ class StudentSeesTeacherAnswerTest extends Specification {
     }
 
     def createBasicDiscussion(User student, Question question, DiscussionDto discussionDto) {
-        Discussion discussion = new Discussion(questionAnswer, student, question, discussionDto)
+        Discussion discussion = new Discussion(student, question, discussionDto)
         MessageDto messageDto = new MessageDto()
         messageDto.setMessage(TEACHER_ANSWER)
         messageDto.setUserName(TEACHER_NAME)

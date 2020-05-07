@@ -1,7 +1,6 @@
 package pt.ulisboa.tecnico.socialsoftware.tutor.discussion;
 
 import pt.ulisboa.tecnico.socialsoftware.tutor.answer.domain.QuestionAnswer;
-import pt.ulisboa.tecnico.socialsoftware.tutor.answer.domain.QuizAnswer;
 import pt.ulisboa.tecnico.socialsoftware.tutor.answer.repository.QuestionAnswerRepository;
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecution;
@@ -68,7 +67,7 @@ public class DiscussionService {
         checkDuplicates(student.getId(), questionId);
         verifyIfAnsweredQuestion(questionAnswer, questionId, userId);
 
-        Discussion discussion = new Discussion(questionAnswer, student, question, discussionDto);
+        Discussion discussion = new Discussion(student, question, discussionDto);
         this.entityManager.persist(discussion);
         return new DiscussionDto(discussion);
     }
@@ -204,19 +203,6 @@ public class DiscussionService {
                 .filter(Discussion::isVisibleToOtherStudents)
                 .map(DiscussionDto::new)
                 .collect(Collectors.toList());
-    }
-
-    @Retryable(
-            value = { SQLException.class },
-            backoff = @Backoff(delay = 5000))
-    @Transactional(isolation = Isolation.REPEATABLE_READ)
-    public boolean studentHasAnsweredQuestion(User student, Question question) {
-        return question.getQuizQuestions().stream()
-                .map(QuizQuestion::getQuestionAnswers)
-                .flatMap(Collection::stream)
-                .map(QuestionAnswer::getQuizAnswer)
-                .map(QuizAnswer::getUser)
-                .anyMatch(userWhoAnsweredQuestion -> userWhoAnsweredQuestion.getId().equals(student.getId()));
     }
 
     @Retryable(
