@@ -257,7 +257,7 @@ export default class StudentQuestionsView extends Vue {
       studentQuestion.topics = changedTopics;
     }
   }
-  
+
   openApproveStudentQuestionDialog(studentQuestion: StudentQuestion) {
     this.currentStudentQuestion = studentQuestion;
     this.approveStudentQuestionDialog = true;

@@ -56,7 +56,9 @@
                   <edit-student-question-topics
                     :studentQuestion="editStudentQuestion"
                     :topics="topics"
-                    v-on:student-question-changed-topics="onStudentQuestionChangedTopics"
+                    v-on:student-question-changed-topics="
+                      onStudentQuestionChangedTopics
+                    "
                   />
                   <h2>Image:</h2>
                   <v-file-input
@@ -67,9 +69,7 @@
                     accept="image/*"
                   />
 
-                  <v-img
-                    :src="getImage(editStudentQuestion)"
-                  />
+                  <v-img :src="getImage(editStudentQuestion)" />
                 </v-card>
                 <v-btn color="primary" @click="currentStep = 2">Continue</v-btn>
               </v-stepper-content>
@@ -94,7 +94,7 @@
                   style="overflow: hidden scroll;padding:10px"
                   height="450px"
                 >
-                  <show-student-question
+                  <show-edit-student-question
                     :studentQuestion="editStudentQuestion"
                   />
                 </v-card>
@@ -133,13 +133,13 @@ import RemoteServices from '@/services/RemoteServices';
 import Topic from '@/models/management/Topic';
 import Image from '@/models/management/Image';
 import ApproveStudentQuestionContent from '@/views/teacher/questions/student/ApproveStudentQuestionContent.vue';
-import ShowStudentQuestion from '@/views/student/questions/ShowStudentQuestion.vue';
+import ShowEditStudentQuestion from '@/views/teacher/questions/student/ShowEditStudentQuestion.vue';
 import EditStudentQuestionTopics from '@/views/student/questions/EditStudentQuestionTopics.vue';
 
 @Component({
   components: {
     'approve-student-question-content': ApproveStudentQuestionContent,
-    'show-student-question': ShowStudentQuestion,
+    'show-edit-student-question': ShowEditStudentQuestion,
     'edit-student-question-topics': EditStudentQuestionTopics
   }
 })
@@ -156,9 +156,9 @@ export default class ApproveStudentQuestionDialog extends Vue {
   currentStep: number = 1;
 
   getImage(studentQuestion: StudentQuestion): string {
-    if(studentQuestion.image)
-      return process.env.VUE_APP_ROOT_API + '/images/questions/' + studentQuestion.image.url
-    return ''
+    if (studentQuestion.image)
+      return `${process.env.VUE_APP_ROOT_API}/images/questions/${studentQuestion.image.url}`;
+    return '';
   }
 
   created() {

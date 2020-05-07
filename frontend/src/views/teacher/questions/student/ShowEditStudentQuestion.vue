@@ -1,16 +1,19 @@
 <template>
   <div>
-    <div class="review" v-if="studentQuestion.status !== 'AWAITING_APPROVAL'">
+    <div
+      class="review"
+      v-if="editStudentQuestion.status !== 'AWAITING_APPROVAL'"
+    >
       <p data-cy="studentQuestionDetailsReview">
         Last Reviewed by
-        {{ studentQuestion.lastReviewerUsername }}
+        {{ editStudentQuestion.lastReviewerUsername }}
         on
-        {{ studentQuestion.reviewedDate }}
+        {{ editStudentQuestion.reviewedDate }}
       </p>
-      <template v-if="studentQuestion.status === 'REJECTED'">
+      <template v-if="editStudentQuestion.status === 'REJECTED'">
         <h4>Reason:</h4>
         <v-alert data-cy="studentQuestionDetailsRejected" type="error">
-          {{ studentQuestion.rejectedExplanation }}
+          {{ editStudentQuestion.rejectedExplanation }}
         </v-alert>
       </template>
     </div>
@@ -18,10 +21,12 @@
     <span
       class="student-question-content"
       data-cy="studentQuestionDetailsContent"
-      v-html="convertMarkDown(studentQuestion.content, studentQuestion.image)"
+      v-html="
+        convertMarkDown(editStudentQuestion.content, editStudentQuestion.image)
+      "
     />
     <ul>
-      <li v-for="option in studentQuestion.options" :key="option.number">
+      <li v-for="option in editStudentQuestion.options" :key="option.number">
         <span
           :data-cy="`studentQuestionDetailsOptionCorrect`"
           v-if="option.correct"
@@ -49,8 +54,15 @@ export default class ShowStudentQuestion extends Vue {
   @Prop({ type: StudentQuestion, required: true })
   readonly studentQuestion!: StudentQuestion;
 
+  readonly editStudentQuestion: StudentQuestion = this.editStudentQuestionData();
+
   convertMarkDown(text: string, image: Image | null = null): string {
     return convertMarkDown(text, image);
+  }
+
+  @Watch('studentQuestion', { immediate: true, deep: true })
+  editStudentQuestionData() {
+    return this.studentQuestion;
   }
 }
 </script>
