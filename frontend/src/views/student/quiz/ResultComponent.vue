@@ -28,7 +28,7 @@
         @click="getQuestionDiscussions()"
         v-if="!discussionsDiv"
         class="square"
-        data-cy="GetDiscussions"
+        data-cy="getDiscussionsButton"
       >
         <i class="fas fa-comment-alt mt-3"></i>
       </div>
@@ -84,14 +84,14 @@
         >There are no discussions for this question.</v-toolbar-title
       >
     </v-toolbar>
-    <v-list v-if="discussionsDiv">
+    <v-list v-if="discussionsDiv" data-cy="questionDiscussions">
       <v-list-group
         v-for="discussion in discussions"
         :key="discussion.messages[0].userName"
         v-model="discussion.active"
       >
         <template v-slot:activator>
-          <v-list-item-title
+          <v-list-item-title data-cy="visibleDiscussion"
             v-text="
               discussion.messages[0].userName +
                 ' asked ' +

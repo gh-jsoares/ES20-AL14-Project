@@ -39,3 +39,13 @@ Cypress.Commands.add('openDiscussion', () => {
   cy.get('[data-cy="questionTitleButton"]').click();
   cy.get('[data-cy="isVisibleToOtherStudents"]').should('exist');
 });
+
+
+Cypress.Commands.add('seeQuestionDiscussions', (quizTitle) => {
+  cy.get('[data-cy="quizzesButton"]').click();
+  cy.contains('Solved').click();
+  cy.contains(quizTitle).click();
+  cy.get('[data-cy="getDiscussionsButton"]').click();
+  cy.get('[data-cy="questionDiscussions"]').should('exist');
+  cy.get('[data-cy="visibleDiscussion"]').click();
+});
