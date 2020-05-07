@@ -22,7 +22,7 @@ import spock.lang.Unroll
 import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.*
 
 @DataJpaTest
-class ConvertApprovedStudentQuestionToQuestion extends Specification {
+class ConvertApprovedStudentQuestionToQuestionSpockTest extends Specification {
 
     public static final String USER_NAME = "Alfredo Costa"
     public static final String USER_USERNAME = "alcosta"
