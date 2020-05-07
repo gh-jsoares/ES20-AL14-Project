@@ -1,14 +1,15 @@
 import User from '@/models/user/User';
 import Topic from '@/models/management/Topic';
 import { Quiz } from '@/models/management/Quiz';
+import { ISOtoString } from '@/services/ConvertDateService';
 
 export class Tournament {
   id!: number;
   scramble!: boolean;
   title!: string;
   creationDate!: string | undefined;
-  availableDate!: string | undefined;
-  conclusionDate!: string | undefined;
+  availableDate!: string;
+  conclusionDate!: string;
   state!: string;
   series!: number;
   version!: string;
@@ -30,9 +31,10 @@ export class Tournament {
       this.version = jsonObj.version;
       this.numberOfQuestions = jsonObj.numberOfQuestions;
       this.numberOfEnrolls = jsonObj.numberOfEnrolls;
-      this.creationDate = jsonObj.creationDate;
-      this.availableDate = jsonObj.availableDate;
-      this.conclusionDate = jsonObj.conclusionDate;
+      if (!!jsonObj.creationDate)
+        this.creationDate = ISOtoString(jsonObj.creationDate);
+      this.availableDate = ISOtoString(jsonObj.availableDate);
+      this.conclusionDate = ISOtoString(jsonObj.conclusionDate);
       this.userEnrolled = jsonObj.userEnrolled;
       this.creator = jsonObj.creator;
       this.quiz = jsonObj.quiz;

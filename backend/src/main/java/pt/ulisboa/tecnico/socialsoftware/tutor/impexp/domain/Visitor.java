@@ -6,6 +6,9 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Image;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Option;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Question;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.StudentQuestion;
+import pt.ulisboa.tecnico.socialsoftware.tutor.course.Course;
+import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecution;
+import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.*;
 import pt.ulisboa.tecnico.socialsoftware.tutor.quiz.domain.Quiz;
 import pt.ulisboa.tecnico.socialsoftware.tutor.quiz.domain.QuizQuestion;
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.User;
@@ -28,6 +31,14 @@ public interface Visitor {
     default void visitQuestionAnswer(QuestionAnswer questionAnswer) {}
 
     default void visitStudentQuestion(StudentQuestion studentQuestion) {}
+
+    default void visitTopic(Topic topic) {}
+
+    default void visitCourse(Course course) {}
+
+    default void visitAssessment(Assessment assessment) {}
+
+    default void visitCourseExecution(CourseExecution courseExecution) {}
 
     default String convertSequenceToLetter(Integer value) {
         switch (value) {

@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
+import pt.ulisboa.tecnico.socialsoftware.tutor.config.DateHandler
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.Course
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecution
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecutionRepository
@@ -16,8 +17,6 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.tournament.TournamentService
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.User
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.UserRepository
 import spock.lang.Specification
-
-import java.time.LocalDateTime
 
 @DataJpaTest
 class GetOpenTournamentsSpockPerformanceTest extends Specification {
@@ -91,9 +90,9 @@ class GetOpenTournamentsSpockPerformanceTest extends Specification {
     def createTournament(it) {
         def tourn = new Tournament()
         tourn.setTitle(TOURN_TITLE+it)
-        tourn.setCreationDate(LocalDateTime.now().minusDays(1))
-        tourn.setAvailableDate(LocalDateTime.now().plusDays(1))
-        tourn.setConclusionDate(LocalDateTime.now().plusDays(2))
+        tourn.setCreationDate(DateHandler.now().minusDays(1))
+        tourn.setAvailableDate(DateHandler.now().plusDays(1))
+        tourn.setConclusionDate(DateHandler.now().plusDays(2))
         tourn.setState(Tournament.State.ENROLL)
         tourn.setNumberOfQuestions(QUEST_NUM)
         tourn.setCreator(user)

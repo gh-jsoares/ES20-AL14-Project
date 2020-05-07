@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
+import pt.ulisboa.tecnico.socialsoftware.tutor.config.DateHandler
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.Course
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecution
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecutionRepository
@@ -20,10 +21,6 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.user.User
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.UserRepository
 import spock.lang.Specification
 import spock.lang.Unroll
-
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
-
 
 @DataJpaTest
 class GetOpenTournamentsSpockTest extends Specification{
@@ -58,13 +55,10 @@ class GetOpenTournamentsSpockTest extends Specification{
 
     def courseExecution
     def days = []
-    def formatter
     def topic
     def user
 
     def setup() {
-        formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
-
         // create course
         def course = new Course(COURSE_NAME, Course.Type.TECNICO)
         courseRepository.save(course)
@@ -87,8 +81,8 @@ class GetOpenTournamentsSpockTest extends Specification{
         userRepository.save(user)
 
         // create dates in different days
-        days.add(LocalDateTime.now().plusDays(1))
-        days.add(LocalDateTime.now().plusDays(2))
+        days.add(DateHandler.now().plusDays(1))
+        days.add(DateHandler.now().plusDays(2))
 
     }
 
@@ -100,7 +94,7 @@ class GetOpenTournamentsSpockTest extends Specification{
         tourn.setNumberOfQuestions(QUEST_NUM)
         tourn.setState(state)
         tourn.setScramble(true)
-        tourn.setCreationDate(LocalDateTime.now())
+        tourn.setCreationDate(DateHandler.now())
         tourn.setAvailableDate(days[0])
         tourn.setConclusionDate(days[1])
         tourn.setSeries(1)
