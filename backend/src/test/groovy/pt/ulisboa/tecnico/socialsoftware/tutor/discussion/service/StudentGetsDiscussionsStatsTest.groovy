@@ -59,7 +59,6 @@ class StudentGetsDiscussionsStatsTest extends Specification {
     public static final Integer INVALID_ID = -1
     public static final String MESSAGE = "message"
     public static final String STUDENT_NAME = "student_test"
-    public static final String ANOTHER_STUDENT_NAME = "another_student_test"
     public static final String TEACHER_NAME = "teacher_test"
     public static final String COURSE_NAME = "course_test"
     public static final String COURSE_ACRONYM = "acronym_test"
@@ -163,7 +162,7 @@ class StudentGetsDiscussionsStatsTest extends Specification {
 
         then: "an exception is thrown"
         def exception = thrown(TutorException)
-        exception.errorMessage == ErrorMessage.USER_IS_NOT_STUDENT;
+        exception.errorMessage == ErrorMessage.USER_IS_NOT_STUDENT
     }
 
     def "non-existent user wants to see discussions stats"() {
@@ -172,7 +171,7 @@ class StudentGetsDiscussionsStatsTest extends Specification {
 
         then: "an exception is thrown"
         def exception = thrown(TutorException)
-        exception.errorMessage == ErrorMessage.USER_NOT_FOUND;
+        exception.errorMessage == ErrorMessage.USER_NOT_FOUND
     }
 
     def createBasicDiscussion(User student, Question question, DiscussionDto discussionDto) {
