@@ -32,10 +32,7 @@ import javax.persistence.PersistenceContext;
 import java.sql.SQLException;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -161,7 +158,18 @@ public class TournamentService {
     public List<TournamentDto> getOpenTournaments(int executionId, int userId) {
         CourseExecution courseExecution = getCourseExecution(executionId);
 
-        courseExecution.getTournaments().forEach(tourn -> {
+        updateTournamentsState(courseExecution.getTournaments());
+
+        return courseExecution.getTournaments().stream()
+                .filter(tourn -> !tourn.getState().equals(Tournament.State.CLOSED))
+                .sorted(Comparator.comparing(Tournament::getId).reversed())
+                .map(tournament -> new TournamentDto(tournament, userId))
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public void updateTournamentsState(Set<Tournament> tournaments) {
+        tournaments.forEach(tourn -> {
             LocalDateTime now = DateHandler.now();
             if (tourn.getQuiz() == null &&
                     tourn.getEnrolledStudents().size() > 1 &&
@@ -175,12 +183,6 @@ public class TournamentService {
                 tourn.setState(Tournament.State.CLOSED);
             }
         });
-
-        return courseExecution.getTournaments().stream()
-                .filter(tourn -> !tourn.getState().equals(Tournament.State.CLOSED))
-                .sorted(Comparator.comparing(Tournament::getId).reversed())
-                .map(tournament -> new TournamentDto(tournament, userId))
-                .collect(Collectors.toList());
     }
 
     @Retryable(

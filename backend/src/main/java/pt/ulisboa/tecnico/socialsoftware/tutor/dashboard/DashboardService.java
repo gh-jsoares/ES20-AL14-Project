@@ -16,6 +16,7 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Option;
 import pt.ulisboa.tecnico.socialsoftware.tutor.quiz.domain.Quiz;
 import pt.ulisboa.tecnico.socialsoftware.tutor.tournament.Tournament;
+import pt.ulisboa.tecnico.socialsoftware.tutor.tournament.TournamentService;
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.User;
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.UserRepository;
 
@@ -35,6 +36,9 @@ public class DashboardService {
     @Autowired
     private CourseExecutionRepository courseExecutionRepository;
 
+    @Autowired
+    private TournamentService tournamentService;
+
     @Retryable(
             value = { SQLException.class },
             backoff = @Backoff(delay = 5000))
@@ -44,14 +48,7 @@ public class DashboardService {
         CourseExecution courseExecution = courseExecutionRepository.findById(executionId)
                 .orElseThrow(() -> new TutorException(ErrorMessage.COURSE_EXECUTION_NOT_FOUND, executionId));
 
-        courseExecution.getTournaments().forEach(tourn -> {
-            LocalDateTime now = DateHandler.now();
-            if (!tourn.getState().equals(Tournament.State.CLOSED) &&
-                    (tourn.getConclusionDate().isBefore(now) ||
-                            tourn.getAvailableDate().isBefore(now) && tourn.getEnrolledStudents().size() <= 1)) {
-                tourn.setState(Tournament.State.CLOSED);
-            }
-        });
+        tournamentService.updateTournamentsState(courseExecution.getTournaments());
 
         TournamentDashDto statsDto = new TournamentDashDto();
 
@@ -63,20 +60,9 @@ public class DashboardService {
                 .sorted(Comparator.comparing(ClosedTournamentDto::getConclusionDate).reversed())
                 .collect(Collectors.toList());
 
-        int totalTournaments = (int) user.getEnrolledTournaments().stream()
-                .filter(tourn -> tourn.getCourseExecution().getId() == executionId)
-                .filter(tourn -> tourn.getState().equals(Tournament.State.CLOSED))
-                .filter(tourn -> tourn.getQuiz() != null)
-                .count();
-
-        int totalSolved = (int) user.getQuizAnswers().stream()
-                .filter(quizAnswer -> quizAnswer.getQuiz().getType().equals(Quiz.QuizType.TOURNAMENT))
-                .filter(quizAnswer -> quizAnswer.getQuiz().getCourseExecution().getId() == executionId)
-                .filter(QuizAnswer::isCompleted)
-                .count();
-
+        int totalTournaments = closedTourns.size();
+        int totalSolved = (int) closedTourns.stream().filter(dto -> dto.getRanking() != 0).count();
         int totalUnsolved = totalTournaments - totalSolved;
-
         int totalFirst = (int) closedTourns.stream().filter(dto -> dto.getRanking() == 1).count();
         int totalSecond = (int) closedTourns.stream().filter(dto -> dto.getRanking() == 2).count();
         int totalThird = (int) closedTourns.stream().filter(dto -> dto.getRanking() == 3).count();
@@ -106,11 +92,9 @@ public class DashboardService {
         int totalPerfect = (int) user.getQuizAnswers().stream()
                 .filter(quizAnswer -> quizAnswer.getQuiz().getCourseExecution().getId() == executionId)
                 .filter(quizAnswer -> quizAnswer.getQuiz().getType().equals(Quiz.QuizType.TOURNAMENT))
+                .filter(QuizAnswer::isCompleted)
                 .map(QuizAnswer::getQuestionAnswers)
-                .filter(ans -> ans.stream()
-                        .map(QuestionAnswer::getOption)
-                        .filter(Objects::nonNull)
-                        .allMatch(Option::getCorrect))
+                .filter(ans -> ans.stream().allMatch(quest -> quest.getOption() != null && quest.getOption().getCorrect()))
                 .count();
 
         int score = Math.max(0, 5*totalPerfect + 10*totalFirst + 5*totalSecond + 3*totalThird - 10*totalUnsolved);
@@ -145,7 +129,7 @@ public class DashboardService {
                 .flatMap(Collection::stream)
                 .map(QuestionAnswer::getOption)
                 .filter(Objects::nonNull)
-                .filter(opt -> !opt.getCorrect())
+                .filter(Option::getCorrect)
                 .count();
 
         List<Integer> results = new ArrayList<>();
