@@ -159,6 +159,14 @@ public class StudentQuestionService {
             value = {SQLException.class},
             backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public StudentQuestionDto editStudentQuestion(int userId, int studentQuestionId, StudentQuestionDto studentQuestionDto) {
+        return new StudentQuestionDto();
+    }
+
+    @Retryable(
+            value = {SQLException.class},
+            backoff = @Backoff(delay = 5000))
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
     public StudentQuestionDto approveStudentQuestion(int userId, int studentQuestionId, StudentQuestionDto studentQuestionDto) {
         if (studentQuestionDto == null)
             return approveStudentQuestion(userId, studentQuestionId);
