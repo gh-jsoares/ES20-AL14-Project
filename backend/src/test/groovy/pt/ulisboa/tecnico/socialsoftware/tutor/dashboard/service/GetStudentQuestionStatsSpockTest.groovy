@@ -52,37 +52,13 @@ class GetStudentQuestionStatsSpockTest extends Specification {
     def "multiple data: awaitingCount=#awaitingCount | rejectedCount=#rejectedCount | approvedCount=#approvedCount || rejected=#rejected | approved=#approved | total=#total | percentage=#percentage"() {
 
         given: "number of awaitingCount"
-        if (awaitingCount != 0)
-            1.upto(awaitingCount, {
-                studentQuestion = createStudentQuestion(
-                        QUESTION_TITLE + it,
-                        QUESTION_CONTENT,
-                        StudentQuestion.Status.AWAITING_APPROVAL.name(),
-                        it.toInteger()
-                )
-            })
+        createStudentQuestions(awaitingCount, StudentQuestion.Status.AWAITING_APPROVAL)
 
         and: "number of rejectedCount"
-        if (rejectedCount != 0)
-            1.upto(rejectedCount, {
-                studentQuestion = createStudentQuestion(
-                        QUESTION_TITLE + it,
-                        QUESTION_CONTENT,
-                        StudentQuestion.Status.REJECTED.name(),
-                        it.toInteger()
-                )
-            })
+        createStudentQuestions(rejectedCount, StudentQuestion.Status.REJECTED)
 
         and: "number of approvedCount"
-        if (approvedCount != 0)
-            1.upto(approvedCount, {
-                studentQuestion = createStudentQuestion(
-                        QUESTION_TITLE + it,
-                        QUESTION_CONTENT,
-                        StudentQuestion.Status.ACCEPTED.name(),
-                        it.toInteger()
-                )
-            })
+        createStudentQuestions(approvedCount, StudentQuestion.Status.ACCEPTED)
 
         when:
         def studentQuestionsStats = dashboardService.getStudentQuestionStats(user.getId())
@@ -105,6 +81,18 @@ class GetStudentQuestionStatsSpockTest extends Specification {
         1             | 0             | 1             || 0        | 1        | 50         | 2
         0             | 1             | 1             || 1        | 1        | 50         | 2
         1             | 1             | 1             || 1        | 1        | 33         | 3
+    }
+
+    private void createStudentQuestions(Integer count, StudentQuestion.Status status) {
+        if (count != 0)
+            1.upto(count, {
+                studentQuestion = createStudentQuestion(
+                        QUESTION_TITLE + it,
+                        QUESTION_CONTENT,
+                        status.name(),
+                        it.toInteger()
+                )
+            })
     }
 
     private StudentQuestion createStudentQuestion(String title, String content, String status, Integer key) {
