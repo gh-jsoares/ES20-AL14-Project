@@ -53,7 +53,7 @@
       </div>
       <div class="items">
         <div class="icon-wrapper" ref="percentageOfSeenQuestions">
-          <animated-number :number="stats.totalSolved" />
+          <animated-number :number="stats.totalUnsolved" />
         </div>
         <div class="project-name">
           <p>Total Unsolved</p>
@@ -144,6 +144,7 @@ export default class TournamentsTabView extends Vue {
     await this.$store.dispatch('loading');
     try {
       this.stats = await RemoteServices.getTournamentsDashboardStats();
+      console.log(this.stats);
     } catch (error) {
       await this.$store.dispatch('error', error);
     }

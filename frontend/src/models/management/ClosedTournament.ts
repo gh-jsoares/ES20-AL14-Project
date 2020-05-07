@@ -17,7 +17,7 @@ export class ClosedTournament {
       this.ranking = jsonObj.ranking;
       this.conclusionDate = ISOtoString(jsonObj.conclusionDate);
       this.creator = jsonObj.creator;
-      this.solvedQuiz = jsonObj.solvedQuiz;
+      this.solvedQuiz = new SolvedQuiz(jsonObj.solvedQuiz);
     }
   }
 }
