@@ -50,6 +50,9 @@ public class User implements UserDetails, DomainEntity {
     private Integer numberOfCorrectInClassAnswers;
     private Integer numberOfCorrectStudentAnswers;
 
+    @Column(name = "student_questions_stats_visibility")
+    private Boolean studentQuestionStatsVisibility = true;
+
     @Column(name = "creation_date")
     private LocalDateTime creationDate;
 
@@ -218,6 +221,14 @@ public class User implements UserDetails, DomainEntity {
 
     public void setNumberOfTeacherQuizzes(Integer numberOfTeacherQuizzes) {
         this.numberOfTeacherQuizzes = numberOfTeacherQuizzes;
+    }
+
+    public void toggleStudentQuestionStatsVisibility() {
+        this.studentQuestionStatsVisibility = !this.studentQuestionStatsVisibility;
+    }
+
+    public Boolean getStudentQuestionStatsVisibility() {
+        return this.studentQuestionStatsVisibility;
     }
 
     public Integer getNumberOfStudentQuizzes() {
