@@ -14,25 +14,23 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecutionRepository;
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage;
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Assessment;
-import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Question;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.TopicConjunction;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.TopicDto;
-import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.QuestionRepository;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.TopicRepository;
-import pt.ulisboa.tecnico.socialsoftware.tutor.quiz.QuizService;
 import pt.ulisboa.tecnico.socialsoftware.tutor.quiz.domain.Quiz;
 import pt.ulisboa.tecnico.socialsoftware.tutor.statement.StatementService;
 import pt.ulisboa.tecnico.socialsoftware.tutor.statement.dto.StatementCreationDto;
+import pt.ulisboa.tecnico.socialsoftware.tutor.statement.dto.StatementQuizDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.User;
-
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.UserRepository;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.sql.SQLException;
-
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.Comparator;
+import java.util.List;
 import java.util.stream.Collectors;
 
 
@@ -49,12 +47,6 @@ public class TournamentService {
 
     @Autowired
     private TopicRepository topicRepository;
-
-    @Autowired
-    private QuestionRepository questionRepository;
-
-    @Autowired
-    private QuizService quizService;
 
     @Autowired
     private StatementService statementService;
@@ -79,7 +71,6 @@ public class TournamentService {
 
         Tournament tournament = getTournament(tournamentId);
         tournament.addEnrolledStudent(user);
-        user.addEnrolledTournament(tournament);
         return new TournamentDto(tournament, user.getId());
     }
 
@@ -102,6 +93,20 @@ public class TournamentService {
 
         return new TournamentDto(tourn);
     }
+
+    @Retryable(
+            value = { SQLException.class },
+            backoff = @Backoff(delay = 5000))
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public void cancelTournament(int tournamentId, int userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new TutorException(ErrorMessage.USER_NOT_FOUND, userId));
+
+        Tournament tournament = getTournament(tournamentId);
+
+        tournament.cancel(user);
+        tournamentRepository.delete(tournament);
+    }
+
 
     private void checkTournamentDto(TournamentDto tournDto) {
         if (tournDto == null) {
@@ -163,7 +168,16 @@ public class TournamentService {
         return courseExecution.getTournaments().stream()
                 .filter(tourn -> !tourn.getState().equals(Tournament.State.CLOSED))
                 .sorted(Comparator.comparing(Tournament::getId).reversed())
-                .map(tournament -> new TournamentDto(tournament, userId))
+                .map(tourn -> {
+                    LocalDateTime now = DateHandler.now();
+                    TournamentDto tournDto = new TournamentDto(tourn, userId);
+                    if (tourn.getAvailableDate().isBefore(now) &&
+                            tourn.getConclusionDate().isAfter(now) &&
+                            tourn.isStudentEnrolled(userId) && tourn.getQuiz() != null) {
+                        tournDto.setStatementQuiz(getUserQuizAnswer(userId, tourn));
+                    }
+                    return tournDto;
+                })
                 .collect(Collectors.toList());
     }
 
@@ -183,6 +197,14 @@ public class TournamentService {
                 tourn.setState(Tournament.State.CLOSED);
             }
         });
+    }
+
+    private StatementQuizDto getUserQuizAnswer(int userId, Tournament tourn) {
+        QuizAnswer quizAnswer = getUser(userId).getQuizAnswers().stream().filter(answer ->
+                answer.getQuiz().getId().equals(tourn.getQuiz().getId()))
+                .findFirst()
+                .orElse(null);
+        return quizAnswer != null ? new StatementQuizDto(quizAnswer) : null;
     }
 
     @Retryable(

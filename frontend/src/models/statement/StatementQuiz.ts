@@ -16,6 +16,8 @@ export default class StatementQuiz {
   timeToResults!: number | null;
   questions: StatementQuestion[] = [];
   answers: StatementAnswer[] = [];
+  tournament!: boolean;
+  completed!: boolean;
   private lastTimeCalled: number = Date.now();
   private timerId!: number;
 
@@ -37,6 +39,8 @@ export default class StatementQuiz {
       this.questions = jsonObj.questions.map(question => {
         return new StatementQuestion(question);
       });
+      this.tournament = jsonObj.tournament;
+      this.completed = jsonObj.completed;
 
       if (jsonObj.answers) {
         this.answers = jsonObj.answers.map(answer => {

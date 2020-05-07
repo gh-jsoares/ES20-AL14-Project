@@ -5,6 +5,8 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
 import pt.ulisboa.tecnico.socialsoftware.tutor.answer.AnswerService
+import pt.ulisboa.tecnico.socialsoftware.tutor.answer.domain.QuizAnswer
+import pt.ulisboa.tecnico.socialsoftware.tutor.answer.repository.QuizAnswerRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.config.DateHandler
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.Course
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecution
@@ -31,13 +33,14 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.user.UserRepository
 import spock.lang.Specification
 import spock.lang.Unroll
 
-
 @DataJpaTest
 class GetOpenTournamentsSpockTest extends Specification{
     public static final String USER_NAME = "name"
     public static final String USER_USERNAME = "username"
     public static final String USER_NAME2 = "name2"
     public static final String USER_USERNAME2 = "username2"
+    public static final String USER_NAME3 = "name3"
+    public static final String USER_USERNAME3 = "username3"
     public static final String COURSE_NAME = "Software Architecture"
     public static final String ACRONYM = "AS1"
     public static final String ACADEMIC_TERM = "1 SEM"
@@ -64,6 +67,9 @@ class GetOpenTournamentsSpockTest extends Specification{
 
     @Autowired
     QuestionRepository questionRepository
+
+    @Autowired
+    QuizAnswerRepository quizAnswerRepository
 
     @Autowired
     QuizRepository quizRepository
@@ -103,6 +109,11 @@ class GetOpenTournamentsSpockTest extends Specification{
         courseExecution.addUser(users[1] as User)
         userRepository.save(users[1] as User)
 
+        users[2] = new User(USER_NAME3, USER_USERNAME3, 3, User.Role.STUDENT)
+        users[2].addCourse(courseExecution)
+        courseExecution.addUser(users[2] as User)
+        userRepository.save(users[2] as User)
+
         // create question
         def question = new Question()
         question.setKey(1)
@@ -126,7 +137,9 @@ class GetOpenTournamentsSpockTest extends Specification{
 
         tourn.setCourseExecution(courseExecution as CourseExecution)
         tourn.setState(Tournament.State.ENROLL)
-        1.upto(enrolls, {tourn.addEnrolledStudent(users[it-1 as int])})
+
+        if (enrolls > 0)
+            1.upto(enrolls, {tourn.addEnrolledStudent(users[it-1 as int])})
 
         tourn.setCreationDate(DateHandler.now().minusDays(3))
         if (state == Tournament.State.ENROLL) {
@@ -231,6 +244,70 @@ class GetOpenTournamentsSpockTest extends Specification{
         false   | 2         | Tournament.State.CLOSED   | Tournament.State.ENROLL   || Tournament.State.CLOSED  | true      // first call only after conclusion still generates
     }
 
+    @Unroll
+    def "check correct display of quiz answer: #isUserEnrolled | #tournamentState || #size | #shouldHaveQuizAnswer"() {
+        given: "a tournament"
+        def stack = []
+        def tournament = createTournament(tournamentState, isUserEnrolled ? 3 : 2, stack)
+        and: "a quiz for the tournament"
+        def quiz = createTournamentQuiz(tournament)
+        and: "a quiz answer for the user"
+        def quizAnswer = new QuizAnswer(users.get(2) as User,quiz)
+        quizAnswerRepository.save(quizAnswer)
+        users.get(2).addQuizAnswer(quizAnswer)
+
+        when:
+        def result = tournService.getOpenTournaments(courseExecution.getId(), users.get(2).getId())
+
+        then: "only one tournament returned"
+        result.size() == size
+        and: "the correct quiz answer is returned"
+        if (shouldHaveQuizAnswer)
+            result.get(0).getStatementQuiz().getId() == quizAnswer.getId()
+        else
+            !shouldHaveQuizAnswer
+
+        where:
+
+        isUserEnrolled   | tournamentState           || size | shouldHaveQuizAnswer
+        true             | Tournament.State.ENROLL   || 1    | false
+        false            | Tournament.State.ENROLL   || 1    | false
+        true             | Tournament.State.ONGOING  || 1    | true
+        false            | Tournament.State.ONGOING  || 1    | false
+        true             | Tournament.State.CLOSED   || 0    | false
+        false            | Tournament.State.CLOSED   || 0    | false
+    }
+
+    Quiz createTournamentQuiz(tournament){
+        def quiz = new Quiz()
+        quizRepository.save(quiz)
+        tournament.setQuiz(quiz)
+        return quiz
+    }
+
+    def enrollUserInTournament(tournament, user, isUserEnrolled){
+        if (isUserEnrolled) {
+            tournament.addEnrolledStudent(user)
+        }
+    }
+
+
+    def setTournamentState(tournament, tournamentState){
+        switch (tournamentState) {
+            case Tournament.State.ONGOING:
+                tournament.setState(Tournament.State.ONGOING)
+                tournament.setAvailableDate(DateHandler.now())
+                break
+            case Tournament.State.CLOSED:
+                tournament.setCreationDate(DateHandler.now().minusHours(2))
+                tournament.setAvailableDate(DateHandler.now().minusHours(1))
+                tournament.setConclusionDate(DateHandler.now())
+                tournament.setState(Tournament.State.CLOSED)
+                break
+            default:
+                tournament.setState(Tournament.State.ENROLL)
+        }
+    }
 
     @TestConfiguration
     static class TournamentServiceImplTestContextConfiguration {
