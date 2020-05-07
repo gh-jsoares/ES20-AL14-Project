@@ -37,3 +37,27 @@ Cypress.Commands.add('createStudentQuestion', (studentQuestion, options) => {
         .click()
         .wait('@saveStudentQuestion');
 })
+
+Cypress.Commands.add('editStudentQuestion', (studentQuestion) => {
+    
+    cy.server(); // cannot be chained
+
+    cy.route('put', `/questions/student/${studentQuestion.id}`).as('editStudentQuestion');
+
+    cy.get('[data-cy="studentQuestionViewTitle"]')
+        .parent()
+        .parent()
+        .filter(`:contains('${studentQuestion.title}')`)
+        .get('[data-cy="editStudentQuestionDialog"]')
+        .click()
+        .get('[data-cy="studentQuestionNewTitle"]')
+        .clear()
+        .type(`Updated ${studentQuestion.title} ${studentQuestion.id}`)
+        .get('[data-cy="studentQuestionNewContent"]')
+        .clear()
+        .type('Updated ' + studentQuestion.content);
+    
+    cy.get('[data-cy="studentQuestionNewSave"]')
+        .click()
+        .wait('@editStudentQuestion');
+})
