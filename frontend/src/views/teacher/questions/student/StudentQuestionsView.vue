@@ -43,6 +43,18 @@
         </v-chip>
       </template>
 
+      <template v-slot:item.image="{ item }">
+        <v-img
+          v-if="item.image"
+          max-height="100px"
+          max-width="100px"
+          :src="getImage(item)"
+        />
+        <span v-else>
+          No image
+        </span>
+      </template>
+
       <template v-slot:item.action="{ item }">
         <v-tooltip bottom>
           <template v-slot:activator="{ on }">
@@ -102,6 +114,7 @@
       :topics="topics"
       v-on:approve-student-question="onApproveStudentQuestion"
       v-on:student-question-changed-topics="onStudentQuestionChangedTopics"
+      v-on:student-question-changed-image="onStudentQuestionChangedImage"
     />
     <show-student-question-dialog
       v-if="currentStudentQuestion"
@@ -158,6 +171,12 @@ export default class StudentQuestionsView extends Vue {
       align: 'center'
     },
     {
+      text: 'Image',
+      value: 'image',
+      align: 'center',
+      sortable: false
+    },
+    {
       text: 'Actions',
       value: 'action',
       align: 'center',
@@ -176,6 +195,12 @@ export default class StudentQuestionsView extends Vue {
       await this.$store.dispatch('error', error);
     }
     await this.$store.dispatch('clearLoading');
+  }
+
+  getImage(studentQuestion: StudentQuestion): string {
+    if (studentQuestion.image)
+      return `${process.env.VUE_APP_ROOT_API}/images/questions/${studentQuestion.image.url}`;
+    return '';
   }
 
   getStatusColor(status: string) {
@@ -209,6 +234,7 @@ export default class StudentQuestionsView extends Vue {
 
   onCloseShowStudentQuestionDialog() {
     this.studentQuestionDialog = false;
+    this.currentStudentQuestion = null;
   }
 
   async approveStudentQuestion(studentQuestion: StudentQuestion) {
@@ -243,6 +269,14 @@ export default class StudentQuestionsView extends Vue {
     if (!this.rejectStudentQuestionDialog) {
       this.currentStudentQuestion = null;
     }
+  }
+
+  onStudentQuestionChangedImage(studentQuestionId: number, image: Image) {
+    const studentQuestion = this.studentQuestions.find(
+      (studentQuestion: StudentQuestion) =>
+        studentQuestion.id == studentQuestionId
+    );
+    studentQuestion!.image = image;
   }
 
   onStudentQuestionChangedTopics(

@@ -83,7 +83,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Model, Prop, Vue } from 'vue-property-decorator';
+import { Component, Model, Prop, Watch, Vue } from 'vue-property-decorator';
 import StudentQuestion from '@/models/management/StudentQuestion';
 import RemoteServices from '@/services/RemoteServices';
 
@@ -96,6 +96,11 @@ export default class EditStudentQuestionDialog extends Vue {
   editStudentQuestion!: StudentQuestion;
 
   created() {
+    this.updateStudentQuestion();
+  }
+
+  @Watch('studentQuestion', { immediate: true, deep: true })
+  updateStudentQuestion() {
     this.editStudentQuestion = new StudentQuestion(this.studentQuestion);
   }
 

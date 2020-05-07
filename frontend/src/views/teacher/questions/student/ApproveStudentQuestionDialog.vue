@@ -127,7 +127,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Model, Prop, Vue } from 'vue-property-decorator';
+import { Component, Model, Prop, Watch, Vue } from 'vue-property-decorator';
 import StudentQuestion from '@/models/management/StudentQuestion';
 import RemoteServices from '@/services/RemoteServices';
 import Topic from '@/models/management/Topic';
@@ -155,14 +155,19 @@ export default class ApproveStudentQuestionDialog extends Vue {
 
   currentStep: number = 1;
 
+  created() {
+    this.updateStudentQuestion();
+  }
+
+  @Watch('studentQuestion', { immediate: true, deep: true })
+  updateStudentQuestion() {
+    this.editStudentQuestion = new StudentQuestion(this.studentQuestion);
+  }
+
   getImage(studentQuestion: StudentQuestion): string {
     if (studentQuestion.image)
       return `${process.env.VUE_APP_ROOT_API}/images/questions/${studentQuestion.image.url}`;
     return '';
-  }
-
-  created() {
-    this.editStudentQuestion = new StudentQuestion(this.studentQuestion);
   }
 
   onStudentQuestionChangedTopics(
@@ -183,9 +188,11 @@ export default class ApproveStudentQuestionDialog extends Vue {
           event,
           studentQuestion.id
         );
-        studentQuestion.image = new Image();
-        studentQuestion.image.url = imageURL;
+        const image = new Image(null, imageURL);
+        studentQuestion.image = image;
         confirm('Image ' + imageURL + ' was uploaded!');
+        this.$emit('student-question-changed-image', studentQuestion.id, image);
+        this.updateStudentQuestion();
       } catch (error) {
         await this.$store.dispatch('error', error);
       }
