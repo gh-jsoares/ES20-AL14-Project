@@ -10,16 +10,16 @@ public class StudentQuestionStatsDto implements Serializable {
 
     private final String studentName;
 
-    private final Integer totalStudentQuestions;
-    private final Integer approvedStudentQuestions;
-    private final Integer rejectedStudentQuestions;
+    private final Long totalStudentQuestions;
+    private final Long approvedStudentQuestions;
+    private final Long rejectedStudentQuestions;
 
-    public StudentQuestionStatsDto(User user) {
+    public StudentQuestionStatsDto(User user, long total, long approved, long rejected) {
         this.userId = user.getId();
         this.studentName = user.getUsername();
-        this.totalStudentQuestions = user.getTotalNumberOfStudentQuestions();
-        this.approvedStudentQuestions = user.getNumberOfApprovedStudentQuestions();
-        this.rejectedStudentQuestions = user.getNumberOfRejectedStudentQuestions();
+        this.totalStudentQuestions = total;
+        this.approvedStudentQuestions = approved;
+        this.rejectedStudentQuestions = rejected;
     }
 
     public Integer getUserId() {
@@ -30,22 +30,22 @@ public class StudentQuestionStatsDto implements Serializable {
         return studentName;
     }
 
-    public Integer getTotalStudentQuestions() {
+    public Long getTotalStudentQuestions() {
         return totalStudentQuestions;
     }
 
-    public Integer getApprovedStudentQuestions() {
+    public Long getApprovedStudentQuestions() {
         return approvedStudentQuestions;
     }
 
-    public Integer getRejectedStudentQuestions() {
+    public Long getRejectedStudentQuestions() {
         return rejectedStudentQuestions;
     }
 
-    public Integer getPercentageOfStudentQuestions() {
-        if(getTotalStudentQuestions() != 0)
-            return Math.floorDiv(getApprovedStudentQuestions(), getTotalStudentQuestions());
+    public Long getPercentageOfStudentQuestions() {
+        if(getTotalStudentQuestions() != 0L)
+            return Math.round((getApprovedStudentQuestions().doubleValue() / getTotalStudentQuestions()) * 100L);
         else
-            return 0;
+            return 0L;
     }
 }

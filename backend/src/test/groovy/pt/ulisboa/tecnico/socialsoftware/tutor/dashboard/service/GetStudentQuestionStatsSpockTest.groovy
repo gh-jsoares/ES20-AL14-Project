@@ -52,34 +52,37 @@ class GetStudentQuestionStatsSpockTest extends Specification {
     def "multiple data: awaitingCount=#awaitingCount | rejectedCount=#rejectedCount | approvedCount=#approvedCount || rejected=#rejected | approved=#approved | total=#total | percentage=#percentage"() {
 
         given: "number of awaitingCount"
-        0.upto(awaitingCount, {
-            studentQuestion = createStudentQuestion(
-                    QUESTION_TITLE + it,
-                    QUESTION_CONTENT,
-                    StudentQuestion.Status.AWAITING_APPROVAL.name(),
-                    it.toInteger()
-            )
-        })
+        if (awaitingCount != 0)
+            1.upto(awaitingCount, {
+                studentQuestion = createStudentQuestion(
+                        QUESTION_TITLE + it,
+                        QUESTION_CONTENT,
+                        StudentQuestion.Status.AWAITING_APPROVAL.name(),
+                        it.toInteger()
+                )
+            })
 
         and: "number of rejectedCount"
-        0.upto(rejectedCount, {
-            studentQuestion = createStudentQuestion(
-                    QUESTION_TITLE + it,
-                    QUESTION_CONTENT,
-                    StudentQuestion.Status.REJECTED.name(),
-                    it.toInteger()
-            )
-        })
+        if (rejectedCount != 0)
+            1.upto(rejectedCount, {
+                studentQuestion = createStudentQuestion(
+                        QUESTION_TITLE + it,
+                        QUESTION_CONTENT,
+                        StudentQuestion.Status.REJECTED.name(),
+                        it.toInteger()
+                )
+            })
 
         and: "number of approvedCount"
-        0.upto(approvedCount, {
-            studentQuestion = createStudentQuestion(
-                    QUESTION_TITLE + it,
-                    QUESTION_CONTENT,
-                    StudentQuestion.Status.ACCEPTED.name(),
-                    it.toInteger()
-            )
-        })
+        if (approvedCount != 0)
+            1.upto(approvedCount, {
+                studentQuestion = createStudentQuestion(
+                        QUESTION_TITLE + it,
+                        QUESTION_CONTENT,
+                        StudentQuestion.Status.ACCEPTED.name(),
+                        it.toInteger()
+                )
+            })
 
         when:
         def studentQuestionsStats = dashboardService.getStudentQuestionStats(user.getId())
@@ -111,6 +114,7 @@ class GetStudentQuestionStatsSpockTest extends Specification {
         studentQuestion.setContent(content)
         studentQuestion.setStatus(StudentQuestion.Status.valueOf(status))
         studentQuestion.setStudent(user)
+        user.addStudentQuestion(studentQuestion)
         studentQuestionRepository.save(studentQuestion)
         studentQuestion.setCourse(course)
         course.addStudentQuestion(studentQuestion)
