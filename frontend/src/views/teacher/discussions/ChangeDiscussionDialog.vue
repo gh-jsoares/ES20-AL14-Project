@@ -59,6 +59,7 @@
             <p
               class="ml-1"
               v-if="editDiscussion.visibleToOtherStudents === true"
+              data-cy="isVisibleToOtherStudents"
             >
               <b>Discussion status: </b> Visible to other students
             </p>

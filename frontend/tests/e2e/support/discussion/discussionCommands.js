@@ -32,3 +32,10 @@ Cypress.Commands.add('seeDiscussion', () => {
   cy.get('[data-cy="questionTitleButton"]').click();
   cy.get('[data-cy="closeButton"]').click();
 });
+
+Cypress.Commands.add('openDiscussion', () => {
+  cy.get('[data-cy="questionTitleButton"]').click();
+  cy.get('[data-cy="openDiscussionButton"]').click();
+  cy.get('[data-cy="questionTitleButton"]').click();
+  cy.get('[data-cy="isVisibleToOtherStudents"]').should('exist');
+});
