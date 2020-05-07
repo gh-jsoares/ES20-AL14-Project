@@ -66,7 +66,7 @@ public class DiscussionService {
         checkDuplicates(student.getId(), questionId);
         verifyIfAnsweredQuestion(questionAnswer, questionId, userId);
 
-        Discussion discussion = new Discussion(questionAnswer, student, question, discussionDto);
+        Discussion discussion = new Discussion(student, question, discussionDto);
         this.entityManager.persist(discussion);
         return new DiscussionDto(discussion);
     }

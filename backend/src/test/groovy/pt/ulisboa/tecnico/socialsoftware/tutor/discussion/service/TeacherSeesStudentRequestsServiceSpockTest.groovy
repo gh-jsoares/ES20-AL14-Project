@@ -60,7 +60,7 @@ class TeacherSeesStudentRequestsServiceSpockTest extends Specification {
     public static final String COURSE_ACADEMIC_TERM = "academic_term_test"
     public static final String TEACHER_ANSWER = "teacher_answer_test"
     public static final String QUESTION_TITLE = "question_title_test"
-    public static final Integer NON_EXISTING_ID = 100;
+    public static final Integer NON_EXISTING_ID = 100
 
     Question question
     User student
@@ -110,7 +110,7 @@ class TeacherSeesStudentRequestsServiceSpockTest extends Specification {
         questionRepository.save(question)
         userRepository.save(student)
 
-        discussion = new Discussion(questionAnswer, student, question, discussionDto)
+        discussion = new Discussion(student, question, discussionDto)
         discussionRepository.save(discussion)
     }
 

@@ -119,7 +119,7 @@ class StudentMakesAdditionalRequestTest extends Specification {
         courseExecution.addUser(teacher)
         message.setUserName(teacher.getUsername())
 
-        discussion = new Discussion(questionAnswer, student, question, discussionDto)
+        discussion = new Discussion(student, question, discussionDto)
         discussionRepository.save(discussion)
     }
 

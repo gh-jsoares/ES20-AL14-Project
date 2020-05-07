@@ -112,7 +112,7 @@ class TeacherAnswersStudentServiceSpockTest extends Specification {
         questionRepository.save(question)
         userRepository.save(student)
 
-        discussion = new Discussion(questionAnswer, student, question, discussionDto)
+        discussion = new Discussion(student, question, discussionDto)
         discussionRepository.save(discussion)
     }
 
@@ -158,25 +158,6 @@ class TeacherAnswersStudentServiceSpockTest extends Specification {
         then: "an exception is thrown"
         def exception = thrown(TutorException)
         exception.errorMessage == ErrorMessage.TEACHER_NOT_IN_COURSE_EXECUTION
-    }
-
-    def "teacher answers student and there is already an answer from a teacher"() {
-        given: "a messageDto with an answer from a teacher"
-        def messageDto = messageDtoCreation(TEACHER_NAME, TEACHER_ANSWER)
-
-        def teacher = new User('teacher', TEACHER_NAME, 2, User.Role.TEACHER)
-        teacher.getCourseExecutions().add(courseExecution)
-        userRepository.save(teacher)
-
-        and: "the discussion was already answered"
-        discussionService.teacherAnswersStudent(teacher.getId(), discussion.getId(), messageDto)
-
-        when: "adding the answer from the teacher"
-        discussionService.teacherAnswersStudent(teacher.getId(), discussion.getId(), messageDto)
-
-        then: "an exception is thrown"
-        def exception = thrown(TutorException)
-        exception.errorMessage == ErrorMessage.DISCUSSION_ALREADY_ANSWERED
     }
 
     def "non-teacher user tries to answer to a discussion"() {

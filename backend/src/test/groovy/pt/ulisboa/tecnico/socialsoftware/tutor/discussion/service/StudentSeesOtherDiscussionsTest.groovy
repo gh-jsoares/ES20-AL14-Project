@@ -207,7 +207,7 @@ class StudentSeesOtherDiscussionsTest extends Specification {
     }
 
     def createBasicDiscussion(User student, Question question, DiscussionDto discussionDto) {
-        discussion = new Discussion(questionAnswer, student, question, discussionDto)
+        discussion = new Discussion(student, question, discussionDto)
         MessageDto messageDto = new MessageDto()
         messageDto.setMessage(TEACHER_ANSWER)
         messageDto.setUserName(TEACHER_NAME)
