@@ -28,9 +28,9 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
-import java.util.*;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 
@@ -170,6 +170,7 @@ public class TournamentService {
                 .sorted(Comparator.comparing(Tournament::getId).reversed())
                 .map(tourn -> {
                     LocalDateTime now = DateHandler.now();
+
                     TournamentDto tournDto = new TournamentDto(tourn, userId);
                     if (tourn.getAvailableDate().isBefore(now) &&
                             tourn.getConclusionDate().isAfter(now) &&

@@ -37,6 +37,7 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.tournament.TournamentService
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.User
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.UserRepository
 import spock.lang.Specification
+import spock.lang.Unroll
 
 
 @DataJpaTest
@@ -89,9 +90,7 @@ class GetTournamentStatsSpockTest extends Specification{
     def topic
     def users = []
     def course
-    def tourns = []
     def questions = []
-    def quizzes = []
 
     def setup() {
         // create course
@@ -150,7 +149,7 @@ class GetTournamentStatsSpockTest extends Specification{
         if (quiz != null) tourn.setQuiz(quiz)
 
         tournRepository.save(tourn)
-        tourns.add(tourn)
+        return tourn
     }
 
     def createQuestion(key, title) {
@@ -186,7 +185,8 @@ class GetTournamentStatsSpockTest extends Specification{
 
         quiz.setType(Quiz.QuizType.TOURNAMENT.toString())
         quizRepository.save(quiz)
-        quizzes.add(quiz)
+
+        return quiz
     }
 
     def createAnswer(user, quiz, correct) {
@@ -212,6 +212,14 @@ class GetTournamentStatsSpockTest extends Specification{
         })
         quizAnswer.setCompleted(true)
     }
+
+    def buildAnsweredCase(answers) {
+        def quiz = createQuiz()
+        createTournament(Tournament.State.CLOSED, answers.size(), quiz)
+        1.upto(answers.size(), {createAnswer(users[it-1], quiz, answers[it-1])})
+    }
+
+
 
     def "invalid user id"() {
         given: "tournament closed and answered tournament"
@@ -239,16 +247,16 @@ class GetTournamentStatsSpockTest extends Specification{
 
     def "first call after conclusion with >1 enroll generates"() {
         given: "tournament after conclusion but still with enroll state"
-        createTournament(Tournament.State.CLOSED, 2, null)
-        tourns[0].setState(Tournament.State.ENROLL)
+        def tourn = createTournament(Tournament.State.CLOSED, 2, null)
+        tourn.setState(Tournament.State.ENROLL)
 
         when: "service call with invalid execution id"
         dashboardService.getTournamentStats(users[0].getId(), topic.getId())
 
         then: "tournament closed and quiz generated"
-        def tourn = tournRepository.findAll().get(0)
-        tourn.getQuiz() != null
-        tourn.getState() == Tournament.State.CLOSED
+        def saved = tournRepository.findAll().get(0)
+        saved.getQuiz() != null
+        saved.getState() == Tournament.State.CLOSED
         quizRepository.count() == 1L
         quizAnswerRepository.count() == 2L
 
@@ -256,52 +264,30 @@ class GetTournamentStatsSpockTest extends Specification{
 
     def "first call after conclusion with <=1 enroll closes but doesnt generate"() {
         given: "tournament after conclusion but still with enroll state"
-        createTournament(Tournament.State.CLOSED, 1, null)
-        tourns[0].setState(Tournament.State.ENROLL)
+        def tourn = createTournament(Tournament.State.CLOSED, 1, null)
+        tourn.setState(Tournament.State.ENROLL)
 
         when: "service call with invalid execution id"
         dashboardService.getTournamentStats(users[0].getId(), topic.getId())
 
         then: "tournament closed but quiz not generated"
-        def tourn = tournRepository.findAll().get(0)
-        tourn.getQuiz() == null
-        tourn.getState() == Tournament.State.CLOSED
+        def saved = tournRepository.findAll().get(0)
+        saved.getQuiz() == null
+        saved.getState() == Tournament.State.CLOSED
         quizRepository.count() == 0L
         quizAnswerRepository.count() == 0L
 
     }
 
-    def "not completed any tournament"() {
-        given: "tournament answered by user 0"
-        createQuiz()
-        createTournament(Tournament.State.CLOSED, 1, quizzes[0])
-        createAnswer(users[0], quizzes[0], 2)
-
-        when: "service call by user 1"
-        def result = dashboardService.getTournamentStats(users[1].getId(), courseExecution.getId())
-
-        then: "no concluded tournaments of any kind"
-        result.getClosedTournaments().size() == 0
-        result.getTotalTournaments() == 0
-        result.getTotalFirstPlace() == 0
-        result.getTotalSecondPlace() == 0
-        result.getTotalThirdPlace() == 0
-        result.getTotalUnrankedPlace() == 0
-        result.getTotalSolved() == 0
-        result.getTotalUnsolved() == 0
-        result.getTotalPerfect() == 0
-        result.getTotalCorrectAnswers() == 0
-        result.getTotalWrongAnswers() == 0
-        result.getScore() == 0
-    }
-
-    def "enrolled but not answered or concluded"() {
+    @Unroll
+    def "uncounted scnerario: #testName"() {
         given: "tournament ongoing and not answered"
-        createQuiz()
-        createTournament(Tournament.State.ONGOING, 1, quizzes[0])
+        def quiz = createQuiz()
+        createTournament(state, 2, quiz)
+        createAnswer(users[0], quiz, 2)
 
         when: "service call by user 1"
-        def result = dashboardService.getTournamentStats(users[1].getId(), courseExecution.getId())
+        def result = dashboardService.getTournamentStats(users[userCaller].getId(), courseExecution.getId())
 
         then: "no concluded tournaments of any kind"
         result.getClosedTournaments().size() == 0
@@ -316,38 +302,17 @@ class GetTournamentStatsSpockTest extends Specification{
         result.getTotalCorrectAnswers() == 0
         result.getTotalWrongAnswers() == 0
         result.getScore() == 0
-    }
 
-    def "enrolled and answered but not concluded"() {
-        given: "tournament ongoing and not answered"
-        createQuiz()
-        createTournament(Tournament.State.ONGOING, 1, quizzes[0])
-        createAnswer(users[0], quizzes[0], 2)
-
-        when: "service call by user 1"
-        def result = dashboardService.getTournamentStats(users[1].getId(), courseExecution.getId())
-
-        then: "no concluded tournaments of any kind"
-        result.getClosedTournaments().size() == 0
-        result.getTotalTournaments() == 0
-        result.getTotalFirstPlace() == 0
-        result.getTotalSecondPlace() == 0
-        result.getTotalThirdPlace() == 0
-        result.getTotalUnrankedPlace() == 0
-        result.getTotalSolved() == 0
-        result.getTotalUnsolved() == 0
-        result.getTotalPerfect() == 0
-        result.getTotalCorrectAnswers() == 0
-        result.getTotalWrongAnswers() == 0
-        result.getScore() == 0
+        where:
+        state                       | userCaller    || testName
+        Tournament.State.CLOSED     | 2             || 'not enrolled/concluded any tournament'
+        Tournament.State.ONGOING    | 1             || 'enrolled but not answered or concluded'
+        Tournament.State.ONGOING    | 0             || 'enrolled and answered but not concluded'
     }
 
     def "enrolled and concluded but not answered"() {
         given: "tournament closed with only answers from user 0"
-        createQuiz()
-        createTournament(Tournament.State.CLOSED, 2, quizzes[0])
-        createAnswer(users[0], quizzes[0], 2)
-        createAnswer(users[1], quizzes[0], -1)
+        buildAnsweredCase([2, -1])
 
         when: "service call by user 1"
         def result = dashboardService.getTournamentStats(users[1].getId(), courseExecution.getId())
@@ -368,175 +333,46 @@ class GetTournamentStatsSpockTest extends Specification{
         result.getScore() == 0
     }
 
-    def "1st place"() {
+    @Unroll
+    def "answered scenario: #testName"() {
         given: "tournament with 3 answers, 1st: 0 and 1, 2nd: 2"
-        createQuiz()
-        createTournament(Tournament.State.CLOSED, 3, quizzes[0])
-        createAnswer(users[0], quizzes[0], 4)
-        createAnswer(users[1], quizzes[0], 4)
-        createAnswer(users[2], quizzes[0], 2)
+        buildAnsweredCase(answers)
 
         when: "service call by user 0"
         def result = dashboardService.getTournamentStats(users[0].getId(), courseExecution.getId())
 
         then: "one 1st place tournament"
         result.getClosedTournaments().size() == 1
-        result.getClosedTournaments().get(0).getRanking() == 1
+        result.getClosedTournaments().get(0).getRanking() == rank
         result.getTotalTournaments() == 1
-        result.getTotalFirstPlace() == 1
-        result.getTotalSecondPlace() == 0
-        result.getTotalThirdPlace() == 0
-        result.getTotalUnrankedPlace() == 0
-        result.getTotalSolved() == 1
-        result.getTotalUnsolved() == 0
-        result.getTotalPerfect() == 0
-        result.getTotalCorrectAnswers() == 4
-        result.getTotalWrongAnswers() == 1
-        result.getScore() == 10
-    }
+        result.getTotalFirstPlace() == first
+        result.getTotalSecondPlace() == second
+        result.getTotalThirdPlace() == third
+        result.getTotalUnrankedPlace() == nonTop
+        result.getTotalSolved() == solved
+        result.getTotalUnsolved() == 1 - solved
+        result.getTotalPerfect() == perfect
+        result.getTotalCorrectAnswers() == correct
+        result.getTotalWrongAnswers() == questions.size() - correct
+        result.getScore() == score
 
-    def "2nd place"() {
-        given: "tournament with 3 answers, 1st: 1, 2nd: 0 and 2"
-        createQuiz()
-        createTournament(Tournament.State.CLOSED, 3, quizzes[0])
-        createAnswer(users[0], quizzes[0], 2)
-        createAnswer(users[1], quizzes[0], 4)
-        createAnswer(users[2], quizzes[0], 2)
-
-        when: "service call by user 0"
-        def result = dashboardService.getTournamentStats(users[0].getId(), courseExecution.getId())
-
-        then: "one 2nd place tournament"
-        result.getClosedTournaments().size() == 1
-        result.getClosedTournaments().get(0).getRanking() == 2
-        result.getTotalTournaments() == 1
-        result.getTotalFirstPlace() == 0
-        result.getTotalSecondPlace() == 1
-        result.getTotalThirdPlace() == 0
-        result.getTotalUnrankedPlace() == 0
-        result.getTotalSolved() == 1
-        result.getTotalUnsolved() == 0
-        result.getTotalPerfect() == 0
-        result.getTotalCorrectAnswers() == 2
-        result.getTotalWrongAnswers() == 3
-        result.getScore() == 5
-    }
-
-    def "3rd place"() {
-        given: "tournament with 3 answers, 1st: 1, 2nd: 2, 3rd: 0"
-        createQuiz()
-        createTournament(Tournament.State.CLOSED, 3, quizzes[0])
-        createAnswer(users[0], quizzes[0], 1)
-        createAnswer(users[1], quizzes[0], 4)
-        createAnswer(users[2], quizzes[0], 2)
-
-        when: "service call by user 0"
-        def result = dashboardService.getTournamentStats(users[0].getId(), courseExecution.getId())
-
-        then: "one 3rd place tournament"
-        result.getClosedTournaments().size() == 1
-        result.getClosedTournaments().get(0).getRanking() == 3
-        result.getTotalTournaments() == 1
-        result.getTotalFirstPlace() == 0
-        result.getTotalSecondPlace() == 0
-        result.getTotalThirdPlace() == 1
-        result.getTotalUnrankedPlace() == 0
-        result.getTotalSolved() == 1
-        result.getTotalUnsolved() == 0
-        result.getTotalPerfect() == 0
-        result.getTotalCorrectAnswers() == 1
-        result.getTotalWrongAnswers() == 4
-        result.getScore() == 3
-    }
-
-    def "non top place"() {
-        given: "tournament with 3 answers, 1st: 1, 2nd: 3, 3rd: 2, 4th: 0"
-        createQuiz()
-        createTournament(Tournament.State.CLOSED, 4, quizzes[0])
-        createAnswer(users[0], quizzes[0], 1)
-        createAnswer(users[1], quizzes[0], 4)
-        createAnswer(users[2], quizzes[0], 2)
-        createAnswer(users[2], quizzes[0], 3)
-
-        when: "service call by user 0"
-        def result = dashboardService.getTournamentStats(users[0].getId(), courseExecution.getId())
-
-        then: "one 4th place tournament"
-        result.getClosedTournaments().size() == 1
-        result.getClosedTournaments().get(0).getRanking() == 4
-        result.getTotalTournaments() == 1
-        result.getTotalFirstPlace() == 0
-        result.getTotalSecondPlace() == 0
-        result.getTotalThirdPlace() == 0
-        result.getTotalUnrankedPlace() == 1
-        result.getTotalSolved() == 1
-        result.getTotalUnsolved() == 0
-        result.getTotalPerfect() == 0
-        result.getTotalCorrectAnswers() == 1
-        result.getTotalWrongAnswers() == 4
-        result.getScore() == 0
-    }
-
-    def "perfect score"() {
-        given: "tournament with 3 answers, user 0 with all correct"
-        createQuiz()
-        createTournament(Tournament.State.CLOSED, 2, quizzes[0])
-        createAnswer(users[0], quizzes[0], 5)
-        createAnswer(users[1], quizzes[0], 4)
-
-        when: "service call by user 0"
-        def result = dashboardService.getTournamentStats(users[0].getId(), courseExecution.getId())
-
-        then: "one 1st place tournament with all answers correct"
-        result.getClosedTournaments().size() == 1
-        result.getClosedTournaments().get(0).getRanking() == 1
-        result.getTotalTournaments() == 1
-        result.getTotalFirstPlace() == 1
-        result.getTotalSecondPlace() == 0
-        result.getTotalThirdPlace() == 0
-        result.getTotalUnrankedPlace() == 0
-        result.getTotalSolved() == 1
-        result.getTotalUnsolved() == 0
-        result.getTotalPerfect() == 1
-        result.getTotalCorrectAnswers() == 5
-        result.getTotalWrongAnswers() == 0
-        result.getScore() == 15
+        where:
+        answers     || rank | first | second    | third | nonTop| solved    | perfect   | correct   | score | testName
+        [4, 4, 2]   || 1    | 1     | 0         | 0     | 0     | 1         | 0         | 4         | 10    | '1st place'
+        [2, 4, 2]   || 2    | 0     | 1         | 0     | 0     | 1         | 0         | 2         | 5     | '2nd place'
+        [1, 4, 2]   || 3    | 0     | 0         | 1     | 0     | 1         | 0         | 1         | 3     | '3rd place'
+        [1, 4, 2, 3]|| 4    | 0     | 0         | 0     | 1     | 1         | 0         | 1         | 0     | '4th place (non-top)'
+        [5, 4]      || 1    | 1     | 0         | 0     | 0     | 1         | 1         | 5         | 15    | 'perfect'
     }
 
     def "multiple concluded with different ranks"() {
         given: "multiple tournaments answered"
-        createQuiz()
-        createTournament(Tournament.State.CLOSED, 2, quizzes[0])
-        createAnswer(users[0], quizzes[0], -1)
-        createAnswer(users[1], quizzes[0], 4)
-
-        createQuiz()
-        createTournament(Tournament.State.CLOSED, 1, quizzes[1])
-        createAnswer(users[0], quizzes[1], 3)
-
-        createQuiz()
-        createTournament(Tournament.State.CLOSED, 3, quizzes[2])
-        createAnswer(users[0], quizzes[2], 3)
-        createAnswer(users[1], quizzes[2], 4)
-        createAnswer(users[2], quizzes[2], 5)
-
-        createQuiz()
-        createTournament(Tournament.State.CLOSED, 3, quizzes[3])
-        createAnswer(users[0], quizzes[3], 5)
-        createAnswer(users[1], quizzes[3], 4)
-        createAnswer(users[2], quizzes[3], 5)
-
-        createQuiz()
-        createTournament(Tournament.State.CLOSED, 2, quizzes[4])
-        createAnswer(users[0], quizzes[4], 2)
-        createAnswer(users[1], quizzes[4], 3)
-
-        createQuiz()
-        createTournament(Tournament.State.CLOSED, 4, quizzes[5])
-        createAnswer(users[0], quizzes[5], 1)
-        createAnswer(users[1], quizzes[5], 2)
-        createAnswer(users[2], quizzes[5], 3)
-        createAnswer(users[3], quizzes[5], 4)
+        buildAnsweredCase([-1, 4])
+        buildAnsweredCase([3, -1])
+        buildAnsweredCase([3, 4, 5])
+        buildAnsweredCase([5, 4, 5])
+        buildAnsweredCase([2, 3])
+        buildAnsweredCase([1, 2, 3, 4])
 
         when: "service call by user 0"
         def result = dashboardService.getTournamentStats(users[0].getId(), courseExecution.getId())
