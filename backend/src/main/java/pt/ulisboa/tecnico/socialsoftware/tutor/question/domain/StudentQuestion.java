@@ -169,6 +169,7 @@ public class StudentQuestion implements DomainEntity {
     public void setImage(Image image) {
         this.image = image;
         image.setStudentQuestion(this);
+        doAwait();
     }
 
     public LocalDateTime getCreationDate() {
@@ -214,6 +215,7 @@ public class StudentQuestion implements DomainEntity {
         toRemove.forEach(this::removeTopic);
         Set<Topic> toAdd = newTopics.stream().filter(topic -> !this.topics.contains(topic)).collect(Collectors.toSet());
         toAdd.forEach(this::addTopic);
+        doAwait();
     }
 
     public LocalDateTime getReviewedDate() {
@@ -242,7 +244,8 @@ public class StudentQuestion implements DomainEntity {
     }
 
     public void doAwait() {
-        this.lastReviewer.removeReviewedStudentQuestion(this);
+        if (this.lastReviewer != null)
+            this.lastReviewer.removeReviewedStudentQuestion(this);
 
         this.lastReviewer = null;
         this.reviewedDate = null;
@@ -282,9 +285,32 @@ public class StudentQuestion implements DomainEntity {
             throw new TutorException(STUDENT_QUESTION_REJECT_NO_EXPLANATION);
     }
 
+    private void checkRejected() {
+        if (!status.equals(Status.REJECTED))
+            throw new TutorException(STUDENT_QUESTION_NOT_REJECTED, getTitle());
+    }
+
     private void checkAwaitingApproval() {
         if (!status.equals(Status.AWAITING_APPROVAL))
             throw new TutorException(STUDENT_QUESTION_NOT_AWAITING_APPROVAL, getTitle());
+    }
+
+    public void updateAsStudent(User user, StudentQuestionDto studentQuestionDto) {
+        checkRejected();
+        checkConsistentStudentQuestion(user, studentQuestionDto, true);
+
+        setTitle(studentQuestionDto.getTitle());
+        setContent(studentQuestionDto.getContent());
+
+        studentQuestionDto.getOptions().forEach(optionDto -> {
+            Option option = getOptionById(optionDto.getId());
+            if (option == null) {
+                throw new TutorException(OPTION_NOT_FOUND, optionDto.getId());
+            }
+            option.setContent(optionDto.getContent());
+            option.setCorrect(optionDto.getCorrect());
+        });
+        doAwait();
     }
 
     public void updateAsTeacher(User user, StudentQuestionDto studentQuestionDto) {

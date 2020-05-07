@@ -160,7 +160,13 @@ public class StudentQuestionService {
             backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public StudentQuestionDto editStudentQuestion(int userId, int studentQuestionId, StudentQuestionDto studentQuestionDto) {
-        return new StudentQuestionDto();
+        User user = getUserIfExists(userId);
+        StudentQuestion studentQuestion = getStudentQuestionIfExists(studentQuestionId);
+
+        checkUserIsStudent(user);
+        studentQuestion.updateAsStudent(user, studentQuestionDto);
+
+        return new StudentQuestionDto(studentQuestion);
     }
 
     @Retryable(
