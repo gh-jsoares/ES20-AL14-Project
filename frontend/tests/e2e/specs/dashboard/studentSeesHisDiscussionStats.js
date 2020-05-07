@@ -8,7 +8,6 @@ describe('creating, answering, opening discussion and seeing discussion stats wa
     });
 
     afterEach(() => {
-        cy.contains('Logout').click();
         cy.databaseRunFile(cleanupFile);
     });
 
