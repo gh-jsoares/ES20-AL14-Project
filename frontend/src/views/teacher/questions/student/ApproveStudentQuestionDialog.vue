@@ -47,7 +47,7 @@
             <v-stepper-items>
               <v-stepper-content step="1">
                 <v-card
-                  class="mb-12"
+                  class="mb-5"
                   color="lighten-1"
                   height="450px"
                   style="overflow: hidden scroll;padding:10px"
@@ -71,7 +71,7 @@
 
                   <v-img :src="getImage(editStudentQuestion)" />
                 </v-card>
-                <v-btn color="primary" @click="currentStep = 2">Continue</v-btn>
+                <v-btn data-cy="stepperContinueContent" color="primary" @click="currentStep = 2">Continue</v-btn>
               </v-stepper-content>
               <v-stepper-content step="2">
                 <v-card
@@ -85,7 +85,7 @@
                   ></approve-student-question-content>
                 </v-card>
                 <v-btn text @click="currentStep = 1">Back</v-btn>
-                <v-btn color="primary" @click="currentStep = 3">Continue</v-btn>
+                <v-btn data-cy="stepperContinueReview" color="primary" @click="currentStep = 3">Continue</v-btn>
               </v-stepper-content>
               <v-stepper-content step="3">
                 <v-card
@@ -102,7 +102,7 @@
                 <v-btn
                   color="green darken-1 white--text"
                   @click="saveStudentQuestion"
-                  data-cy="studentQuestionNewSave"
+                  data-cy="stepperApprove"
                 >
                   Approve
                 </v-btn>
@@ -235,4 +235,9 @@ span.v-stepper__step__step
     padding: 0 !important
 div.v-stepper__label
   display: block !important
+</style>
+
+<style lang="sass" scoped>
+.v-dialog__content--active
+  z-index: 8000 !important
 </style>

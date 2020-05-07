@@ -13,13 +13,6 @@ describe('Review Student Question walkthrough', () => {
         cy.cleanupStudentQuestions();
     });
 
-    it('login accept student question', () => {
-        cy.fixture('questions/student/studentQuestionsData.json').then(data => {
-            const studentQuestion = data.student_questions[0];
-            cy.acceptStudentQuestion(studentQuestion);
-        });
-    });
-
     it('login reject student question', () => {
         cy.fixture('questions/student/studentQuestionsData.json').then(data => {
             const studentQuestion = data.student_questions[0];

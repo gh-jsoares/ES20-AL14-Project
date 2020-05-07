@@ -66,6 +66,14 @@ Cypress.Commands.add('initStudentQuestions', ({ amount, student_id, course_id, o
     });
 });
 
+Cypress.Commands.add('cleanupStudentQuestion', (id) => {
+    cy.queryDatabase(
+        `DELETE FROM options WHERE student_question_id = '${id}';\
+        DELETE FROM student_questions WHERE id = '${id}';\
+    `);
+});
+
+
 Cypress.Commands.add('cleanupStudentQuestions', () => {
     cy.queryDatabase(
         `WITH sq_id AS (\
