@@ -17,8 +17,8 @@
           {{ discussion.question.title }}
         </div>
         <div class="col last-col">
-          <i v-if="discussion.needsAnswer" class="fas fa-exclamation"></i>
-          <i v-else class="fas fa-chevron-circle-right"></i>
+          <i v-if="discussion.needsAnswer" data-cy="notAnswered" class="fas fa-exclamation"></i>
+          <i v-else data-cy="isAnswered" class="fas fa-chevron-circle-right"></i>
         </div>
       </li>
     </ul>

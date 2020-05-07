@@ -22,7 +22,7 @@ Cypress.Commands.add('answerDiscussion', (questionTitle, teacherAnswer) => {
   cy.get('[data-cy="questionTitleButton"]').click();
   cy.get('[data-cy="teacherAnswer"]').type(teacherAnswer);
   cy.get('[data-cy="sendButton"]').click();
-  cy.get('[data-cy="questionTitleButton"]').should('not.exist');
+  cy.get('[data-cy="notAnswered"]').should('not.exist');
 });
 
 Cypress.Commands.add('seeDiscussion', () => {

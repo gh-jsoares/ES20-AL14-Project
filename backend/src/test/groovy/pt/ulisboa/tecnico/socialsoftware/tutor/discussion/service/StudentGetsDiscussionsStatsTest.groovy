@@ -14,7 +14,6 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecutionRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseService
 import pt.ulisboa.tecnico.socialsoftware.tutor.dashboard.DashboardService
-import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.DiscussionService
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.domain.Discussion
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.domain.Message
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.dto.DiscussionDto
