@@ -43,11 +43,9 @@ public class DashboardService {
             value = { SQLException.class },
             backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
-    public ResponseEntity toggleStudentQuestionStatsVisibility(int userId) {
+    public Boolean toggleStudentQuestionStatsVisibility(int userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new TutorException(USER_NOT_FOUND, userId));
 
-        user.toggleStudentQuestionStatsVisibility();
-
-        return ResponseEntity.ok(200);
+        return user.toggleStudentQuestionStatsVisibility();
     }
 }

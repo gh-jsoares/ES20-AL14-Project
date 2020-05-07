@@ -223,8 +223,9 @@ public class User implements UserDetails, DomainEntity {
         this.numberOfTeacherQuizzes = numberOfTeacherQuizzes;
     }
 
-    public void toggleStudentQuestionStatsVisibility() {
+    public Boolean toggleStudentQuestionStatsVisibility() {
         this.studentQuestionStatsVisibility = !this.studentQuestionStatsVisibility;
+        return this.getStudentQuestionStatsVisibility();
     }
 
     public Boolean getStudentQuestionStatsVisibility() {

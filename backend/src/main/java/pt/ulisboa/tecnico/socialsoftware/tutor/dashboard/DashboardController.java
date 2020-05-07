@@ -6,6 +6,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RestController;
 import pt.ulisboa.tecnico.socialsoftware.tutor.dashboard.dto.StudentQuestionStatsDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException;
@@ -35,6 +36,12 @@ public class DashboardController {
     @PreAuthorize("hasRole('ROLE_STUDENT')")
     public StudentQuestionStatsDto getStudentQuestionStats(Principal principal) {
         return this.dashboardService.getStudentQuestionStats(getAuthUser(principal).getId());
+    }
+
+    @PutMapping("/dashboard/questions/student")
+    @PreAuthorize("hasRole('ROLE_STUDENT')")
+    public Boolean toggleStudentQuestionStatsVisibility(Principal principal) {
+        return this.dashboardService.toggleStudentQuestionStatsVisibility(getAuthUser(principal).getId());
     }
 
     private User getAuthUser(Principal principal) {
