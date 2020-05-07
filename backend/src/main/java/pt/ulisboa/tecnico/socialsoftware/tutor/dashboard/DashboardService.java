@@ -41,6 +41,16 @@ public class DashboardService {
         return discussionStatsDto;
     }
 
+    @Retryable(
+            value = { SQLException.class },
+            backoff = @Backoff(delay = 5000))
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public Boolean toggleDiscussionStats(Integer userId, Boolean bool){
+        User student = getStudentById(userId);
+        student.setDiscussionsPrivacy(bool);
+        return student.getDiscussionsPrivacy();
+    }
+
     private User getStudentById(Integer studentId) {
         User student = userRepository.findById(studentId).orElseThrow(() -> new TutorException(ErrorMessage.USER_NOT_FOUND, studentId));
         if (student.getRole() != User.Role.STUDENT) {

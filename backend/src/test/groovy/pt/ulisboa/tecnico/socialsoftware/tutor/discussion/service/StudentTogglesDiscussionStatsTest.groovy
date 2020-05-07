@@ -75,10 +75,10 @@ class StudentTogglesDiscussionStatsTest extends Specification {
         and: "a boolean"
         Boolean bool = false
         when:
-        def result = dashboardService.toggleDiscussionStats(student, bool)
+        def result = dashboardService.toggleDiscussionStats(student.getId(), bool)
 
         then:
-        result == false
+        !result
         !student.getDiscussionsPrivacy()
     }
 
@@ -88,10 +88,10 @@ class StudentTogglesDiscussionStatsTest extends Specification {
         and: "a boolean"
         Boolean bool = true
         when:
-        def result = dashboardService.toggleDiscussionStats(student, bool)
+        def result = dashboardService.toggleDiscussionStats(student.getId(), bool)
 
         then:
-        result == true
+        result
         student.getDiscussionsPrivacy()
     }
 
@@ -99,11 +99,11 @@ class StudentTogglesDiscussionStatsTest extends Specification {
         given: "a student"
         student
         when:
-        def result1 = dashboardService.toggleDiscussionStats(student, true)
-        def result2 = dashboardService.toggleDiscussionStats(student, false)
+        def result1 = dashboardService.toggleDiscussionStats(student.getId(), true)
+        def result2 = dashboardService.toggleDiscussionStats(student.getId(), false)
         then:
-        result1 == true
-        result2 == false
+        result1
+        !result2
         !student.getDiscussionsPrivacy()
     }
 
@@ -111,13 +111,13 @@ class StudentTogglesDiscussionStatsTest extends Specification {
         given: "a student"
         student
         when:
-        def result1 = dashboardService.toggleDiscussionStats(student, true)
-        def result2 = dashboardService.toggleDiscussionStats(student, false)
-        def result3 = dashboardService.toggleDiscussionStats(student, true)
+        def result1 = dashboardService.toggleDiscussionStats(student.getId(), true)
+        def result2 = dashboardService.toggleDiscussionStats(student.getId(), false)
+        def result3 = dashboardService.toggleDiscussionStats(student.getId(), true)
         then:
-        result1 == true
-        result2 == false
-        result3 == true
+        result1
+        !result2
+        result3
         student.getDiscussionsPrivacy()
     }
 
@@ -126,7 +126,7 @@ class StudentTogglesDiscussionStatsTest extends Specification {
         teacher
 
         when: "teacher wants to see his discussion stats"
-        dashboardService.toggleDiscussionStats(teacher.getId())
+        dashboardService.toggleDiscussionStats(teacher.getId(), true)
 
         then: "an exception is thrown"
         def exception = thrown(TutorException)
@@ -135,7 +135,7 @@ class StudentTogglesDiscussionStatsTest extends Specification {
 
     def "non-existent user toggles discussion stats"() {
         when:
-        dashboardService.toggleDiscussionStats(INVALID_ID)
+        dashboardService.toggleDiscussionStats(INVALID_ID, true)
 
         then: "an exception is thrown"
         def exception = thrown(TutorException)
