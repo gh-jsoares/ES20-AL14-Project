@@ -14,6 +14,7 @@
           class="ma-2"
           :label="visibilitySetting ? 'Public' : 'Private'"
           @change="toggleVisibilitySetting"
+          data-cy="studentQuestionStatsVisibility"
         />
       </v-card>
     </h2>

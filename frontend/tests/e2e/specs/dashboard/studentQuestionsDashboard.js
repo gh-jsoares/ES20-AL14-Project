@@ -4,12 +4,16 @@ describe('Student question Dashboard walkthrough', () => {
 
         cy.cleanupStudentQuestions();
         cy.initStudentQuestions();
+
+        cy.queryDatabase('UPDATE users SET student_questions_stats_visibility = TRUE WHERE id = "676;"')
+
         cy.get('[data-cy="dashboardButton"]').click();
         cy.get('[data-cy="studentQuestionDashboardLink"]').click();
     });
 
     afterEach(() => {
         cy.cleanupStudentQuestions();
+        cy.queryDatabase('UPDATE users SET student_questions_stats_visibility = TRUE WHERE id = "676;"')
     });
 
     it('login view student question dashboard', () => {
@@ -26,7 +30,17 @@ describe('Student question Dashboard walkthrough', () => {
                 .get('[data-cy="total"]')
                 .should('have.text', `${total}`)
                 .get('[data-cy="percentage"]')
-                .should('have.text', `${percentage}%`);
+                .should('have.text', `${percentage} % `);
         });
+    });
+
+    it('login toggle visibility student question dashboard', () => {
+        cy.get('.v-input__slot')
+            .click();
+        cy.goToStudentQuestionsAsStudent()
+            .get('[data-cy="dashboardButton"]').click()
+            .get('[data-cy="studentQuestionDashboardLink"]').click()
+            .get('[data-cy="studentQuestionStatsVisibility"]')
+            .should('have.attr', 'aria-checked', 'false');
     });
 });
