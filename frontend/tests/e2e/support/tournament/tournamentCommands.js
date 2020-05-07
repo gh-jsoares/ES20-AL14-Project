@@ -17,7 +17,7 @@ Cypress.Commands.add('assertSearchResults', (data, times) => {
     expect($rows).to.have.length(times);
     for (let i = 0; i < times; i++) {
       const cols = $rows.eq(i).children();
-      for (let j = 0; j < cols.length - 1; j++) {
+      for (let j = 0; j < cols.length - 2; j++) {
         const col = cols.eq(j);
         if (Array.isArray(data[i][j])) {
           expect(col.children()).to.have.length(data[i][j].length);
@@ -123,4 +123,15 @@ Cypress.Commands.add( 'startQuiz',  type => {
 Cypress.Commands.add('concludeQuiz', () => {
   cy.get('[data-cy="endQuizBtn"]').click();
   cy.get('[data-cy="concludeQuizBtn"]').click()
+});
+
+Cypress.Commands.add('cancelTournament', () => {
+  cy.get('[data-cy="cancelBtn"]').click();
+});
+
+Cypress.Commands.add('checkTournamentDeletion', wasDeleted => {
+  if (wasDeleted)
+    cy.get('[data-cy="tournTable"]').children().should('have.length',1);
+  else
+    cy.get('[data-cy="cancelBtn"]').should('not.exist');
 });

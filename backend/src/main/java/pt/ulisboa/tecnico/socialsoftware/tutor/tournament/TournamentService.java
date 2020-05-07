@@ -93,6 +93,20 @@ public class TournamentService {
         return new TournamentDto(tourn);
     }
 
+    @Retryable(
+            value = { SQLException.class },
+            backoff = @Backoff(delay = 5000))
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public void cancelTournament(int tournamentId, int userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new TutorException(ErrorMessage.USER_NOT_FOUND, userId));
+
+        Tournament tournament = getTournament(tournamentId);
+
+        tournament.cancel(user);
+        tournamentRepository.delete(tournament);
+    }
+
+
     private void checkTournamentDto(TournamentDto tournDto) {
         if (tournDto == null) {
             throw new TutorException(ErrorMessage.TOURNAMENT_IS_NULL);
