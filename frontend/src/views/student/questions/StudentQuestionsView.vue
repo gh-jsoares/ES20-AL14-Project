@@ -96,6 +96,19 @@
           </template>
           <span>View Details</span>
         </v-tooltip>
+        <v-tooltip v-if="item.status == 'REJECTED'" bottom>
+          <template v-slot:activator="{ on }">
+            <v-icon
+              data-cy="editStudentQuestionDialog"
+              small
+              class="mr-2"
+              v-on="on"
+              @click="openEditStudentQuestionDialog(item)"
+              >edit</v-icon
+            >
+          </template>
+          <span>Edit</span>
+        </v-tooltip>
       </template>
     </v-data-table>
     <edit-student-question-dialog
@@ -245,6 +258,7 @@ export default class StudentQuestionsView extends Vue {
         studentQuestion.id == newStudentQuestion.id
     );
     studentQuestion!.image = newStudentQuestion.image;
+    studentQuestion!.status = 'AWAITING_APPROVAL';
   }
 
   @Watch('editStudentQuestionDialog')
@@ -256,6 +270,11 @@ export default class StudentQuestionsView extends Vue {
 
   newStudentQuestion() {
     this.currentStudentQuestion = new StudentQuestion();
+    this.editStudentQuestionDialog = true;
+  }
+
+  openEditStudentQuestionDialog(studentQuestion: StudentQuestion) {
+    this.currentStudentQuestion = studentQuestion;
     this.editStudentQuestionDialog = true;
   }
 
@@ -278,6 +297,7 @@ export default class StudentQuestionsView extends Vue {
     );
     if (studentQuestion) {
       studentQuestion.topics = changedTopics;
+      studentQuestion.status = 'AWAITING_APPROVAL';
     }
   }
 }

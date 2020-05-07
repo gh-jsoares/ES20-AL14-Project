@@ -118,9 +118,14 @@ export default class EditStudentQuestionDialog extends Vue {
 
     if (this.editStudentQuestion) {
       try {
-        const result = await RemoteServices.createStudentQuestion(
-          this.editStudentQuestion
-        );
+        const result =
+          this.editStudentQuestion.id == null
+            ? await RemoteServices.createStudentQuestion(
+                this.editStudentQuestion
+              )
+            : await RemoteServices.editStudentQuestion(
+                this.editStudentQuestion
+              );
         this.$emit('save-student-question', result);
       } catch (error) {
         await this.$store.dispatch('error', error);

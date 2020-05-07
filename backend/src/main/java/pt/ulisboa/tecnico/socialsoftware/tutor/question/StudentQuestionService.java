@@ -222,6 +222,7 @@ public class StudentQuestionService {
                 studentQuestion.getCourse().getType() +
                 studentQuestion.getKey() +
                 "." + type);
+        studentQuestion.doAwait();
     }
 
     @Retryable(

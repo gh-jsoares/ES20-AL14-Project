@@ -229,6 +229,19 @@ export default class RemoteServices {
       });
   }
 
+  static async editStudentQuestion(
+    studentQuestion: StudentQuestion
+  ): Promise<StudentQuestion> {
+    return httpClient
+      .put(`/questions/student/${studentQuestion.id}`, studentQuestion)
+      .then(response => {
+        return new StudentQuestion(response.data);
+      })
+      .catch(async error => {
+        throw Error(await this.errorMessage(error));
+      });
+  }
+
   static async createStudentQuestion(
     studentQuestion: StudentQuestion
   ): Promise<StudentQuestion> {

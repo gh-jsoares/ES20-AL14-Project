@@ -169,7 +169,6 @@ public class StudentQuestion implements DomainEntity {
     public void setImage(Image image) {
         this.image = image;
         image.setStudentQuestion(this);
-        doAwait();
     }
 
     public LocalDateTime getCreationDate() {
