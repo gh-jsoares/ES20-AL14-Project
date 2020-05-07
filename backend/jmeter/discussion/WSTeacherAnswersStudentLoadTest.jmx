@@ -138,7 +138,8 @@ insert into question_answers values (&apos;${range}&apos;, 40000, 7663, &apos;${
           <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="JDBC Request - Create discussion" enabled="true">
             <stringProp name="dataSource">sampleReq</stringProp>
             <stringProp name="queryType">Callable Statement</stringProp>
-            <stringProp name="query">insert into discussions (id, message_from_student, question_id, student_id, is_visible_to_other_students) values (${id}, &apos;???&apos;, ${questionId}, 676, false);</stringProp>
+            <stringProp name="query">insert into discussions values (${id}, false, false, ${questionId}, 676);
+insert into messages values (${id}, 0, &apos;studentQuestion&apos;, ${id}, 676);</stringProp>
             <stringProp name="queryArguments"></stringProp>
             <stringProp name="queryArgumentsTypes"></stringProp>
             <stringProp name="variableNames"></stringProp>
@@ -303,11 +304,7 @@ insert into question_answers values (&apos;${range}&apos;, 40000, 7663, &apos;${
                   <elementProp name="" elementType="HTTPArgument">
                     <boolProp name="HTTPArgument.always_encode">false</boolProp>
                     <stringProp name="Argument.value">{ &#xd;
-	&quot;id&quot;:${id},&#xd;
-	&quot;questionId&quot;:1800,&#xd;
-	&quot;userId&quot;: 677,&#xd;
-	&quot;messageFromStudent&quot;: &quot;???&quot;,&#xd;
-	&quot;teacherAnswer&quot;: &quot;yes&quot;,&#xd;
+	&quot;message&quot;:&quot;teacherAnswer&quot;,&#xd;
 	&quot;userName&quot;:&quot;Demo-Teacher&quot;&#xd;
 }&#xd;
 </stringProp>
@@ -444,6 +441,7 @@ insert into question_answers values (&apos;${range}&apos;, 40000, 7663, &apos;${
           <stringProp name="dataSource">sampleReq</stringProp>
           <stringProp name="query">update users set enrolled_courses_acronyms=&apos;&apos; where username=&apos;Demo-Student&apos;;
 update users set enrolled_courses_acronyms=&apos;&apos; where username=&apos;Demo-Teacher&apos;;
+delete from messages;
 delete from discussions where student_id=676;
 delete from question_answers where id between 100000 and 101001;
 delete from quiz_answers where id between 100000 and 101001;

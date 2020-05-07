@@ -138,7 +138,9 @@ insert into question_answers values (&apos;${range}&apos;, 40000, 7663, &apos;${
           <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="JDBC Request - Create discussion" enabled="true">
             <stringProp name="dataSource">sampleReq</stringProp>
             <stringProp name="queryType">Callable Statement</stringProp>
-            <stringProp name="query">insert into discussions (id, message_from_student, teacher_answer, question_id, student_id, teacher_id, is_visible_to_other_students) values (${id}, &apos;???&apos;, &apos;yes&apos;, ${questionId}, 676, 677, false);</stringProp>
+            <stringProp name="query">insert into discussions values (${id}, false, false, ${questionId}, 676);
+insert into messages values (${id}, 0, &apos;studentQuestion&apos;, ${id}, 676);
+insert into messages values (${id}+1001, 1, &apos;teacherAnswer&apos;, ${id}, 677);</stringProp>
             <stringProp name="queryArguments"></stringProp>
             <stringProp name="queryArgumentsTypes"></stringProp>
             <stringProp name="variableNames"></stringProp>
@@ -413,6 +415,7 @@ insert into question_answers values (&apos;${range}&apos;, 40000, 7663, &apos;${
           <stringProp name="dataSource">sampleReq</stringProp>
           <stringProp name="query">update users set enrolled_courses_acronyms=&apos;&apos; where username=&apos;Demo-Student&apos;;
 update users set enrolled_courses_acronyms=&apos;&apos; where username=&apos;Demo-Teacher&apos;;
+delete from messages;
 delete from discussions where student_id=676;
 delete from question_answers where id between 100000 and 101001;
 delete from quiz_answers where id between 100000 and 101001;
