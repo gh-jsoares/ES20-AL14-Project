@@ -801,6 +801,14 @@ export default class RemoteServices {
       });
   }
 
+  static async cancelTournament(tournamentId: number) {
+    return httpClient
+      .delete(`tournaments/${tournamentId}`)
+      .catch(async error => {
+        throw Error(await this.errorMessage(error));
+      });
+  }
+
   static async errorMessage(error: any): Promise<string> {
     if (error.message === 'Network Error') {
       return 'Unable to connect to server';
