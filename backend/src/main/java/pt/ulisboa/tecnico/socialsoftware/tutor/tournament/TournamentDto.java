@@ -3,7 +3,7 @@ package pt.ulisboa.tecnico.socialsoftware.tutor.tournament;
 import pt.ulisboa.tecnico.socialsoftware.tutor.config.DateHandler;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Topic;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.TopicDto;
-import pt.ulisboa.tecnico.socialsoftware.tutor.quiz.dto.QuizDto;
+import pt.ulisboa.tecnico.socialsoftware.tutor.statement.dto.StatementQuizDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.dto.UserDto;
 
 import java.io.Serializable;
@@ -22,7 +22,7 @@ public class TournamentDto implements Serializable {
     private boolean userEnrolled = false;
     private Integer numberOfEnrolls;
     private List<TopicDto> topics = new ArrayList<>();
-    private QuizDto quiz;
+    private StatementQuizDto statementQuiz;
     private Integer numberOfQuestions;
     private Integer series;
     private String version;
@@ -140,12 +140,12 @@ public class TournamentDto implements Serializable {
         this.topics.add(topic);
     }
 
-    public QuizDto getQuiz() {
-        return quiz;
+    public StatementQuizDto getStatementQuiz() {
+        return statementQuiz;
     }
 
-    public void setQuiz(QuizDto quiz) {
-        this.quiz = quiz;
+    public void setStatementQuiz(StatementQuizDto statementQuiz) {
+        this.statementQuiz = statementQuiz;
     }
 
     public Integer getNumberOfQuestions() {

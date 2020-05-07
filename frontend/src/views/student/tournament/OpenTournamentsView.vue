@@ -47,27 +47,36 @@
             </v-btn>
             <v-spacer></v-spacer>
             <v-btn
+              v-if="getStatus(current) === 'Not Started'"
+              color="success"
+              :disabled="current.userEnrolled"
+              @click="enrollTournament(current)"
+              >Enroll</v-btn
+            >
+            <v-btn
+              v-else-if="
+                getStatus(current) === 'Started' && current.statementQuiz
+              "
+              color="primary"
+              class="solveQuiz"
+              @click="solveQuiz(current.statementQuiz)"
+              data-cy="solveQuiz"
+            >
+              Solve
+            </v-btn>
+            <v-spacer></v-spacer>
+            <v-btn
               v-if="
-                getStatus(current) === 'Not Started' &&
-                  checkIsCreator(current.creator)
+              getStatus(current) === 'Not Started' &&
+              checkIsCreator(current.creator)
               "
               right
               color="red"
               @click="cancelTournament(current)"
               text
-            >
-              Delete
+              >
+            Delete
             </v-btn>
-            <v-spacer></v-spacer>
-            <v-btn
-              color="success"
-              :disabled="
-                current.userEnrolled || getStatus(current) === 'Started'
-              "
-              @click="enrollTournament(current)"
-              text
-              >Enroll</v-btn
-            >
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -159,7 +168,8 @@
           </div>
           <div class="col">
             <v-btn
-              :disabled="tourn.userEnrolled || getStatus(tourn) === 'Started'"
+              v-if="getStatus(tourn) === 'Not Started'"
+              :disabled="tourn.userEnrolled"
               color="success"
               class="enroll"
               outlined
@@ -167,6 +177,17 @@
               data-cy="enrollBtn"
             >
               Enroll
+            </v-btn>
+            <v-btn
+              v-else-if="getStatus(tourn) === 'Started'"
+              :disabled="!tourn.userEnrolled || tourn.statementQuiz.completed"
+              width="90"
+              color="primary"
+              class="solveQuiz"
+              @click="solveQuiz(tourn.statementQuiz)"
+              data-cy="solveQuizBtn"
+            >
+              Solve
             </v-btn>
           </div>
           <div class="col short-col last-col">
@@ -202,6 +223,8 @@ import { Component, Vue } from 'vue-property-decorator';
 import RemoteServices from '@/services/RemoteServices';
 import { Tournament } from '@/models/management/Tournament';
 import User from '@/models/user/User';
+import StatementQuiz from '@/models/statement/StatementQuiz';
+import StatementManager from '@/models/statement/StatementManager';
 
 @Component
 export default class OpenTournamentsView extends Vue {
@@ -253,6 +276,13 @@ export default class OpenTournamentsView extends Vue {
       await this.$store.dispatch('error', error);
     }
     await this.$store.dispatch('clearLoading');
+  }
+
+
+  async solveQuiz(quiz: StatementQuiz) {
+    let statementManager: StatementManager = StatementManager.getInstance;
+    statementManager.statementQuiz = quiz;
+    await this.$router.push({ name: 'solve-quiz' });
   }
 
   async cancelTournament(tournament: Tournament) {

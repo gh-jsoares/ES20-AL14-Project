@@ -164,6 +164,7 @@ public class Tournament {
             throw new TutorException(TOURNAMENT_NOT_OPEN, getId());
         if (!this.enrolledStudents.add(user))
             throw new TutorException(DUPLICATE_USER);
+        user.addEnrolledTournament(this);
     }
 
     public Set<Topic> getTopics() {

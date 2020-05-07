@@ -175,7 +175,6 @@ class TournamentEnrollSpockTest extends Specification{
     def enrollUserInTournament(isUserEnrolledInTournament){
         if (isUserEnrolledInTournament) {
             tournament.addEnrolledStudent(user)
-            user.addEnrolledTournament(tournament)
         }
     }
 
