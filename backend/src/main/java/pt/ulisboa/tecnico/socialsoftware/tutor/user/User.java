@@ -50,6 +50,10 @@ public class User implements UserDetails, DomainEntity {
     private Integer numberOfCorrectInClassAnswers;
     private Integer numberOfCorrectStudentAnswers;
 
+    private Integer totalNumberOfStudentQuestions = 0;
+    private Integer numberOfApprovedStudentQuestions = 0;
+    private Integer numberOfRejectedStudentQuestions = 0;
+
     @Column(name = "creation_date")
     private LocalDateTime creationDate;
 
@@ -261,6 +265,18 @@ public class User implements UserDetails, DomainEntity {
 
     public void setNumberOfTeacherAnswers(Integer numberOfTeacherAnswers) {
         this.numberOfTeacherAnswers = numberOfTeacherAnswers;
+    }
+
+    public Integer getTotalNumberOfStudentQuestions() {
+        return totalNumberOfStudentQuestions;
+    }
+
+    public Integer getNumberOfApprovedStudentQuestions() {
+        return numberOfApprovedStudentQuestions;
+    }
+
+    public Integer getNumberOfRejectedStudentQuestions() {
+        return numberOfRejectedStudentQuestions;
     }
 
     public Integer getNumberOfInClassAnswers() {
