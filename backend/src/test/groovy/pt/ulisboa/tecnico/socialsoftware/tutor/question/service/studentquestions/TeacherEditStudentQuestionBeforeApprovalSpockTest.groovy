@@ -19,7 +19,7 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.user.UserRepository
 import spock.lang.Specification
 
 @DataJpaTest
-class TeacherEditStudentQuestionBeforeApproval extends Specification {
+class TeacherEditStudentQuestionBeforeApprovalSpockTest extends Specification {
 
     public static final String USER_NAME = "Alfredo Costa"
     public static final String USER_USERNAME = "alcosta"
