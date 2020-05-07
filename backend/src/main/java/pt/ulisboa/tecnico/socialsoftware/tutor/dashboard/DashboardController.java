@@ -19,7 +19,7 @@ public class DashboardController {
         this.dashboardService = dashboardService;
     }
 
-    @PostMapping("/executions/{executionId}/dashboard/tournaments")
+    @GetMapping("/executions/{executionId}/dashboard/tournaments")
     @PreAuthorize("(hasRole('ROLE_STUDENT') or hasRole('ROLE_DEMO_STUDENT')) and hasPermission(#executionId, 'TOURNAMENT.ACCESS')")
     public TournamentDashDto getTournamentStats(Principal principal, @PathVariable int executionId) {
         User user = (User) ((Authentication) principal).getPrincipal();
