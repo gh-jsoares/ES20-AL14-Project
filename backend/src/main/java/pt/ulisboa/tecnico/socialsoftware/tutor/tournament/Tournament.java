@@ -164,6 +164,7 @@ public class Tournament {
             throw new TutorException(TOURNAMENT_NOT_OPEN, getId());
         if (!this.enrolledStudents.add(user))
             throw new TutorException(DUPLICATE_USER);
+        user.addEnrolledTournament(this);
     }
 
     public Set<Topic> getTopics() {
@@ -185,6 +186,7 @@ public class Tournament {
     }
 
     public void setQuiz(Quiz quiz) {
+        quiz.setTournament(this);
         this.quiz = quiz;
     }
 
@@ -260,7 +262,7 @@ public class Tournament {
             this.quiz = null;
         }
 
-        if (this.creator != null) {
+       if (this.creator != null) {
             this.creator.getCreatedTournaments().remove(this);
             this.creator = null;
         }
@@ -276,5 +278,15 @@ public class Tournament {
         this.topics.forEach(topic -> topic.getTournaments().remove(this));
         this.topics.clear();
 
+    }
+
+    public void cancel(User user) {
+        if (user.getRole() != User.Role.STUDENT)
+            throw new TutorException(TOURNAMENT_USER_IS_NOT_STUDENT, user.getId());
+        if (this.getState() != Tournament.State.ENROLL)
+            throw new TutorException(TOURNAMENT_HAS_STARTED, this.getId());
+        else if (!this.getCreator().getId().equals(user.getId()))
+            throw new TutorException(ErrorMessage.TOURNAMENT_USER_IS_NOT_CREATOR, user.getUsername());
+        this.remove();
     }
 }

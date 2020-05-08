@@ -16,6 +16,7 @@ import { QuizAnswers } from '@/models/management/QuizAnswers';
 import { Discussion } from '@/models/management/Discussion';
 import StudentQuestion from '@/models/management/StudentQuestion';
 import { Tournament } from '@/models/management/Tournament';
+import { TournamentDashStats } from '@/models/management/TournamentDashStats';
 import StudentQuestionStats from '@/models/user/dashboard/StudentQuestionStats';
 
 const httpClient = axios.create();
@@ -821,6 +822,37 @@ export default class RemoteServices {
       .then(response => {
         return new Tournament(response.data);
       })
+      .catch(async error => {
+        throw Error(await this.errorMessage(error));
+      });
+  }
+
+  static async getTournamentsDashboardStats(): Promise<TournamentDashStats> {
+    return httpClient
+      .get(
+        `/executions/${Store.getters.getCurrentCourse.courseExecutionId}/dashboard/tournaments`
+      )
+      .then(response => {
+        return new TournamentDashStats(response.data);
+      })
+      .catch(async error => {
+        throw Error(await this.errorMessage(error));
+      });
+  }
+
+  static async cancelTournament(tournamentId: number) {
+    return httpClient
+      .delete(`tournaments/${tournamentId}`)
+      .catch(async error => {
+        throw Error(await this.errorMessage(error));
+      });
+  }
+
+  static async changeTournamentStatsPrivacy() {
+    return httpClient
+      .post(
+        `/executions/${Store.getters.getCurrentCourse.courseExecutionId}/dashboard/tournaments/changePrivacy`
+      )
       .catch(async error => {
         throw Error(await this.errorMessage(error));
       });
