@@ -34,8 +34,8 @@ import OpenTournamentsView from '@/views/student/tournament/OpenTournamentsView.
 import CreateTournamentView from '@/views/student/tournament/CreateTournamentView.vue';
 import TournamentsTabView from '@/views/student/dashboard/TournamentsTabView.vue';
 
-import DashboardView from '@/views/dashboard/DashboardView.vue';
-import StudentQuestionStatsView from '@/views/dashboard/StudentQuestionStatsView.vue';
+import DashboardView from '@/views/student/dashboard/DashboardView.vue';
+import StudentQuestionStatsView from '@/views/student/dashboard/StudentQuestionStatsView.vue';
 
 Vue.use(Router);
 
