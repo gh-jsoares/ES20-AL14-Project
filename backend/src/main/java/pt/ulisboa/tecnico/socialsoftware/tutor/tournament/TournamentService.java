@@ -187,10 +187,17 @@ public class TournamentService {
         tournaments.forEach(tourn -> {
             LocalDateTime now = DateHandler.now();
             if (tourn.getQuiz() == null &&
+                    !tourn.getState().equals(Tournament.State.CLOSED) &&
                     tourn.getEnrolledStudents().size() > 1 &&
                     tourn.getAvailableDate().isBefore(now)) {
-                generateTournamentQuiz(tourn.getId());
-                tourn.setState(Tournament.State.ONGOING);
+                try {
+                    generateTournamentQuiz(tourn.getId());
+                    tourn.setState(Tournament.State.ONGOING);
+                } catch (TutorException e) {
+                    if (e.getErrorMessage().equals(ErrorMessage.NOT_ENOUGH_QUESTIONS))
+                        tourn.setState(Tournament.State.CLOSED);
+                }
+
             }
             if (!tourn.getState().equals(Tournament.State.CLOSED) &&
                     (tourn.getConclusionDate().isBefore(now) ||
