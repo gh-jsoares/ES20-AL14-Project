@@ -122,6 +122,7 @@ class TeacherEditStudentQuestionBeforeApprovalSpockTest extends Specification {
         for (int i = 0; i < 4; i++) {
             def option = new Option()
             option.setContent(content)
+            option.setSequence(i)
             option.setStudentQuestion(studentQuestion)
             options.add(option)
             studentQuestion.addOption(option)

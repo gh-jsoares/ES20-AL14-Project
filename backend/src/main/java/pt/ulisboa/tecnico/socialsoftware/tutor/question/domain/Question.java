@@ -96,7 +96,6 @@ public class Question implements DomainEntity {
         if (studentQuestion.getImage() != null)
             setImage(studentQuestion.getImage());
 
-        this.options.addAll(studentQuestion.getOptions());
         studentQuestion.getOptions().forEach(option -> option.setQuestion(this));
 
         this.topics.addAll(studentQuestion.getTopics());
