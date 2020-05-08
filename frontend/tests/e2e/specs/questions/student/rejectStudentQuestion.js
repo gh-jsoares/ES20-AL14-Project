@@ -1,4 +1,4 @@
-describe('Review Student Question walkthrough', () => {
+describe('Reject Student Question walkthrough', () => {
     beforeEach(() => {
         cy.demoTeacherLogin();
 

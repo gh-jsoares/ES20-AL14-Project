@@ -71,7 +71,13 @@
 
                   <v-img :src="getImage(editStudentQuestion)" />
                 </v-card>
-                <v-btn data-cy="stepperContinueContent" color="primary" @click="currentStep = 2">Continue</v-btn>
+                <v-btn
+                  data-cy="stepperContinueContent"
+                  color="primary"
+                  @click="currentStep = 2"
+                >
+                  Continue
+                </v-btn>
               </v-stepper-content>
               <v-stepper-content step="2">
                 <v-card
@@ -85,7 +91,13 @@
                   ></approve-student-question-content>
                 </v-card>
                 <v-btn text @click="currentStep = 1">Back</v-btn>
-                <v-btn data-cy="stepperContinueReview" color="primary" @click="currentStep = 3">Continue</v-btn>
+                <v-btn
+                  data-cy="stepperContinueContent"
+                  color="primary"
+                  @click="currentStep = 3"
+                >
+                  Continue
+                </v-btn>
               </v-stepper-content>
               <v-stepper-content step="3">
                 <v-card
