@@ -66,3 +66,9 @@ Cypress.Commands.add('seeDiscussionStats', () => {
   cy.get('[data-cy="discussionsNumber"]').should('exist');
   cy.get('[data-cy="publicDiscussionsNumber"]').should('exist');
 });
+
+Cypress.Commands.add('clickInDiscussionPrivacySwitch', () => {
+  cy.get('[data-cy="dashboardButton"]').click();
+  cy.contains('Discussions').click();
+  cy.get('[data-cy="privacyToggle"]').click();
+});

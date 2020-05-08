@@ -7,13 +7,13 @@
       outlined
       raised
       class="px-3 mx-5 switch-private"
+      data-cy="privacyToggle"
     >
       <v-switch
         v-model="stats.areDiscussionsPublic"
         class="ma-2"
         :label="stats.areDiscussionsPublic ? 'Make Private' : 'Make Public'"
         @change="changePrivacySetting"
-        data-cy="privacyToggle"
       ></v-switch>
     </v-card>
     <div v-if="stats != null" class="stats-container">
