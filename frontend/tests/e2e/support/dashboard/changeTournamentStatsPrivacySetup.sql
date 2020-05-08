@@ -1,0 +1,1 @@
+UPDATE users SET anonymize_tournament_stats=true WHERE username='Demo-Student';
