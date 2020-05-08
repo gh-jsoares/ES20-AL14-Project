@@ -17,7 +17,7 @@ public class TournamentDashDto implements Serializable {
     private Integer totalWrongAnswers = 0;
     private double score = 0;
     private List<ClosedTournamentDto> closedTournaments = new ArrayList<>();
-    private boolean anonymize = false;
+    private boolean anonimize = false;
 
     public Integer getTotalTournaments() {
         return totalTournaments;
@@ -115,9 +115,9 @@ public class TournamentDashDto implements Serializable {
         this.closedTournaments = closedTournaments;
     }
 
-    public boolean isAnonimize() { return anonymize; }
+    public boolean isAnonimize() { return anonimize; }
 
-    public void setAnonimize(boolean anonymize) { this.anonymize = anonymize; }
+    public void setAnonimize(boolean anonymize) { this.anonimize = anonymize; }
 
     @Override
     public String toString() {

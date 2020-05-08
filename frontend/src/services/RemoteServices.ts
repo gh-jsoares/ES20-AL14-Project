@@ -809,6 +809,16 @@ export default class RemoteServices {
       });
   }
 
+  static async changeTournamentStatsPrivacy() {
+    return httpClient
+    .post(
+    `/executions/${Store.getters.getCurrentCourse.courseExecutionId}/dashboard/tournaments/changePrivacy`
+      )
+      .catch(async error => {
+        throw Error(await this.errorMessage(error));
+      });
+  }
+
   static async errorMessage(error: any): Promise<string> {
     if (error.message === 'Network Error') {
       return 'Unable to connect to server';
