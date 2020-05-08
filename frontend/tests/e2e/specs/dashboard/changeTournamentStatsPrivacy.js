@@ -1,8 +1,11 @@
 //To run these tests first copy cypress.env.json.example rename it to cypress.env.json and change the values inside for db connection
+const setupFile = 'tests/e2e/support/dashboard/changeTournamentStatsPrivacySetup.sql';
 
 describe('Student changes privacy of tournament stats walkthrough', () => {
 
   beforeEach(() => {
+    cy.log('try to setup datatabase before test');
+    cy.databaseRunFile(setupFile);
     cy.demoStudentLogin();
     cy.goToTournamentsDashboard();
   });
