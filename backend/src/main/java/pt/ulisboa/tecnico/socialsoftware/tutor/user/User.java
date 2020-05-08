@@ -51,7 +51,7 @@ public class User implements UserDetails, DomainEntity {
     private Integer numberOfCorrectInClassAnswers;
     private Integer numberOfCorrectStudentAnswers;
 
-    @Column(columnDefinition = "boolean default false")
+    @Column(columnDefinition = "boolean default true")
     private boolean areDiscussionsPublic;
 
     @Column(name = "creation_date")
@@ -102,7 +102,7 @@ public class User implements UserDetails, DomainEntity {
         this.numberOfCorrectTeacherAnswers = 0;
         this.numberOfCorrectInClassAnswers = 0;
         this.numberOfCorrectStudentAnswers = 0;
-        this.areDiscussionsPublic = false;
+        this.areDiscussionsPublic = true;
     }
 
     @Override

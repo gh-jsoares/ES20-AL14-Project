@@ -78,8 +78,8 @@ class StudentTogglesDiscussionStatsTest extends Specification {
         def result = dashboardService.toggleDiscussionStats(student.getId())
 
         then:
-        result.getAreDiscussionsPublic()
-        student.getDiscussionsPrivacy()
+        !result.getAreDiscussionsPublic()
+        !student.getDiscussionsPrivacy()
     }
 
     def "student makes discussion stats private again"() {
@@ -89,9 +89,9 @@ class StudentTogglesDiscussionStatsTest extends Specification {
         DiscussionStatsDto result1 = dashboardService.toggleDiscussionStats(student.getId())
         DiscussionStatsDto result2 = dashboardService.toggleDiscussionStats(student.getId())
         then:
-        result1.getAreDiscussionsPublic()
-        !result2.getAreDiscussionsPublic()
-        !student.getDiscussionsPrivacy()
+        !result1.getAreDiscussionsPublic()
+        result2.getAreDiscussionsPublic()
+        student.getDiscussionsPrivacy()
     }
 
     def "student makes discussion stats public again"() {
@@ -102,10 +102,10 @@ class StudentTogglesDiscussionStatsTest extends Specification {
         def result2 = dashboardService.toggleDiscussionStats(student.getId())
         def result3 = dashboardService.toggleDiscussionStats(student.getId())
         then:
-        result1.getAreDiscussionsPublic()
-        !result2.getAreDiscussionsPublic()
-        result3.getAreDiscussionsPublic()
-        student.getDiscussionsPrivacy()
+        !result1.getAreDiscussionsPublic()
+        result2.getAreDiscussionsPublic()
+        !result3.getAreDiscussionsPublic()
+        !student.getDiscussionsPrivacy()
     }
 
     def "non-student user toggles discussion stats"() {

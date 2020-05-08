@@ -12,7 +12,7 @@
       <v-switch
         v-model="stats.areDiscussionsPublic"
         class="ma-2"
-        :label="stats.areDiscussionsPublic ? 'Make Private' : 'Make Public'"
+        :label="stats.areDiscussionsPublic ? 'Public' : 'Private'"
         @change="changePrivacySetting"
       ></v-switch>
     </v-card>
