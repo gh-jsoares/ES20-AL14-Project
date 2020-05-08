@@ -26,7 +26,7 @@
       ></div>
       <div
         @click="getQuestionDiscussions()"
-        v-if="!discussionsDiv"
+        v-if="discussions === null"
         class="square"
         data-cy="getDiscussionsButton"
       >
@@ -71,20 +71,15 @@
         />
       </li>
     </ul>
-    <v-toolbar
-      class="mt-12"
-      v-if="discussionsDiv && discussions[0]"
-      color="teal"
-      dark
-    >
+    <v-toolbar class="mt-12" v-if="discussions != null" color="teal" dark>
       <v-toolbar-title>Discussions about this question</v-toolbar-title>
     </v-toolbar>
-    <v-toolbar class="mt-12" v-else-if="discussionsDiv" color="teal" dark>
+    <v-toolbar class="mt-12" v-else-if="discussions != null" color="teal" dark>
       <v-toolbar-title
         >There are no discussions for this question.</v-toolbar-title
       >
     </v-toolbar>
-    <v-list v-if="discussionsDiv" data-cy="questionDiscussions">
+    <v-list v-if="discussions != null" data-cy="questionDiscussions">
       <v-list-group
         v-for="discussion in discussions"
         :key="discussion.messages[0].userName"
@@ -153,11 +148,11 @@ export default class ResultComponent extends Vue {
   @Prop(StatementCorrectAnswer) readonly correctAnswer!: StatementCorrectAnswer;
   @Prop(StatementAnswer) readonly answer!: StatementAnswer;
   @Prop() readonly questionNumber!: number;
-  @Prop() discussionsDiv!: boolean;
+  @Prop() readonly discussions!: Discussion;
   hover: boolean = false;
   optionLetters: string[] = ['A', 'B', 'C', 'D'];
   createDiscussionDialog: boolean = false;
-  discussions: Discussion[] = [];
+  newDiscussions: Discussion[] = [];
 
   @Emit()
   increaseOrder() {
@@ -187,11 +182,12 @@ export default class ResultComponent extends Vue {
 
   async getQuestionDiscussions() {
     try {
-      this.discussions = await RemoteServices.getQuestionDiscussions(
+      this.newDiscussions = await RemoteServices.getQuestionDiscussions(
         this.question.questionId,
         this.answer.questionAnswerId
       );
-      this.discussionsDiv = true;
+      //this.discussionsDiv = true;
+      this.$emit('see-discussions', this.newDiscussions);
     } catch (error) {
       await this.$store.dispatch('error', error);
     }
