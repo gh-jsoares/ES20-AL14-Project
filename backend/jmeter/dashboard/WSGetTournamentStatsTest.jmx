@@ -70,29 +70,29 @@
           <stringProp name="query">
 INSERT INTO quizzes(available_date, creation_date, title, type, course_execution_id) VALUES (&apos;2019-05-23 10:51&apos;,&apos;2019-05-23 10:51&apos;,&apos;Jmeter Test&apos;, &apos;TOURNAMENT&apos;, (SELECT id FROM course_executions WHERE acronym=&apos;DemoCourse&apos;));
 
-INSERT INTO quiz_questions(sequence, question_id, quiz_id) VALUES (0, 1494, (SELECT id FROM quizzes WHERE title=&apos;Jmeter Test&apos;));
-INSERT INTO quiz_questions(sequence, question_id, quiz_id) VALUES (3, 1377, (SELECT id FROM quizzes WHERE title=&apos;Jmeter Test&apos;));
-INSERT INTO quiz_questions(sequence, question_id, quiz_id) VALUES (2, 1619, (SELECT id FROM quizzes WHERE title=&apos;Jmeter Test&apos;));
-INSERT INTO quiz_questions(sequence, question_id, quiz_id) VALUES (1, 1561, (SELECT id FROM quizzes WHERE title=&apos;Jmeter Test&apos;));
+INSERT INTO quiz_questions(sequence, question_id, quiz_id) VALUES (0, (SELECT id FROM questions WHERE title=&apos;Allowing the incorporation of independently developed components&apos;), (SELECT id FROM quizzes WHERE title=&apos;Jmeter Test&apos;));
+INSERT INTO quiz_questions(sequence, question_id, quiz_id) VALUES (3, (SELECT id FROM questions WHERE title=&apos;Restrict vocabulary&apos;), (SELECT id FROM quizzes WHERE title=&apos;Jmeter Test&apos;));
+INSERT INTO quiz_questions(sequence, question_id, quiz_id) VALUES (2, (SELECT id FROM questions WHERE title=&apos;The impact of functionalities on the architecture&apos;), (SELECT id FROM quizzes WHERE title=&apos;Jmeter Test&apos;));
+INSERT INTO quiz_questions(sequence, question_id, quiz_id) VALUES (1, (SELECT id FROM questions WHERE title=&apos;Impact of the business goals on the architecture&apos;), (SELECT id FROM quizzes WHERE title=&apos;Jmeter Test&apos;));
 
 INSERT INTO quiz_answers(answer_date, completed, quiz_id, user_id, used_in_statistics, creation_date) VALUES (&apos;2019-05-24 10:51&apos;,true,(SELECT id FROM quizzes WHERE title=&apos;Jmeter Test&apos;),(SELECT id FROM users WHERE name=&apos;Demo Student&apos;),true,&apos;2019-05-24 09:51&apos;);
 
 
-INSERT INTO question_answers(time_taken, option_id, quiz_answer_id, quiz_question_id, sequence) VALUES (10000, (select id from options where question_id=1494 AND correct=true), (SELECT id from quiz_answers WHERE creation_date=&apos;2019-05-24 09:51&apos;),
-    (SELECT id FROM quiz_questions WHERE question_id=1494 AND quiz_id IN (SELECT id FROM quizzes WHERE title=&apos;Jmeter Test&apos;)),
-    (SELECT sequence FROM quiz_questions WHERE question_id=1494 AND quiz_id IN (SELECT id FROM quizzes WHERE title=&apos;Jmeter Test&apos;)));
+INSERT INTO question_answers(time_taken, option_id, quiz_answer_id, quiz_question_id, sequence) VALUES (10000, (select id from options where question_id=(SELECT id FROM questions WHERE  title=&apos;Allowing the incorporation of independently developed components&apos;) AND correct=true), (SELECT id from quiz_answers WHERE creation_date=&apos;2019-05-24 09:51&apos;),
+    (SELECT id FROM quiz_questions WHERE question_id=(SELECT id FROM questions WHERE  title=&apos;Allowing the incorporation of independently developed components&apos;) AND quiz_id IN (SELECT id FROM quizzes WHERE title=&apos;Jmeter Test&apos;)),
+    (SELECT sequence FROM quiz_questions WHERE question_id=(SELECT id FROM questions WHERE  title=&apos;Allowing the incorporation of independently developed components&apos;) AND quiz_id IN (SELECT id FROM quizzes WHERE title=&apos;Jmeter Test&apos;)));
 
-INSERT INTO question_answers(time_taken, option_id, quiz_answer_id, quiz_question_id, sequence) VALUES (10000, (select id from options where question_id=1377 AND correct=true), (SELECT id from quiz_answers WHERE creation_date=&apos;2019-05-24 09:51&apos;),
-    (SELECT id FROM quiz_questions WHERE question_id=1377 AND quiz_id IN (SELECT id FROM quizzes WHERE title=&apos;Jmeter Test&apos;)),
-    (SELECT sequence FROM quiz_questions WHERE question_id=1377 AND quiz_id IN (SELECT id FROM quizzes WHERE title=&apos;Jmeter Test&apos;)));
+INSERT INTO question_answers(time_taken, option_id, quiz_answer_id, quiz_question_id, sequence) VALUES (10000, (select id from options where question_id=(SELECT id FROM questions WHERE  title=&apos;Restrict vocabulary&apos;) AND correct=true), (SELECT id from quiz_answers WHERE creation_date=&apos;2019-05-24 09:51&apos;),
+    (SELECT id FROM quiz_questions WHERE question_id=(SELECT id FROM questions WHERE  title=&apos;Restrict vocabulary&apos;) AND quiz_id IN (SELECT id FROM quizzes WHERE title=&apos;Jmeter Test&apos;)),
+    (SELECT sequence FROM quiz_questions WHERE question_id=(SELECT id FROM questions WHERE  title=&apos;Restrict vocabulary&apos;) AND quiz_id IN (SELECT id FROM quizzes WHERE title=&apos;Jmeter Test&apos;)));
 
-INSERT INTO question_answers(time_taken, option_id, quiz_answer_id, quiz_question_id, sequence) VALUES (10000, (select id from options where question_id=1619 AND correct=false LIMIT 1), (SELECT id from quiz_answers WHERE creation_date=&apos;2019-05-24 09:51&apos;),
-    (SELECT id FROM quiz_questions WHERE question_id=1619 AND quiz_id IN (SELECT id FROM quizzes WHERE title=&apos;Jmeter Test&apos;)),
-    (SELECT sequence FROM quiz_questions WHERE question_id=1619 AND quiz_id IN (SELECT id FROM quizzes WHERE title=&apos;Jmeter Test&apos;)));
+INSERT INTO question_answers(time_taken, option_id, quiz_answer_id, quiz_question_id, sequence) VALUES (10000, (select id from options where question_id=(SELECT id FROM questions WHERE  title=&apos;The impact of functionalities on the architecture&apos;) AND correct=false LIMIT 1), (SELECT id from quiz_answers WHERE creation_date=&apos;2019-05-24 09:51&apos;),
+    (SELECT id FROM quiz_questions WHERE question_id=(SELECT id FROM questions WHERE  title=&apos;The impact of functionalities on the architecture&apos;) AND quiz_id IN (SELECT id FROM quizzes WHERE title=&apos;Jmeter Test&apos;)),
+    (SELECT sequence FROM quiz_questions WHERE question_id=(SELECT id FROM questions WHERE  title=&apos;The impact of functionalities on the architecture&apos;) AND quiz_id IN (SELECT id FROM quizzes WHERE title=&apos;Jmeter Test&apos;)));
 
-INSERT INTO question_answers(time_taken, option_id, quiz_answer_id, quiz_question_id, sequence) VALUES (10000, (select id from options where question_id=1561 AND correct=false LIMIT 1), (SELECT id from quiz_answers WHERE creation_date=&apos;2019-05-24 09:51&apos;),
-    (SELECT id FROM quiz_questions WHERE question_id=1561 AND quiz_id IN (SELECT id FROM quizzes WHERE title=&apos;Jmeter Test&apos;)),
-    (SELECT sequence FROM quiz_questions WHERE question_id=1561 AND quiz_id IN (SELECT id FROM quizzes WHERE title=&apos;Jmeter Test&apos;)));
+INSERT INTO question_answers(time_taken, option_id, quiz_answer_id, quiz_question_id, sequence) VALUES (10000, (select id from options where question_id=(SELECT id FROM questions WHERE  title=&apos;Impact of the business goals on the architecture&apos;) AND correct=false LIMIT 1), (SELECT id from quiz_answers WHERE creation_date=&apos;2019-05-24 09:51&apos;),
+    (SELECT id FROM quiz_questions WHERE question_id=(SELECT id FROM questions WHERE  title=&apos;Impact of the business goals on the architecture&apos;) AND quiz_id IN (SELECT id FROM quizzes WHERE title=&apos;Jmeter Test&apos;)),
+    (SELECT sequence FROM quiz_questions WHERE question_id=(SELECT id FROM questions WHERE  title=&apos;Impact of the business goals on the architecture&apos;) AND quiz_id IN (SELECT id FROM quizzes WHERE title=&apos;Jmeter Test&apos;)));
 
 
 INSERT INTO tournaments(state, title, course_execution_id, creator_id, creation_date, available_date, conclusion_date, number_of_questions, quiz_id) VALUES
