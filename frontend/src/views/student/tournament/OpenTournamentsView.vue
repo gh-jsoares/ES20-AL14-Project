@@ -67,15 +67,15 @@
             <v-spacer></v-spacer>
             <v-btn
               v-if="
-              getStatus(current) === 'Not Started' &&
-              checkIsCreator(current.creator)
+                getStatus(current) === 'Not Started' &&
+                  checkIsCreator(current.creator)
               "
               right
               color="red"
               @click="cancelTournament(current)"
               text
-              >
-            Delete
+            >
+              Delete
             </v-btn>
           </v-card-actions>
         </v-card>
@@ -277,7 +277,6 @@ export default class OpenTournamentsView extends Vue {
     }
     await this.$store.dispatch('clearLoading');
   }
-
 
   async solveQuiz(quiz: StatementQuiz) {
     let statementManager: StatementManager = StatementManager.getInstance;

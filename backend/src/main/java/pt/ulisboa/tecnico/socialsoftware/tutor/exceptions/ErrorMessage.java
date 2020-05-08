@@ -115,7 +115,8 @@ public enum ErrorMessage {
     STUDENT_QUESTION_NOT_A_TEACHER("The user is not a teacher"),
     STUDENT_QUESTION_NOT_AWAITING_APPROVAL("The student question '%s' is not awaiting approval"),
     STUDENT_QUESTION_REJECT_NO_EXPLANATION("To reject a student question you need to write an explanation"),
-    TOO_MANY_OPTIONS_STUDENT_QUESTION("Student question cant have more than 4 options");
+    TOO_MANY_OPTIONS_STUDENT_QUESTION("Student question cant have more than 4 options"),
+    STUDENT_QUESTION_NOT_REJECTED("Student question '%s' is not rejected");
 
 
 

@@ -23,7 +23,7 @@ import spock.lang.Specification
 import spock.lang.Unroll
 
 @DataJpaTest
-class ChangeTournamentPrivacySpockTest extends Specification{
+class ChangeTournamentStatsPrivacySpockTest extends Specification{
     public static final String COURSE_NAME = "Software Architecture"
     public static final String ACRONYM = "AS1"
     public static final String ACADEMIC_TERM = "1 SEM"

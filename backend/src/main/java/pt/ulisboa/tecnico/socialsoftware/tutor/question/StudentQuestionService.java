@@ -15,6 +15,7 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.StudentQuestion;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Topic;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.StudentQuestionDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.ImageRepository;
+import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.QuestionRepository;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.StudentQuestionRepository;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.TopicRepository;
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.User;
@@ -35,6 +36,9 @@ public class StudentQuestionService {
 
     @Autowired
     private StudentQuestionRepository studentQuestionRepository;
+
+    @Autowired
+    private QuestionRepository questionRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -144,7 +148,44 @@ public class StudentQuestionService {
         User user = getUserIfExists(userId);
         StudentQuestion studentQuestion = getStudentQuestionIfExists(studentQuestionId);
 
-        studentQuestion.doApprove(user);
+        Question question = studentQuestion.doApprove(user);
+
+        questionRepository.save(question);
+
+        return new StudentQuestionDto(studentQuestion);
+    }
+
+    @Retryable(
+            value = {SQLException.class},
+            backoff = @Backoff(delay = 5000))
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public StudentQuestionDto editStudentQuestion(int userId, int studentQuestionId, StudentQuestionDto studentQuestionDto) {
+        User user = getUserIfExists(userId);
+        StudentQuestion studentQuestion = getStudentQuestionIfExists(studentQuestionId);
+
+        checkUserIsStudent(user);
+        studentQuestion.updateAsStudent(user, studentQuestionDto);
+
+        return new StudentQuestionDto(studentQuestion);
+    }
+
+    @Retryable(
+            value = {SQLException.class},
+            backoff = @Backoff(delay = 5000))
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public StudentQuestionDto approveStudentQuestion(int userId, int studentQuestionId, StudentQuestionDto studentQuestionDto) {
+        if (studentQuestionDto == null)
+            return approveStudentQuestion(userId, studentQuestionId);
+
+        User user = getUserIfExists(userId);
+        StudentQuestion studentQuestion = getStudentQuestionIfExists(studentQuestionId);
+
+        checkUserIsTeacher(user);
+        studentQuestion.updateAsTeacher(user, studentQuestionDto);
+
+        Question question = studentQuestion.doApprove(user);
+
+        questionRepository.save(question);
 
         return new StudentQuestionDto(studentQuestion);
     }
@@ -163,7 +204,7 @@ public class StudentQuestionService {
     }
 
     @Retryable(
-            value = { SQLException.class },
+            value = {SQLException.class},
             backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public void uploadImage(Integer studentQuestionId, String type) {
@@ -181,10 +222,11 @@ public class StudentQuestionService {
                 studentQuestion.getCourse().getType() +
                 studentQuestion.getKey() +
                 "." + type);
+        studentQuestion.doAwait();
     }
 
     @Retryable(
-            value = { SQLException.class },
+            value = {SQLException.class},
             backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public void updateStudentQuestionTopics(Integer studentQuestionId, Integer[] topicIds) {
@@ -192,12 +234,12 @@ public class StudentQuestionService {
 
         studentQuestion.updateTopics(
                 Arrays.stream(topicIds)
-                    .map(topicId -> getTopicIfExists(studentQuestion.getCourse().getId(), topicId))
+                        .map(topicId -> getTopicIfExists(studentQuestion.getCourse().getId(), topicId))
                         .collect(Collectors.toSet()));
     }
 
     @Retryable(
-            value = { SQLException.class },
+            value = {SQLException.class},
             backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public boolean canAccessStudentQuestion(int userId, int studentQuestionId) {

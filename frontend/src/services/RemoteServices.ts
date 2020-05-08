@@ -17,6 +17,7 @@ import { Discussion } from '@/models/management/Discussion';
 import StudentQuestion from '@/models/management/StudentQuestion';
 import { Tournament } from '@/models/management/Tournament';
 import { TournamentDashStats } from '@/models/management/TournamentDashStats';
+import StudentQuestionStats from '@/models/user/dashboard/StudentQuestionStats';
 
 const httpClient = axios.create();
 httpClient.defaults.timeout = 10000;
@@ -76,6 +77,28 @@ export default class RemoteServices {
       .get('/auth/demo/admin')
       .then(response => {
         return new AuthDto(response.data);
+      })
+      .catch(async error => {
+        throw Error(await this.errorMessage(error));
+      });
+  }
+
+  static async getStudentQuestionStats(): Promise<StudentQuestionStats> {
+    return httpClient
+      .get('/dashboard/questions/student')
+      .then(response => {
+        return new StudentQuestionStats(response.data);
+      })
+      .catch(async error => {
+        throw Error(await this.errorMessage(error));
+      });
+  }
+
+  static async toggleStudentQuestionStatsVisibility(): Promise<Boolean> {
+    return httpClient
+      .put('/dashboard/questions/student')
+      .then(response => {
+        return response.data;
       })
       .catch(async error => {
         throw Error(await this.errorMessage(error));
@@ -142,7 +165,10 @@ export default class RemoteServices {
     studentQuestion: StudentQuestion
   ): Promise<StudentQuestion> {
     return httpClient
-      .put(`/questions/student/all/${studentQuestion.id}/approve/`)
+      .put(
+        `/questions/student/all/${studentQuestion.id}/approve/`,
+        studentQuestion
+      )
       .then(response => {
         return new StudentQuestion(response.data);
       })
@@ -221,6 +247,19 @@ export default class RemoteServices {
       .put(`/questions/${question.id}`, question)
       .then(response => {
         return new Question(response.data);
+      })
+      .catch(async error => {
+        throw Error(await this.errorMessage(error));
+      });
+  }
+
+  static async editStudentQuestion(
+    studentQuestion: StudentQuestion
+  ): Promise<StudentQuestion> {
+    return httpClient
+      .put(`/questions/student/${studentQuestion.id}`, studentQuestion)
+      .then(response => {
+        return new StudentQuestion(response.data);
       })
       .catch(async error => {
         throw Error(await this.errorMessage(error));

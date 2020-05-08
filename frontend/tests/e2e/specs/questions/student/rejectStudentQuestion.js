@@ -1,4 +1,4 @@
-describe('Review Student Question walkthrough', () => {
+describe('Reject Student Question walkthrough', () => {
     beforeEach(() => {
         cy.demoTeacherLogin();
 
@@ -11,13 +11,6 @@ describe('Review Student Question walkthrough', () => {
     afterEach(() => {
         cy.contains('Logout').click();
         cy.cleanupStudentQuestions();
-    });
-
-    it('login accept student question', () => {
-        cy.fixture('questions/student/studentQuestionsData.json').then(data => {
-            const studentQuestion = data.student_questions[0];
-            cy.acceptStudentQuestion(studentQuestion);
-        });
     });
 
     it('login reject student question', () => {

@@ -15,7 +15,10 @@
         <i class="fas fa-clock"></i>
         <span v-if="!hideTime">{{ submissionTimer }}</span>
       </span>
-        <span class="end-quiz" data-cy="endQuizBtn" @click="confirmationDialog = true"
+      <span
+        class="end-quiz"
+        data-cy="endQuizBtn"
+        @click="confirmationDialog = true"
         ><i class="fas fa-times" />End Quiz</span
       >
     </header>
@@ -93,7 +96,12 @@
           <v-btn color="secondary" text @click="confirmationDialog = false">
             Cancel
           </v-btn>
-          <v-btn color="primary" data-cy="concludeQuizBtn" text @click="concludeQuiz">
+          <v-btn
+            color="primary"
+            data-cy="concludeQuizBtn"
+            text
+            @click="concludeQuiz"
+          >
             I'm sure
           </v-btn>
         </v-card-actions>
@@ -172,8 +180,7 @@ export default class QuizView extends Vue {
         await this.$store.dispatch('error', error);
         if (this.statementQuiz.tournament)
           await this.$router.push({ name: 'open-tournaments' });
-        else
-          await this.$router.push({ name: 'available-quizzes' });
+        else await this.$router.push({ name: 'available-quizzes' });
       }
     }
   }

@@ -26,6 +26,8 @@ public interface Visitor {
 
     default void visitQuestionAnswer(QuestionAnswer questionAnswer) {}
 
+    default void visitStudentQuestion(StudentQuestion studentQuestion) {}
+
     default void visitTopic(Topic topic) {}
 
     default void visitCourse(Course course) {}
