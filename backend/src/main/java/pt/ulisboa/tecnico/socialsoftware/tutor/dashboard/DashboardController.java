@@ -1,5 +1,6 @@
 package pt.ulisboa.tecnico.socialsoftware.tutor.dashboard;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -29,6 +30,20 @@ public class DashboardController {
         }
 
         return dashboardService.getTournamentStats(user.getId(), executionId);
+    }
+
+    @PostMapping("/executions/{executionId}/dashboard/tournaments/changePrivacy")
+    @PreAuthorize("(hasRole('ROLE_STUDENT') or hasRole('ROLE_DEMO_STUDENT')) and hasPermission(#executionId, 'EXECUTION.ACCESS')")
+    public ResponseEntity changeTournamentStatsPrivacy(Principal principal, @PathVariable int executionId) {
+        User user = (User) ((Authentication) principal).getPrincipal();
+
+        if (user == null){
+            throw new TutorException(AUTHENTICATION_ERROR);
+        }
+
+        dashboardService.changeTournamentStatsPrivacy(user.getId());
+
+        return ResponseEntity.ok().build();
     }
 
 }

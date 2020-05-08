@@ -1,6 +1,28 @@
 <template>
   <div class="container">
-    <h2>Tournaments Dashboard</h2>
+    <v-row justify="center" align="center">
+      <v-col></v-col>
+      <v-col>
+        <h2>Tournaments Dashboard</h2>
+      </v-col>
+      <v-col>
+        <v-card
+          width="165"
+          color="white"
+          height="50"
+          outlined
+          raised
+          data-cy="privacySwitch"
+        >
+          <v-switch
+            v-model="privacySetting"
+            class="ma-2"
+            :label="privacySetting ? 'Make Public' : 'Make Private'"
+            @change="changePrivacySetting()"
+          ></v-switch>
+        </v-card>
+      </v-col>
+    </v-row>
     <div class="stats-container">
       <div
         class="items"
@@ -145,12 +167,13 @@ import { ClosedTournament } from '@/models/management/ClosedTournament';
 })
 export default class TournamentsTabView extends Vue {
   stats: TournamentDashStats = new TournamentDashStats();
+  privacySetting: boolean = false;
 
   async created() {
     await this.$store.dispatch('loading');
     try {
       this.stats = await RemoteServices.getTournamentsDashboardStats();
-      console.log(this.stats);
+      this.privacySetting = this.stats.anonimize;
     } catch (error) {
       await this.$store.dispatch('error', error);
     }
@@ -185,6 +208,16 @@ export default class TournamentsTabView extends Vue {
     statementManager.correctAnswers = quiz.correctAnswers;
     statementManager.statementQuiz = quiz.statementQuiz;
     await this.$router.push({ name: 'quiz-results' });
+  }
+
+  async changePrivacySetting() {
+    try {
+      await RemoteServices.changeTournamentStatsPrivacy();
+      this.stats.anonimize = this.privacySetting;
+    } catch (error) {
+      await this.$store.dispatch('error', error);
+    }
+    await this.$store.dispatch('clearLoading');
   }
 }
 </script>

@@ -7,6 +7,8 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.answer.domain.QuizAnswer;
 import pt.ulisboa.tecnico.socialsoftware.tutor.config.DateHandler;
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecution;
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.domain.Discussion;
+import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage;
+import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException;
 import pt.ulisboa.tecnico.socialsoftware.tutor.impexp.domain.DomainEntity;
 import pt.ulisboa.tecnico.socialsoftware.tutor.impexp.domain.Visitor;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Question;
@@ -49,6 +51,9 @@ public class User implements UserDetails, DomainEntity {
     private Integer numberOfCorrectTeacherAnswers;
     private Integer numberOfCorrectInClassAnswers;
     private Integer numberOfCorrectStudentAnswers;
+
+    @Column(columnDefinition = "boolean default false")
+    private boolean anonymizeTournamentStats;
 
     @Column(name = "creation_date")
     private LocalDateTime creationDate;
@@ -96,6 +101,7 @@ public class User implements UserDetails, DomainEntity {
         this.numberOfCorrectTeacherAnswers = 0;
         this.numberOfCorrectInClassAnswers = 0;
         this.numberOfCorrectStudentAnswers = 0;
+        this.anonymizeTournamentStats = false;
     }
 
     @Override
@@ -442,6 +448,14 @@ public class User implements UserDetails, DomainEntity {
 
     public void addEnrolledTournament(Tournament tournament) {
         this.enrolledTournaments.add(tournament);
+    }
+
+    public boolean isAnonymizeTournamentStats() { return this.anonymizeTournamentStats; }
+
+    public void changeTournamentStatsPrivacy() {
+        if (this.role != Role.STUDENT)
+            throw new TutorException(ErrorMessage.USER_IS_NOT_STUDENT, this.id);
+        this.anonymizeTournamentStats = !this.anonymizeTournamentStats;
     }
 
     @Override

@@ -110,8 +110,18 @@ public class DashboardService {
         statsDto.setTotalPerfect(totalPerfect);
         statsDto.setScore(score);
         statsDto.setClosedTournaments(closedTourns);
+        statsDto.setAnonimize(user.isAnonymizeTournamentStats());
 
         return statsDto;
+    }
+
+    @Retryable(
+            value = { SQLException.class },
+            backoff = @Backoff(delay = 5000))
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public void changeTournamentStatsPrivacy(int userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new TutorException(USER_NOT_FOUND, userId));
+        user.changeTournamentStatsPrivacy();
     }
 
     public int calculateRanking(Tournament tourn, User user) {

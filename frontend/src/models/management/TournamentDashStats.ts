@@ -13,6 +13,7 @@ export class TournamentDashStats {
   totalWrongAnswers!: number;
   score!: number;
   closedTournaments: ClosedTournament[] = [];
+  anonimize!: boolean;
 
   constructor(jsonObj?: TournamentDashStats) {
     if (jsonObj) {
@@ -27,6 +28,7 @@ export class TournamentDashStats {
       this.totalCorrectAnswers = jsonObj.totalCorrectAnswers;
       this.totalWrongAnswers = jsonObj.totalWrongAnswers;
       this.score = jsonObj.score;
+      this.anonimize = jsonObj.anonimize;
 
       if (jsonObj.closedTournaments) {
         this.closedTournaments = jsonObj.closedTournaments.map(
