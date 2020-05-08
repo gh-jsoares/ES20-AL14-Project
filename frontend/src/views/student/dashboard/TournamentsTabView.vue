@@ -28,8 +28,8 @@
         class="items"
         style="background-color: rgba(250,180,30,0.85); color: white"
       >
-        <div class="icon-wrapper" ref="totalQuizzes">
-          <animated-number :number="stats.totalFirstPlace" />
+        <div class="icon-wrapper" ref="totalFirstPlace">
+          <animated-number data-cy="first" :number="stats.totalFirstPlace" />
         </div>
         <div class="project-name">
           <p>1st Places</p>
@@ -39,8 +39,8 @@
         class="items"
         style="background-color: rgba(127,127,119,0.85); color: white"
       >
-        <div class="icon-wrapper" ref="totalAnswers">
-          <animated-number :number="stats.totalSecondPlace" />
+        <div class="icon-wrapper" ref="totalSecondPlace">
+          <animated-number data-cy="second" :number="stats.totalSecondPlace" />
         </div>
         <div class="project-name">
           <p>2nd Places</p>
@@ -50,40 +50,43 @@
         class="items"
         style="background-color: rgba(205,126,66,0.85); color: white"
       >
-        <div class="icon-wrapper" ref="totalUniqueQuestions">
-          <animated-number :number="stats.totalThirdPlace" />
+        <div class="icon-wrapper" ref="totalThirdPlace">
+          <animated-number data-cy="third" :number="stats.totalThirdPlace" />
         </div>
         <div class="project-name">
           <p>3rd Places</p>
         </div>
       </div>
       <div class="items">
-        <div class="icon-wrapper" ref="correctAnswers">
-          <animated-number :number="stats.totalPerfect" />
+        <div class="icon-wrapper" ref="totalPerfect">
+          <animated-number data-cy="perfect" :number="stats.totalPerfect" />
         </div>
         <div class="project-name">
           <p>Perfect Scores</p>
         </div>
       </div>
       <div class="items">
-        <div class="icon-wrapper" ref="improvedCorrectAnswers">
-          <animated-number :number="stats.totalSolved" />
+        <div class="icon-wrapper" ref="totalSolved">
+          <animated-number data-cy="solved" :number="stats.totalSolved" />
         </div>
         <div class="project-name">
           <p>Total Solved</p>
         </div>
       </div>
       <div class="items">
-        <div class="icon-wrapper" ref="percentageOfSeenQuestions">
-          <animated-number :number="stats.totalUnsolved" />
+        <div class="icon-wrapper" ref="totalUnsolved">
+          <animated-number data-cy="unsolved" :number="stats.totalUnsolved" />
         </div>
         <div class="project-name">
           <p>Total Unsolved</p>
         </div>
       </div>
       <div class="items">
-        <div class="icon-wrapper" ref="percentageOfSeenQuestions">
-          <animated-number :number="stats.totalCorrectAnswers" />
+        <div class="icon-wrapper" ref="totalCorrectAnswers">
+          <animated-number
+            data-cy="correct"
+            :number="stats.totalCorrectAnswers"
+          />
         </div>
         <div class="project-name">
           <p>Correct Answers</p>
@@ -93,16 +96,18 @@
         class="items"
         style="background-color: rgba(88,170,58,0.85); color: white"
       >
-        <div class="icon-wrapper" ref="totalQuizzes">
-          <animated-number :number="stats.score">pt</animated-number>
+        <div class="icon-wrapper" ref="score">
+          <animated-number data-cy="score" :number="stats.score"
+            >pt</animated-number
+          >
         </div>
         <div class="project-name">
           <p>Score</p>
         </div>
       </div>
       <div class="items">
-        <div class="icon-wrapper" ref="percentageOfSeenQuestions">
-          <animated-number :number="stats.totalWrongAnswers" />
+        <div class="icon-wrapper" ref="totalWrongAnswers">
+          <animated-number data-cy="wrong" :number="stats.totalWrongAnswers" />
         </div>
         <div class="project-name">
           <p>Wrong Answers</p>
@@ -119,6 +124,7 @@
         <div class="col last-col"></div>
       </li>
       <li
+        data-cy="quiz"
         class="list-row"
         v-for="tourn in stats.closedTournaments"
         :key="tourn.id"
