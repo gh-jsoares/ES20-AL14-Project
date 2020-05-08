@@ -36,7 +36,7 @@ public class Discussion {
     @JoinColumn(name = "question_id")
     private Question question;
 
-    @Column(nullable = false)
+    @Column(columnDefinition = "boolean default true")
     private boolean needsAnswer;
 
     public Discussion() {
