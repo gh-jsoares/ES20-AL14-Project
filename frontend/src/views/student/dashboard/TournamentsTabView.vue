@@ -6,7 +6,14 @@
         <h2>Tournaments Dashboard</h2>
       </v-col>
       <v-col>
-        <v-card width="165" color="white" height="50" outlined raised data-cy="privacySwitch">
+        <v-card
+          width="165"
+          color="white"
+          height="50"
+          outlined
+          raised
+          data-cy="privacySwitch"
+        >
           <v-switch
             v-model="privacySetting"
             class="ma-2"
