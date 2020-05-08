@@ -43,6 +43,18 @@
         </v-chip>
       </template>
 
+      <template v-slot:item.image="{ item }">
+        <v-img
+          v-if="item.image"
+          max-height="100px"
+          max-width="100px"
+          :src="getImage(item)"
+        />
+        <span v-else>
+          No image
+        </span>
+      </template>
+
       <template v-slot:item.action="{ item }">
         <v-tooltip bottom>
           <template v-slot:activator="{ on }">
@@ -66,7 +78,7 @@
                 small
                 class="mr-2 green--text"
                 v-on="on"
-                @click="approveStudentQuestion(item)"
+                @click="openApproveStudentQuestionDialog(item)"
                 >check</v-icon
               >
             </template>
@@ -95,6 +107,15 @@
       :studentQuestion="currentStudentQuestion"
       v-on:reject-student-question="onRejectStudentQuestion"
     />
+    <approve-student-question-dialog
+      v-if="currentStudentQuestion"
+      v-model="approveStudentQuestionDialog"
+      :studentQuestion="currentStudentQuestion"
+      :topics="topics"
+      v-on:approve-student-question="onApproveStudentQuestion"
+      v-on:student-question-changed-topics="onStudentQuestionChangedTopics"
+      v-on:student-question-changed-image="onStudentQuestionChangedImage"
+    />
     <show-student-question-dialog
       v-if="currentStudentQuestion"
       v-model="studentQuestionDialog"
@@ -108,25 +129,30 @@
 import { Component, Vue, Watch } from 'vue-property-decorator';
 import RemoteServices from '@/services/RemoteServices';
 import { convertMarkDown } from '@/services/ConvertMarkdownService';
+import Topic from '@/models/management/Topic';
 import Image from '@/models/management/Image';
 import StudentQuestion from '@/models/management/StudentQuestion';
 
 import ShowStudentQuestionDialog from '@/views/student/questions/ShowStudentQuestionDialog.vue';
+import ApproveStudentQuestionDialog from '@/views/teacher/questions/student/ApproveStudentQuestionDialog.vue';
 import RejectStudentQuestionDialog from '@/views/teacher/questions/student/RejectStudentQuestionDialog.vue';
 
 @Component({
   components: {
     'show-student-question-dialog': ShowStudentQuestionDialog,
+    'approve-student-question-dialog': ApproveStudentQuestionDialog,
     'reject-student-question-dialog': RejectStudentQuestionDialog
   }
 })
 export default class StudentQuestionsView extends Vue {
   studentQuestions: StudentQuestion[] = [];
   currentStudentQuestion: StudentQuestion | null = null;
+  approveStudentQuestionDialog: boolean = false;
   rejectStudentQuestionDialog: boolean = false;
   studentQuestionDialog: boolean = false;
   search: string = '';
   statusList = ['AWAITING_APPROVAL', 'ACCEPTED', 'REJECTED'];
+  topics: Topic[] = [];
 
   headers: object = [
     { text: 'Title', value: 'title', align: 'center' },
@@ -145,6 +171,12 @@ export default class StudentQuestionsView extends Vue {
       align: 'center'
     },
     {
+      text: 'Image',
+      value: 'image',
+      align: 'center',
+      sortable: false
+    },
+    {
       text: 'Actions',
       value: 'action',
       align: 'center',
@@ -155,11 +187,20 @@ export default class StudentQuestionsView extends Vue {
   async created() {
     await this.$store.dispatch('loading');
     try {
-      this.studentQuestions = await RemoteServices.getStudentQuestionsAsTeacher();
+      [this.topics, this.studentQuestions] = await Promise.all([
+        RemoteServices.getTopics(),
+        RemoteServices.getStudentQuestionsAsTeacher()
+      ]);
     } catch (error) {
       await this.$store.dispatch('error', error);
     }
     await this.$store.dispatch('clearLoading');
+  }
+
+  getImage(studentQuestion: StudentQuestion): string {
+    if (studentQuestion.image)
+      return `${process.env.VUE_APP_ROOT_API}/images/questions/${studentQuestion.image.url}`;
+    return '';
   }
 
   getStatusColor(status: string) {
@@ -193,6 +234,7 @@ export default class StudentQuestionsView extends Vue {
 
   onCloseShowStudentQuestionDialog() {
     this.studentQuestionDialog = false;
+    this.currentStudentQuestion = null;
   }
 
   async approveStudentQuestion(studentQuestion: StudentQuestion) {
@@ -215,11 +257,50 @@ export default class StudentQuestionsView extends Vue {
     this.studentQuestions.unshift(studentQuestion);
   }
 
+  @Watch('approveStudentQuestionDialog')
+  closeApproveError() {
+    if (!this.approveStudentQuestionDialog) {
+      this.currentStudentQuestion = null;
+    }
+  }
+
   @Watch('rejectStudentQuestionDialog')
-  closeError() {
+  closeRejectError() {
     if (!this.rejectStudentQuestionDialog) {
       this.currentStudentQuestion = null;
     }
+  }
+
+  onStudentQuestionChangedImage(studentQuestionId: number, image: Image) {
+    const studentQuestion = this.studentQuestions.find(
+      (studentQuestion: StudentQuestion) =>
+        studentQuestion.id == studentQuestionId
+    );
+    studentQuestion!.image = image;
+  }
+
+  onStudentQuestionChangedTopics(
+    studentQuestionId: Number,
+    changedTopics: Topic[]
+  ) {
+    let studentQuestion = this.studentQuestions.find(
+      (studentQuestion: StudentQuestion) =>
+        studentQuestion.id == studentQuestionId
+    );
+    if (studentQuestion) {
+      studentQuestion.topics = changedTopics;
+    }
+  }
+
+  openApproveStudentQuestionDialog(studentQuestion: StudentQuestion) {
+    this.currentStudentQuestion = studentQuestion;
+    this.approveStudentQuestionDialog = true;
+  }
+
+  async onApproveStudentQuestion(studentQuestion: StudentQuestion) {
+    this.updateStudentQuestion(studentQuestion);
+    this.approveStudentQuestionDialog = false;
+    this.currentStudentQuestion = null;
   }
 
   openRejectStudentQuestionDialog(studentQuestion: StudentQuestion) {

@@ -23,7 +23,7 @@
           <v-spacer />
           <v-btn
             color="primary"
-            @click="newStudentQuestion"
+            @click="newStudentQuestion()"
             dark
             data-cy="studentQuestionNew"
           >
@@ -63,8 +63,18 @@
       </template>
 
       <template v-slot:item.image="{ item }">
+        <v-img
+          v-if="item.image"
+          max-height="100px"
+          max-width="100px"
+          :src="getImage(item)"
+        />
+        <span v-else>
+          No image
+        </span>
         <v-file-input
           show-size
+          v-if="item.status != 'ACCEPTED'"
           dense
           small-chips
           @change="handleFileUpload($event, item)"
@@ -85,6 +95,19 @@
             >
           </template>
           <span>View Details</span>
+        </v-tooltip>
+        <v-tooltip v-if="item.status == 'REJECTED'" bottom>
+          <template v-slot:activator="{ on }">
+            <v-icon
+              data-cy="editStudentQuestionDialog"
+              small
+              class="mr-2"
+              v-on="on"
+              @click="openEditStudentQuestionDialog(item)"
+              >edit</v-icon
+            >
+          </template>
+          <span>Edit</span>
         </v-tooltip>
       </template>
     </v-data-table>
@@ -173,6 +196,12 @@ export default class StudentQuestionsView extends Vue {
     await this.$store.dispatch('clearLoading');
   }
 
+  getImage(studentQuestion: StudentQuestion): string {
+    if (studentQuestion.image)
+      return `${process.env.VUE_APP_ROOT_API}/images/questions/${studentQuestion.image.url}`;
+    return '';
+  }
+
   getStatusColor(status: string) {
     if (status === 'REJECTED') return 'red white--text';
     else if (status === 'AWAITING_APPROVAL') return 'orange white--text';
@@ -216,10 +245,20 @@ export default class StudentQuestionsView extends Vue {
         studentQuestion.image = new Image();
         studentQuestion.image.url = imageURL;
         confirm('Image ' + imageURL + ' was uploaded!');
+        this.updateImage(studentQuestion);
       } catch (error) {
         await this.$store.dispatch('error', error);
       }
     }
+  }
+
+  updateImage(newStudentQuestion: StudentQuestion) {
+    const studentQuestion = this.studentQuestions.find(
+      (studentQuestion: StudentQuestion) =>
+        studentQuestion.id == newStudentQuestion.id
+    );
+    studentQuestion!.image = newStudentQuestion.image;
+    studentQuestion!.status = 'AWAITING_APPROVAL';
   }
 
   @Watch('editStudentQuestionDialog')
@@ -231,6 +270,11 @@ export default class StudentQuestionsView extends Vue {
 
   newStudentQuestion() {
     this.currentStudentQuestion = new StudentQuestion();
+    this.editStudentQuestionDialog = true;
+  }
+
+  openEditStudentQuestionDialog(studentQuestion: StudentQuestion) {
+    this.currentStudentQuestion = studentQuestion;
     this.editStudentQuestionDialog = true;
   }
 
@@ -253,6 +297,7 @@ export default class StudentQuestionsView extends Vue {
     );
     if (studentQuestion) {
       studentQuestion.topics = changedTopics;
+      studentQuestion.status = 'AWAITING_APPROVAL';
     }
   }
 }

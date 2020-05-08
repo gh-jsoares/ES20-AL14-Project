@@ -30,7 +30,7 @@ import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.AU
 public class StudentQuestionController {
     private static Logger logger = LoggerFactory.getLogger(StudentQuestionController.class);
 
-    private StudentQuestionService studentQuestionService;
+    private final StudentQuestionService studentQuestionService;
 
     @Value("${figures.dir}")
     private String figuresDir;
@@ -47,11 +47,11 @@ public class StudentQuestionController {
     }
 
     @PutMapping("/questions/student/{studentQuestionId}/image")
-    @PreAuthorize("hasRole('ROLE_STUDENT') and hasPermission(#studentQuestionId, 'STUDENTQUESTION.ACCESS')")
+    @PreAuthorize("hasAnyRole('ROLE_STUDENT', 'ROLE_TEACHER') and hasPermission(#studentQuestionId, 'STUDENTQUESTION.ACCESS')")
     public String uploadImage(Principal principal, @PathVariable Integer studentQuestionId, @RequestParam("file") MultipartFile file) throws IOException {
         logger.debug("uploadImage  studentQuestionId: {}: , filename: {}", studentQuestionId, file.getContentType());
 
-        StudentQuestionDto studentQuestionDto = studentQuestionService.getStudentQuestion(getAuthUser(principal).getId(), studentQuestionId);
+        StudentQuestionDto studentQuestionDto = getStudentQuestion(principal, studentQuestionId);
         String url = studentQuestionDto.getImage() != null ? studentQuestionDto.getImage().getUrl() : null;
         if (url != null && Files.exists(getTargetLocation(url))) {
             Files.delete(getTargetLocation(url));
@@ -62,14 +62,22 @@ public class StudentQuestionController {
 
         studentQuestionService.uploadImage(studentQuestionId, type);
 
-        url = studentQuestionService.getStudentQuestion(getAuthUser(principal).getId(), studentQuestionId).getImage().getUrl();
+        url = getStudentQuestion(principal, studentQuestionId).getImage().getUrl();
+
         Files.copy(file.getInputStream(), getTargetLocation(url), StandardCopyOption.REPLACE_EXISTING);
 
         return url;
     }
 
+    private StudentQuestionDto getStudentQuestion(Principal principal, Integer studentQuestionId) {
+        if(getAuthUser(principal).getRole() == User.Role.STUDENT)
+            return studentQuestionService.getStudentQuestion(getAuthUser(principal).getId(), studentQuestionId);
+        else
+            return studentQuestionService.getStudentQuestionAsTeacher(getAuthUser(principal).getId(), studentQuestionId);
+    }
+
     @PutMapping("/questions/student/{studentQuestionId}/topics")
-    @PreAuthorize("hasRole('ROLE_STUDENT') and hasPermission(#studentQuestionId, 'STUDENTQUESTION.ACCESS')")
+    @PreAuthorize("hasAnyRole('ROLE_STUDENT', 'ROLE_TEACHER') and hasPermission(#studentQuestionId, 'STUDENTQUESTION.ACCESS')")
     public ResponseEntity updateQuestionTopics(@PathVariable Integer studentQuestionId, @RequestBody Integer[] topics) {
         studentQuestionService.updateStudentQuestionTopics(studentQuestionId, topics);
         return ResponseEntity.ok().build();
@@ -89,8 +97,8 @@ public class StudentQuestionController {
 
     @PutMapping("/questions/student/all/{studentQuestionId}/approve")
     @PreAuthorize("hasRole('ROLE_TEACHER') and hasPermission(#studentQuestionId, 'STUDENTQUESTION.ACCESS')")
-    public StudentQuestionDto studentQuestionApprove(Principal principal, @PathVariable Integer studentQuestionId) {
-        return this.studentQuestionService.approveStudentQuestion(getAuthUser(principal).getId(), studentQuestionId);
+    public StudentQuestionDto studentQuestionApprove(Principal principal, @PathVariable Integer studentQuestionId, @Valid @RequestBody(required = false) StudentQuestionDto studentQuestion) {
+        return this.studentQuestionService.approveStudentQuestion(getAuthUser(principal).getId(), studentQuestionId, studentQuestion);
     }
 
     @PutMapping("/questions/student/all/{studentQuestionId}/reject")
@@ -109,6 +117,12 @@ public class StudentQuestionController {
     @PreAuthorize("hasRole('ROLE_STUDENT') and hasPermission(#studentQuestionId, 'STUDENTQUESTION.ACCESS')")
     public StudentQuestionDto getStudentQuestionAsStudent(Principal principal, @PathVariable Integer studentQuestionId) {
         return this.studentQuestionService.getStudentQuestion(getAuthUser(principal).getId(), studentQuestionId);
+    }
+
+    @PutMapping("/questions/student/{studentQuestionId}")
+    @PreAuthorize("hasRole('ROLE_STUDENT') and hasPermission(#studentQuestionId, 'STUDENTQUESTION.ACCESS')")
+    public StudentQuestionDto editStudentQuestion(Principal principal, @PathVariable Integer studentQuestionId, @Valid @RequestBody StudentQuestionDto studentQuestion) {
+        return this.studentQuestionService.editStudentQuestion(getAuthUser(principal).getId(), studentQuestionId, studentQuestion);
     }
 
     private Path getTargetLocation(String url) {

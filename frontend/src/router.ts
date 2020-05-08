@@ -34,6 +34,9 @@ import OpenTournamentsView from '@/views/student/tournament/OpenTournamentsView.
 import CreateTournamentView from '@/views/student/tournament/CreateTournamentView.vue';
 import TournamentsTabView from '@/views/student/dashboard/TournamentsTabView.vue';
 
+import DashboardView from '@/views/student/dashboard/DashboardView.vue';
+import StudentQuestionStatsView from '@/views/student/dashboard/StudentQuestionStatsView.vue';
+
 Vue.use(Router);
 
 let router = new Router({
@@ -253,6 +256,22 @@ let router = new Router({
           component: TournamentsTabView,
           meta: {
             title: process.env.VUE_APP_NAME + ' - Tournaments Dashboard',
+            requiredAuth: 'Student'
+          }
+        }
+      ]
+    },
+    {
+      path: '/dashboard',
+      name: 'dashboard',
+      component: DashboardView,
+      children: [
+        {
+          path: 'questions/student',
+          name: 'dashboard-student-questions',
+          component: StudentQuestionStatsView,
+          meta: {
+            title: process.env.VUE_APP_NAME + ' - Dashboard Student Questions',
             requiredAuth: 'Student'
           }
         }

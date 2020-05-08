@@ -52,8 +52,12 @@ public class User implements UserDetails, DomainEntity {
     private Integer numberOfCorrectInClassAnswers;
     private Integer numberOfCorrectStudentAnswers;
 
+
     @Column(columnDefinition = "boolean default false")
     private boolean anonymizeTournamentStats;
+
+    @Column(name = "student_questions_stats_visibility", columnDefinition = "boolean default true")
+    private Boolean studentQuestionStatsVisibility = true;
 
     @Column(name = "creation_date")
     private LocalDateTime creationDate;
@@ -80,7 +84,7 @@ public class User implements UserDetails, DomainEntity {
     @ManyToMany(mappedBy = "enrolledStudents", fetch=FetchType.LAZY)
     private Set<Tournament> enrolledTournaments = new HashSet<>();
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "lastReviewer", fetch = FetchType.LAZY, orphanRemoval=true)
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "lastReviewer", fetch = FetchType.LAZY, orphanRemoval=false)
     private Set<StudentQuestion> reviewedStudentQuestions = new HashSet<>();
 
     public User() {
@@ -224,6 +228,15 @@ public class User implements UserDetails, DomainEntity {
 
     public void setNumberOfTeacherQuizzes(Integer numberOfTeacherQuizzes) {
         this.numberOfTeacherQuizzes = numberOfTeacherQuizzes;
+    }
+
+    public Boolean toggleStudentQuestionStatsVisibility() {
+        this.studentQuestionStatsVisibility = !this.studentQuestionStatsVisibility;
+        return this.getStudentQuestionStatsVisibility();
+    }
+
+    public Boolean getStudentQuestionStatsVisibility() {
+        return this.studentQuestionStatsVisibility;
     }
 
     public Integer getNumberOfStudentQuizzes() {

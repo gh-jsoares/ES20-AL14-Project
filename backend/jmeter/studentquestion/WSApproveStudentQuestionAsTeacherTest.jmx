@@ -363,7 +363,11 @@
         <hashTree/>
         <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="JDBC Request" enabled="true">
           <stringProp name="dataSource">sampleReq</stringProp>
-          <stringProp name="query">DELETE FROM student_questions WHERE id = &apos;${studentQuestionId}&apos;;</stringProp>
+          <stringProp name="query">DELETE FROM student_questions WHERE id = &apos;${studentQuestionId}&apos;;
+WITH q_id AS (
+    SELECT id FROM questions WHERE title LIKE &apos;%Demo Question%&apos;
+) DELETE FROM options WHERE question_id in (SELECT id from q_id);
+DELETE FROM questions WHERE title LIKE &apos;%Demo Question%&apos;;</stringProp>
           <stringProp name="queryArguments"></stringProp>
           <stringProp name="queryArgumentsTypes"></stringProp>
           <stringProp name="queryTimeout"></stringProp>

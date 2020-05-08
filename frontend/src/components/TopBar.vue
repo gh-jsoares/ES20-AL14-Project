@@ -138,8 +138,19 @@
                 <v-list-item-title>Tournaments</v-list-item-title>
               </v-list-item-content>
             </v-list-item>
+            <v-list-item to="/dashboard/questions/student">
+              <v-list-item-action>
+                <v-icon>question_answer</v-icon>
+              </v-list-item-action>
+              <v-list-item-content>
+                <v-list-item-title data-cy="studentQuestionDashboardLink">
+                  Student Questions
+                </v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
           </v-list>
         </v-menu>
+
         <v-btn
           to="/student/questions"
           v-if="isStudent && currentCourse"
@@ -449,6 +460,14 @@
               <v-icon>mdi-crown</v-icon>
             </v-list-item-action>
             <v-list-item-content>Tournaments Stats</v-list-item-content>
+          </v-list-item>
+          <v-list-item to="/dashboard/questions/student">
+            <v-list-item-action>
+              <v-icon>question_answer</v-icon>
+            </v-list-item-action>
+            <v-list-item-content>
+              Student Question Dashboard
+            </v-list-item-content>
           </v-list-item>
         </v-list-group>
 
