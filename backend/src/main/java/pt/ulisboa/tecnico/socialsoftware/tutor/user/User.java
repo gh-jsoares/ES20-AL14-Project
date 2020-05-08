@@ -8,6 +8,8 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.config.DateHandler;
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecution;
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.domain.Discussion;
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.domain.Message;
+import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage;
+import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException;
 import pt.ulisboa.tecnico.socialsoftware.tutor.impexp.domain.DomainEntity;
 import pt.ulisboa.tecnico.socialsoftware.tutor.impexp.domain.Visitor;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Question;
@@ -54,6 +56,12 @@ public class User implements UserDetails, DomainEntity {
     @Column(columnDefinition = "boolean default true")
     private boolean areDiscussionsPublic;
 
+    @Column(columnDefinition = "boolean default true")
+    private boolean anonymizeTournamentStats;
+
+    @Column(name = "student_questions_stats_visibility", columnDefinition = "boolean default true")
+    private Boolean studentQuestionStatsVisibility = true;
+
     @Column(name = "creation_date")
     private LocalDateTime creationDate;
 
@@ -81,7 +89,7 @@ public class User implements UserDetails, DomainEntity {
     @ManyToMany(mappedBy = "enrolledStudents", fetch=FetchType.LAZY)
     private Set<Tournament> enrolledTournaments = new HashSet<>();
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "lastReviewer", fetch = FetchType.LAZY, orphanRemoval=true)
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "lastReviewer", fetch = FetchType.LAZY, orphanRemoval=false)
     private Set<StudentQuestion> reviewedStudentQuestions = new HashSet<>();
 
     public User() {
@@ -103,6 +111,7 @@ public class User implements UserDetails, DomainEntity {
         this.numberOfCorrectInClassAnswers = 0;
         this.numberOfCorrectStudentAnswers = 0;
         this.areDiscussionsPublic = true;
+        this.anonymizeTournamentStats = false;
     }
 
     @Override
@@ -241,6 +250,15 @@ public class User implements UserDetails, DomainEntity {
 
     public void setNumberOfTeacherQuizzes(Integer numberOfTeacherQuizzes) {
         this.numberOfTeacherQuizzes = numberOfTeacherQuizzes;
+    }
+
+    public Boolean toggleStudentQuestionStatsVisibility() {
+        this.studentQuestionStatsVisibility = !this.studentQuestionStatsVisibility;
+        return this.getStudentQuestionStatsVisibility();
+    }
+
+    public Boolean getStudentQuestionStatsVisibility() {
+        return this.studentQuestionStatsVisibility;
     }
 
     public Integer getNumberOfStudentQuizzes() {
@@ -465,6 +483,14 @@ public class User implements UserDetails, DomainEntity {
 
     public void addEnrolledTournament(Tournament tournament) {
         this.enrolledTournaments.add(tournament);
+    }
+
+    public boolean isAnonymizeTournamentStats() { return this.anonymizeTournamentStats; }
+
+    public void changeTournamentStatsPrivacy() {
+        if (this.role != Role.STUDENT)
+            throw new TutorException(ErrorMessage.USER_IS_NOT_STUDENT, this.id);
+        this.anonymizeTournamentStats = !this.anonymizeTournamentStats;
     }
 
     @Override

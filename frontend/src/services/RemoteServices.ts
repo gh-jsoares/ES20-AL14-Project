@@ -18,6 +18,8 @@ import StudentQuestion from '@/models/management/StudentQuestion';
 import { Tournament } from '@/models/management/Tournament';
 import Message from '@/models/management/Message';
 import { DiscussionsStats } from '@/models/management/DiscussionsStats';
+import { TournamentDashStats } from '@/models/management/TournamentDashStats';
+import StudentQuestionStats from '@/models/user/dashboard/StudentQuestionStats';
 
 const httpClient = axios.create();
 httpClient.defaults.timeout = 10000;
@@ -77,6 +79,28 @@ export default class RemoteServices {
       .get('/auth/demo/admin')
       .then(response => {
         return new AuthDto(response.data);
+      })
+      .catch(async error => {
+        throw Error(await this.errorMessage(error));
+      });
+  }
+
+  static async getStudentQuestionStats(): Promise<StudentQuestionStats> {
+    return httpClient
+      .get('/dashboard/questions/student')
+      .then(response => {
+        return new StudentQuestionStats(response.data);
+      })
+      .catch(async error => {
+        throw Error(await this.errorMessage(error));
+      });
+  }
+
+  static async toggleStudentQuestionStatsVisibility(): Promise<Boolean> {
+    return httpClient
+      .put('/dashboard/questions/student')
+      .then(response => {
+        return response.data;
       })
       .catch(async error => {
         throw Error(await this.errorMessage(error));
@@ -143,7 +167,10 @@ export default class RemoteServices {
     studentQuestion: StudentQuestion
   ): Promise<StudentQuestion> {
     return httpClient
-      .put(`/questions/student/all/${studentQuestion.id}/approve/`)
+      .put(
+        `/questions/student/all/${studentQuestion.id}/approve/`,
+        studentQuestion
+      )
       .then(response => {
         return new StudentQuestion(response.data);
       })
@@ -222,6 +249,19 @@ export default class RemoteServices {
       .put(`/questions/${question.id}`, question)
       .then(response => {
         return new Question(response.data);
+      })
+      .catch(async error => {
+        throw Error(await this.errorMessage(error));
+      });
+  }
+
+  static async editStudentQuestion(
+    studentQuestion: StudentQuestion
+  ): Promise<StudentQuestion> {
+    return httpClient
+      .put(`/questions/student/${studentQuestion.id}`, studentQuestion)
+      .then(response => {
+        return new StudentQuestion(response.data);
       })
       .catch(async error => {
         throw Error(await this.errorMessage(error));
@@ -840,6 +880,37 @@ export default class RemoteServices {
       .then(response => {
         return new Tournament(response.data);
       })
+      .catch(async error => {
+        throw Error(await this.errorMessage(error));
+      });
+  }
+
+  static async getTournamentsDashboardStats(): Promise<TournamentDashStats> {
+    return httpClient
+      .get(
+        `/executions/${Store.getters.getCurrentCourse.courseExecutionId}/dashboard/tournaments`
+      )
+      .then(response => {
+        return new TournamentDashStats(response.data);
+      })
+      .catch(async error => {
+        throw Error(await this.errorMessage(error));
+      });
+  }
+
+  static async cancelTournament(tournamentId: number) {
+    return httpClient
+      .delete(`tournaments/${tournamentId}`)
+      .catch(async error => {
+        throw Error(await this.errorMessage(error));
+      });
+  }
+
+  static async changeTournamentStatsPrivacy() {
+    return httpClient
+      .post(
+        `/executions/${Store.getters.getCurrentCourse.courseExecutionId}/dashboard/tournaments/changePrivacy`
+      )
       .catch(async error => {
         throw Error(await this.errorMessage(error));
       });

@@ -4,14 +4,26 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
+import pt.ulisboa.tecnico.socialsoftware.tutor.answer.AnswerService
+import pt.ulisboa.tecnico.socialsoftware.tutor.answer.domain.QuizAnswer
+import pt.ulisboa.tecnico.socialsoftware.tutor.answer.repository.QuizAnswerRepository
+import pt.ulisboa.tecnico.socialsoftware.tutor.config.DateHandler
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.Course
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecution
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecutionRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException
+import pt.ulisboa.tecnico.socialsoftware.tutor.impexp.domain.AnswersXmlImport
+import pt.ulisboa.tecnico.socialsoftware.tutor.question.QuestionService
+import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Question
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Topic
+import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.QuestionRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.TopicRepository
+import pt.ulisboa.tecnico.socialsoftware.tutor.quiz.QuizService
+import pt.ulisboa.tecnico.socialsoftware.tutor.quiz.domain.Quiz
+import pt.ulisboa.tecnico.socialsoftware.tutor.quiz.repository.QuizRepository
+import pt.ulisboa.tecnico.socialsoftware.tutor.statement.StatementService
 import pt.ulisboa.tecnico.socialsoftware.tutor.tournament.Tournament
 import pt.ulisboa.tecnico.socialsoftware.tutor.tournament.TournamentDto
 import pt.ulisboa.tecnico.socialsoftware.tutor.tournament.TournamentRepository
@@ -21,14 +33,14 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.user.UserRepository
 import spock.lang.Specification
 import spock.lang.Unroll
 
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
-
-
 @DataJpaTest
 class GetOpenTournamentsSpockTest extends Specification{
     public static final String USER_NAME = "name"
     public static final String USER_USERNAME = "username"
+    public static final String USER_NAME2 = "name2"
+    public static final String USER_USERNAME2 = "username2"
+    public static final String USER_NAME3 = "name3"
+    public static final String USER_USERNAME3 = "username3"
     public static final String COURSE_NAME = "Software Architecture"
     public static final String ACRONYM = "AS1"
     public static final String ACADEMIC_TERM = "1 SEM"
@@ -54,17 +66,23 @@ class GetOpenTournamentsSpockTest extends Specification{
     TopicRepository topicRepository
 
     @Autowired
+    QuestionRepository questionRepository
+
+    @Autowired
+    QuizAnswerRepository quizAnswerRepository
+
+    @Autowired
+    QuizRepository quizRepository
+
+    @Autowired
     TournamentService tournService
 
     def courseExecution
     def days = []
-    def formatter
     def topic
-    def user
+    def users = []
 
     def setup() {
-        formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
-
         // create course
         def course = new Course(COURSE_NAME, Course.Type.TECNICO)
         courseRepository.save(course)
@@ -81,49 +99,86 @@ class GetOpenTournamentsSpockTest extends Specification{
         topicRepository.save(topic)
 
         // create user
-        user = new User(USER_NAME, USER_USERNAME, 1, User.Role.STUDENT)
-        user.addCourse(courseExecution)
-        courseExecution.addUser(user)
-        userRepository.save(user)
+        users[0] = new User(USER_NAME, USER_USERNAME, 1, User.Role.STUDENT)
+        users[0].addCourse(courseExecution)
+        courseExecution.addUser(users[0] as User)
+        userRepository.save(users[0] as User)
+
+        users[1] = new User(USER_NAME2, USER_USERNAME2, 2, User.Role.STUDENT)
+        users[1].addCourse(courseExecution)
+        courseExecution.addUser(users[1] as User)
+        userRepository.save(users[1] as User)
+
+        users[2] = new User(USER_NAME3, USER_USERNAME3, 3, User.Role.STUDENT)
+        users[2].addCourse(courseExecution)
+        courseExecution.addUser(users[2] as User)
+        userRepository.save(users[2] as User)
+
+        // create question
+        def question = new Question()
+        question.setKey(1)
+        question.setContent("Question Content")
+        question.setTitle("Question Title1")
+        question.setStatus(Question.Status.AVAILABLE)
+        question.setCourse(course)
+        question.addTopic(topic as Topic)
+        questionRepository.save(question)
 
         // create dates in different days
-        days.add(LocalDateTime.now().plusDays(1))
-        days.add(LocalDateTime.now().plusDays(2))
+        days.add(DateHandler.now().plusDays(1))
+        days.add(DateHandler.now().plusDays(2))
 
     }
 
-    def createTournament(state, stack) {
+    def createTournament(state, enrolls, stack) {
         if (state == null)
             return
         def tourn = new Tournament()
+
+        tourn.setCourseExecution(courseExecution as CourseExecution)
+        tourn.setState(Tournament.State.ENROLL)
+
+        if (enrolls > 0)
+            1.upto(enrolls, {tourn.addEnrolledStudent(users[it-1 as int])})
+
+        tourn.setCreationDate(DateHandler.now().minusDays(3))
+        if (state == Tournament.State.ENROLL) {
+            tourn.setAvailableDate(DateHandler.now().plusDays(1))
+            tourn.setConclusionDate(DateHandler.now().plusDays(2))
+        } else if (state == Tournament.State.ONGOING) {
+            tourn.setAvailableDate(DateHandler.now().minusDays(1))
+            tourn.setConclusionDate(DateHandler.now().plusDays(1))
+        } else {
+            tourn.setAvailableDate(DateHandler.now().minusDays(2))
+            tourn.setConclusionDate(DateHandler.now().minusDays(1))
+        }
+        tourn.setState(state)
+
         tourn.setTitle(TOURN_TITLE)
         tourn.setNumberOfQuestions(QUEST_NUM)
-        tourn.setState(state)
         tourn.setScramble(true)
-        tourn.setCreationDate(LocalDateTime.now())
-        tourn.setAvailableDate(days[0])
-        tourn.setConclusionDate(days[1])
         tourn.setSeries(1)
         tourn.setVersion(VERSION)
-        tourn.setCourseExecution(courseExecution)
-        tourn.addTopic(topic)
-        tourn.setCreator(user)
+        tourn.addTopic(topic as Topic)
+        tourn.setCreator(users[0] as User)
         tournRepository.save(tourn)
 
         if (state != Tournament.State.CLOSED) {
             stack.push(tourn)
         }
+
+        return tourn
     }
 
     @Unroll
     def "layout of existing tournaments: #tourn1 | #tourn2 => #size"() {
         given: "existing tournaments"
         def stack = []
-        createTournament(tourn1, stack)
-        createTournament(tourn2, stack)
+        createTournament(tourn1, 2, stack)
+        createTournament(tourn2, 2, stack)
 
         when: "service call to get open tournaments"
-        def result = tournService.getOpenTournaments(courseExecution.getId(), -1)
+        def result = tournService.getOpenTournaments(courseExecution.getId(), users[1].getId())
 
         then: "check number of returned tournaments"
         result.size() == size
@@ -148,17 +203,111 @@ class GetOpenTournamentsSpockTest extends Specification{
 
     def "course execution doesn't exist"() {
         given: "open tournaments but courseExecution doesn't exist"
-        createTournament(Tournament.State.ENROLL, [])
+        createTournament(Tournament.State.ENROLL, 2, [])
         def execId = -1
 
         when: "service call to get open tournaments"
-        tournService.getOpenTournaments(execId, -1)
+        tournService.getOpenTournaments(execId, users[1].getId())
 
         then: "exception is thrown"
         def exception = thrown(TutorException)
         exception.getErrorMessage() == ErrorMessage.COURSE_EXECUTION_NOT_FOUND
     }
 
+    @Unroll
+    def "quiz generation and status update: hasQuiz=#hasQuiz | enroll=#enroll | datesState=#datesState | startState=#startState || endStatus=#endStatus | generates=#generates"() {
+        given: "tournament with certain dates layout and initial state"
+        def tourn = createTournament(datesState, enroll, [])
+        tourn.setState(startState)
+        if (hasQuiz) {
+            def quiz = new Quiz()
+            quizRepository.save(quiz)
+            tourn.setQuiz(quiz)
+        }
+
+        when: "service call to get open tournaments"
+        tournService.getOpenTournaments(courseExecution.getId(), users[1].getId())
+
+        then: "quiz generated?"
+        def tournament = tournRepository.findAll().get(0)
+        if (generates || hasQuiz) assert tournament.getQuiz() != null
+        else assert tournament.getQuiz() == null
+
+        and: "final status"
+        tournament.getState() == endStatus
+
+        where:
+        hasQuiz | enroll    | datesState                | startState                || endStatus                | generates
+        true    | 2         | Tournament.State.ONGOING  | Tournament.State.ONGOING  || Tournament.State.ONGOING | false     // already has quiz generated
+        false   | 1         | Tournament.State.ONGOING  | Tournament.State.ENROLL   || Tournament.State.CLOSED  | false     // not enough enrolls
+        false   | 2         | Tournament.State.ONGOING  | Tournament.State.ENROLL   || Tournament.State.ONGOING | true      // first call while available generates
+        false   | 2         | Tournament.State.CLOSED   | Tournament.State.ENROLL   || Tournament.State.CLOSED  | true      // first call only after conclusion still generates
+    }
+
+    @Unroll
+    def "check correct display of quiz answer: #isUserEnrolled | #tournamentState || #size | #shouldHaveQuizAnswer"() {
+        given: "a tournament"
+        def stack = []
+        def tournament = createTournament(tournamentState, isUserEnrolled ? 3 : 2, stack)
+        and: "a quiz for the tournament"
+        def quiz = createTournamentQuiz(tournament)
+        and: "a quiz answer for the user"
+        def quizAnswer = new QuizAnswer(users.get(2) as User,quiz)
+        quizAnswerRepository.save(quizAnswer)
+        users.get(2).addQuizAnswer(quizAnswer)
+
+        when:
+        def result = tournService.getOpenTournaments(courseExecution.getId(), users.get(2).getId())
+
+        then: "only one tournament returned"
+        result.size() == size
+        and: "the correct quiz answer is returned"
+        if (shouldHaveQuizAnswer)
+            result.get(0).getStatementQuiz().getId() == quizAnswer.getId()
+        else
+            !shouldHaveQuizAnswer
+
+        where:
+
+        isUserEnrolled   | tournamentState           || size | shouldHaveQuizAnswer
+        true             | Tournament.State.ENROLL   || 1    | false
+        false            | Tournament.State.ENROLL   || 1    | false
+        true             | Tournament.State.ONGOING  || 1    | true
+        false            | Tournament.State.ONGOING  || 1    | false
+        true             | Tournament.State.CLOSED   || 0    | false
+        false            | Tournament.State.CLOSED   || 0    | false
+    }
+
+    Quiz createTournamentQuiz(tournament){
+        def quiz = new Quiz()
+        quizRepository.save(quiz)
+        tournament.setQuiz(quiz)
+        return quiz
+    }
+
+    def enrollUserInTournament(tournament, user, isUserEnrolled){
+        if (isUserEnrolled) {
+            tournament.addEnrolledStudent(user)
+        }
+    }
+
+
+    def setTournamentState(tournament, tournamentState){
+        switch (tournamentState) {
+            case Tournament.State.ONGOING:
+                tournament.setState(Tournament.State.ONGOING)
+                tournament.setAvailableDate(DateHandler.now())
+                break
+            case Tournament.State.CLOSED:
+                tournament.setCreationDate(DateHandler.now().minusHours(2))
+                tournament.setAvailableDate(DateHandler.now().minusHours(1))
+                tournament.setConclusionDate(DateHandler.now())
+                tournament.setState(Tournament.State.CLOSED)
+                break
+            default:
+                tournament.setState(Tournament.State.ENROLL)
+        }
+    }
 
     @TestConfiguration
     static class TournamentServiceImplTestContextConfiguration {
@@ -166,6 +315,31 @@ class GetOpenTournamentsSpockTest extends Specification{
         @Bean
         TournamentService tournamentService() {
             return new TournamentService()
+        }
+
+        @Bean
+        StatementService statementService() {
+            return new StatementService()
+        }
+
+        @Bean
+        QuizService quizService() {
+            return new QuizService()
+        }
+
+        @Bean
+        AnswerService answerService() {
+            return new AnswerService()
+        }
+
+        @Bean
+        AnswersXmlImport answersXmlImport() {
+            return new AnswersXmlImport()
+        }
+
+        @Bean
+        QuestionService questionService() {
+            return new QuestionService()
         }
     }
 }

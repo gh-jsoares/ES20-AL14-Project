@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
+import pt.ulisboa.tecnico.socialsoftware.tutor.course.Course
+import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.StudentQuestionService
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Option
@@ -25,6 +27,7 @@ import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.ST
 @DataJpaTest
 class TeacherApproveStudentQuestionSpockTest extends Specification {
 
+    public static final String COURSE_NAME = "Software Architecture"
     public static final String USER_NAME = "Alfredo Costa"
     public static final String USER_USERNAME = "alcosta"
     public static final String TEACHER_USERNAME = "T_alcosta"
@@ -42,14 +45,20 @@ class TeacherApproveStudentQuestionSpockTest extends Specification {
     StudentQuestionRepository studentQuestionRepository
 
     @Autowired
+    CourseRepository courseRepository
+
+    @Autowired
     OptionRepository optionRepository
 
     User student
     User teacher
+    Course course
 
     def setup() {
         student = createUser(1, USER_NAME, USER_USERNAME, User.Role.STUDENT)
         teacher = createUser(2, USER_NAME, TEACHER_USERNAME, User.Role.TEACHER)
+        course = new Course(COURSE_NAME, Course.Type.TECNICO)
+        courseRepository.save(course)
     }
 
     def "a teacher approves an existing student question awaiting approval"() {
@@ -131,6 +140,7 @@ class TeacherApproveStudentQuestionSpockTest extends Specification {
         studentQuestion.setStatus(StudentQuestion.Status.valueOf(status))
         studentQuestion.setStudent(userRepository.findByUsername(USER_USERNAME))
         studentQuestion.setCreationDate(generateRandomCreationDate())
+        studentQuestion.setCourse(course)
         studentQuestionRepository.save(studentQuestion)
         return studentQuestion
     }

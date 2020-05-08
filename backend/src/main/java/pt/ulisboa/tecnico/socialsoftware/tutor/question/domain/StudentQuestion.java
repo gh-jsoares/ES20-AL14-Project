@@ -2,6 +2,8 @@ package pt.ulisboa.tecnico.socialsoftware.tutor.question.domain;
 
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.Course;
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException;
+import pt.ulisboa.tecnico.socialsoftware.tutor.impexp.domain.DomainEntity;
+import pt.ulisboa.tecnico.socialsoftware.tutor.impexp.domain.Visitor;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.OptionDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.dto.StudentQuestionDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.User;
@@ -20,7 +22,7 @@ import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.*;
         indexes = {
                 @Index(name = "student_question_indx_0", columnList = "key")
         })
-public class StudentQuestion {
+public class StudentQuestion implements DomainEntity {
 
     @SuppressWarnings("unused")
     public enum Status {
@@ -79,7 +81,7 @@ public class StudentQuestion {
     }
 
     public StudentQuestion(Course course, User user, StudentQuestionDto studentQuestionDto) {
-        checkConsistentStudentQuestion(user, studentQuestionDto);
+        checkConsistentStudentQuestion(user, studentQuestionDto, true);
 
         this.id = studentQuestionDto.getId();
         this.key = studentQuestionDto.getKey();
@@ -212,6 +214,7 @@ public class StudentQuestion {
         toRemove.forEach(this::removeTopic);
         Set<Topic> toAdd = newTopics.stream().filter(topic -> !this.topics.contains(topic)).collect(Collectors.toSet());
         toAdd.forEach(this::addTopic);
+        doAwait();
     }
 
     public LocalDateTime getReviewedDate() {
@@ -226,7 +229,7 @@ public class StudentQuestion {
         return rejectedExplanation;
     }
 
-    public void doApprove(User user) {
+    public Question doApprove(User user) {
         checkUserIsTeacher(user);
         checkAwaitingApproval();
 
@@ -235,10 +238,13 @@ public class StudentQuestion {
         this.status = Status.ACCEPTED;
 
         this.lastReviewer.addReviewedStudentQuestion(this);
+
+        return new Question(this);
     }
 
     public void doAwait() {
-        this.lastReviewer.removeReviewedStudentQuestion(this);
+        if (this.lastReviewer != null)
+            this.lastReviewer.removeReviewedStudentQuestion(this);
 
         this.lastReviewer = null;
         this.reviewedDate = null;
@@ -278,14 +284,60 @@ public class StudentQuestion {
             throw new TutorException(STUDENT_QUESTION_REJECT_NO_EXPLANATION);
     }
 
+    private void checkRejected() {
+        if (!status.equals(Status.REJECTED))
+            throw new TutorException(STUDENT_QUESTION_NOT_REJECTED, getTitle());
+    }
+
     private void checkAwaitingApproval() {
         if (!status.equals(Status.AWAITING_APPROVAL))
             throw new TutorException(STUDENT_QUESTION_NOT_AWAITING_APPROVAL, getTitle());
     }
 
-    private void checkConsistentStudentQuestion(User user, StudentQuestionDto studentQuestionDto) {
-        if (user.getRole() != User.Role.STUDENT)
+    public void updateAsStudent(User user, StudentQuestionDto studentQuestionDto) {
+        checkRejected();
+        checkConsistentStudentQuestion(user, studentQuestionDto, true);
+
+        setTitle(studentQuestionDto.getTitle());
+        setContent(studentQuestionDto.getContent());
+
+        studentQuestionDto.getOptions().forEach(optionDto -> {
+            Option option = getOptionById(optionDto.getId());
+            if (option == null) {
+                throw new TutorException(OPTION_NOT_FOUND, optionDto.getId());
+            }
+            option.setContent(optionDto.getContent());
+            option.setCorrect(optionDto.getCorrect());
+        });
+        doAwait();
+    }
+
+    public void updateAsTeacher(User user, StudentQuestionDto studentQuestionDto) {
+        checkConsistentStudentQuestion(user, studentQuestionDto, false);
+
+        setTitle(studentQuestionDto.getTitle());
+        setContent(studentQuestionDto.getContent());
+
+        studentQuestionDto.getOptions().forEach(optionDto -> {
+            Option option = getOptionById(optionDto.getId());
+            if (option == null) {
+                throw new TutorException(OPTION_NOT_FOUND, optionDto.getId());
+            }
+            option.setContent(optionDto.getContent());
+            option.setCorrect(optionDto.getCorrect());
+        });
+    }
+
+    private Option getOptionById(Integer id) {
+        return getOptions().stream().filter(option -> option.getId().equals(id)).findAny().orElse(null);
+    }
+
+    private void checkConsistentStudentQuestion(User user, StudentQuestionDto studentQuestionDto, boolean isStudent) {
+        if (user.getRole() != User.Role.STUDENT && isStudent)
             throw new TutorException(STUDENT_QUESTION_NOT_A_STUDENT);
+
+        if(!isStudent)
+            checkUserIsTeacher(user);
 
         if (studentQuestionDto.getTitle() == null || studentQuestionDto.getTitle().trim().length() == 0)
             throw new TutorException(STUDENT_QUESTION_TITLE_IS_EMPTY);
@@ -343,4 +395,10 @@ public class StudentQuestion {
         getTopics().forEach(topic -> topic.removeStudentQuestion(this));
         getTopics().clear();
     }
+
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visitStudentQuestion(this);
+    }
+
 }

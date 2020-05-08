@@ -1,5 +1,6 @@
 package pt.ulisboa.tecnico.socialsoftware.tutor.tournament;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +24,7 @@ public class TournamentController {
 
     @PostMapping("/tournaments/{tournamentId}/enroll")
     @PreAuthorize("(hasRole('ROLE_STUDENT') or hasRole('ROLE_DEMO_STUDENT')) and hasPermission(#tournamentId, 'TOURNAMENT.ACCESS')")
-    public TournamentDto createTournamentEnroll(Principal principal, @PathVariable int tournamentId) {
+    public TournamentDto enrollTournament(Principal principal, @PathVariable int tournamentId) {
         User user = (User) ((Authentication) principal).getPrincipal();
 
         if(user == null){
@@ -57,6 +58,20 @@ public class TournamentController {
         }
 
         return tournamentService.getOpenTournaments(executionId, user.getId());
+    }
+
+    @DeleteMapping("tournaments/{tournamentId}")
+    @PreAuthorize("(hasRole('ROLE_STUDENT') or hasRole('ROLE_DEMO_STUDENT')) and hasPermission(#tournamentId, 'TOURNAMENT.ACCESS')")
+    public ResponseEntity cancelTournament(Principal principal, @PathVariable int tournamentId) {
+        User user = (User) ((Authentication) principal).getPrincipal();
+
+        if(user == null){
+            throw new TutorException(AUTHENTICATION_ERROR);
+        }
+
+        tournamentService.cancelTournament(tournamentId, user.getId());
+
+        return ResponseEntity.ok().build();
     }
 
 }

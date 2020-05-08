@@ -5,6 +5,7 @@ import org.springframework.security.access.PermissionEvaluator;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseDto;
+import pt.ulisboa.tecnico.socialsoftware.tutor.dashboard.DashboardService;
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.DiscussionService;
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseService;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.AssessmentService;
@@ -46,6 +47,9 @@ public class TutorPermissionEvaluator implements PermissionEvaluator {
 
     @Autowired
     private TournamentService tournamentService;
+
+    @Autowired
+    private DashboardService dashboardService;
 
     @Override
     public boolean hasPermission(Authentication authentication, Object targetDomainObject, Object permission) {
@@ -89,12 +93,18 @@ public class TutorPermissionEvaluator implements PermissionEvaluator {
                     return studentQuestionService.canAccessStudentQuestion(userId, id);
                 case "TOURNAMENT.ACCESS":
                     return userHasThisExecution(userId, tournamentService.findTournamentCourseExecution(id).getCourseExecutionId());
+                case "DASHBOARD.STUDENTQUESTION.ACCESS":
+                    return userCanAccessStudentQuestionDashboard(userId, id);
 
                 default: return false;
             }
         }
 
         return false;
+    }
+
+    private boolean userCanAccessStudentQuestionDashboard(int userId, int dashboardId) {
+        return dashboardService.canAccessStudentQuestionStats(userId, dashboardId);
     }
 
     private boolean userHasAnExecutionOfTheCourse(int userId, int courseId) {

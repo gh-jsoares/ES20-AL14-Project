@@ -19,9 +19,15 @@ Cypress.Commands.add('acceptStudentQuestion', studentQuestion => {
         .filter(`:contains('${studentQuestion.title}')`)
         .children()
         .find('[data-cy="approveStudentQuestion"]')
-        .click()
-        .wait('@acceptStudentQuestion')
-        .checkStudentQuestionStatus(studentQuestion, 'ACCEPTED');
+        .click();
+});
+
+Cypress.Commands.add('checkStudentQuestionApproved', (studentQuestion) => {
+    cy.get('[data-cy="studentQuestionViewTitle"]')
+        .parent()
+        .parent()
+        .filter(`:contains('Update ${studentQuestion.title} ${studentQuestion.id}')`)
+        .contains('ACCEPTED');
 });
 
 Cypress.Commands.add('checkStudentQuestionStatus', (studentQuestion, status) => {
@@ -30,7 +36,7 @@ Cypress.Commands.add('checkStudentQuestionStatus', (studentQuestion, status) => 
         .parent()
         .filter(`:contains('${studentQuestion.title}')`)
         .contains(status);
-})
+});
 
 Cypress.Commands.add('rejectStudentQuestion', (studentQuestion, explanation) => {
     cy.get('[data-cy="studentQuestionViewTitle"]')

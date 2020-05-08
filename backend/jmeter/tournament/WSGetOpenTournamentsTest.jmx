@@ -62,17 +62,16 @@
           <stringProp name="timeout">10000</stringProp>
           <stringProp name="transactionIsolation">DEFAULT</stringProp>
           <stringProp name="trimInterval">60000</stringProp>
-          <stringProp name="username">ars</stringProp>
+          <stringProp name="username">proj</stringProp>
         </JDBCDataSource>
         <hashTree/>
         <BeanShellSampler guiclass="BeanShellSamplerGui" testclass="BeanShellSampler" testname="BeanShell Sampler store dates" enabled="true">
-          <stringProp name="BeanShellSampler.query">import java.time.LocalDateTime;
+          <stringProp name="BeanShellSampler.query">import java.time.*;
 import java.time.format.DateTimeFormatter;
 
-DateTimeFormatter formatter = DateTimeFormatter.ofPattern(&quot;yyyy-MM-dd HH:mm&quot;);
-String yesterday = LocalDateTime.now().minusDays(1).format(formatter);
-String dayOne = LocalDateTime.now().plusDays(1).format(formatter);
-String dayTwo = LocalDateTime.now().plusDays(2).format(formatter);
+String yesterday = ZonedDateTime.now(ZoneOffset.UTC).minusDays(1).format(DateTimeFormatter.ISO_INSTANT);
+String dayOne = ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT);
+String dayTwo = ZonedDateTime.now(ZoneOffset.UTC).plusDays(2).format(DateTimeFormatter.ISO_INSTANT);
 
 props.put(&quot;creationDate&quot;, yesterday);
 props.put(&quot;availableDate&quot;, dayOne);
@@ -91,23 +90,36 @@ INSERT INTO course_executions(academic_term, acronym, status, course_id, type)
 	
 INSERT INTO topics(name, course_id) VALUES(&apos;Jmeter Topic&apos;, (SELECT id FROM courses WHERE name=&apos;Jmeter Course&apos;));
 
+INSERT INTO users(name, username) VALUES (&apos;Jmeter Test&apos;, &apos;JmeterTest&apos;);
+
 INSERT INTO users_course_executions VALUES(
 	(SELECT id FROM users WHERE name=&apos;Demo Student&apos;), 
 	(SELECT id FROM course_executions WHERE acronym=&apos;JMC1&apos;));
-	
-	
 
-INSERT INTO tournaments(creation_date, available_date, conclusion_date, number_of_questions, state, title, course_execution_id, creator_id) VALUES 
-	(&apos;${__property(creationDate)}&apos;, &apos;${__property(availableDate)}&apos;, &apos;${__property(conclusionDate)}&apos;, 
-	15, &apos;ENROLL&apos;, &apos;Jmeter Tournament&apos;, 
+INSERT INTO users_course_executions VALUES(
+	(SELECT id FROM users WHERE name=&apos;Jmeter Test&apos;), 
+	(SELECT id FROM course_executions WHERE acronym=&apos;JMC1&apos;));
+	
+INSERT INTO quizzes(title) VALUES (&apos;Jmeter Quiz&apos;);
+
+INSERT INTO quiz_answers(quiz_id, user_id, completed, used_in_statistics) VALUES(
+	(SELECT id FROM quizzes WHERE title=&apos;Jmeter Quiz&apos;),
+	(SELECT id FROM users WHERE name=&apos;Demo Student&apos;), &apos;f&apos;, &apos;f&apos;);
+
+INSERT INTO tournaments(creation_date, available_date, conclusion_date, number_of_questions, state, title, course_execution_id, creator_id, quiz_id) VALUES
+	(&apos;${__property(creationDate)}&apos;, &apos;${__property(availableDate)}&apos;, &apos;${__property(conclusionDate)}&apos;,
+	15, &apos;ONGOING&apos;, &apos;Jmeter Tournament&apos;, 
 	(SELECT id FROM course_executions WHERE acronym=&apos;JMC1&apos;), 
-	(SELECT id FROM users WHERE name=&apos;Demo Student&apos;));
+	(SELECT id FROM users WHERE name=&apos;Demo Student&apos;),
+	(SELECT id FROM quizzes WHERE title=&apos;Jmeter Quiz&apos;));
 
 INSERT INTO topics_tournaments VALUES(
 	(SELECT id FROM topics WHERE name=&apos;Jmeter Topic&apos;), 
 	(SELECT id FROM tournaments WHERE title=&apos;Jmeter Tournament&apos;));
 
-	
+INSERT INTO tournaments_enrolled_students(enrolled_tournaments_id, enrolled_students_id) VALUES ((SELECT id FROM tournaments WHERE title=&apos;Jmeter Tournament&apos;), (SELECT id FROM users WHERE name=&apos;Demo Student&apos;));
+
+INSERT INTO tournaments_enrolled_students(enrolled_tournaments_id, enrolled_students_id) VALUES ((SELECT id FROM tournaments WHERE title=&apos;Jmeter Tournament&apos;), (SELECT id FROM users WHERE name=&apos;Jmeter Test&apos;));
 
 INSERT INTO tournaments(available_date, conclusion_date, creation_date, number_of_questions, state, title, course_execution_id, creator_id) VALUES 
 	(&apos;2020-02-15 11:23&apos;, &apos;2020-02-20 16:23&apos;, &apos;2020-02-21 16:23&apos;, 
@@ -156,9 +168,23 @@ INSERT INTO topics_tournaments VALUES(
             <stringProp name="variableNames">topicId</stringProp>
           </JDBCSampler>
           <hashTree/>
+          <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="JDBC Request to get quizId" enabled="true">
+            <stringProp name="dataSource">sampleReq</stringProp>
+            <stringProp name="query">SELECT id FROM quizzes WHERE title=&apos;Jmeter Quiz&apos;;</stringProp>
+            <stringProp name="queryArguments"></stringProp>
+            <stringProp name="queryArgumentsTypes"></stringProp>
+            <stringProp name="queryTimeout"></stringProp>
+            <stringProp name="queryType">Select Statement</stringProp>
+            <stringProp name="resultSetHandler">Store as String</stringProp>
+            <stringProp name="resultSetMaxRows"></stringProp>
+            <stringProp name="resultVariable"></stringProp>
+            <stringProp name="variableNames">quizId</stringProp>
+          </JDBCSampler>
+          <hashTree/>
           <BeanShellSampler guiclass="BeanShellSamplerGui" testclass="BeanShellSampler" testname="BeanShell Sampler store ids" enabled="true">
             <stringProp name="BeanShellSampler.query">props.put(&quot;executionId&quot;, &quot;${executionId_1}&quot;);
-props.put(&quot;topicId&quot;, &quot;${topicId_1}&quot;);</stringProp>
+props.put(&quot;topicId&quot;, &quot;${topicId_1}&quot;);
+props.put(&quot;quizId&quot;, &quot;${quizId_1}&quot;);</stringProp>
             <stringProp name="BeanShellSampler.filename"></stringProp>
             <stringProp name="BeanShellSampler.parameters"></stringProp>
             <boolProp name="BeanShellSampler.resetInterpreter">false</boolProp>
@@ -333,7 +359,7 @@ props.put(&quot;topicId&quot;, &quot;${topicId_1}&quot;);</stringProp>
             <hashTree/>
             <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="Assert number of enrolls" enabled="true">
               <stringProp name="JSON_PATH">$[0].numberOfEnrolls</stringProp>
-              <stringProp name="EXPECTED_VALUE">0</stringProp>
+              <stringProp name="EXPECTED_VALUE">2</stringProp>
               <boolProp name="JSONVALIDATION">true</boolProp>
               <boolProp name="EXPECT_NULL">false</boolProp>
               <boolProp name="INVERT">false</boolProp>
@@ -342,7 +368,7 @@ props.put(&quot;topicId&quot;, &quot;${topicId_1}&quot;);</stringProp>
             <hashTree/>
             <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="Assert state" enabled="true">
               <stringProp name="JSON_PATH">$[0].state</stringProp>
-              <stringProp name="EXPECTED_VALUE">ENROLL</stringProp>
+              <stringProp name="EXPECTED_VALUE">ONGOING</stringProp>
               <boolProp name="JSONVALIDATION">true</boolProp>
               <boolProp name="EXPECT_NULL">false</boolProp>
               <boolProp name="INVERT">false</boolProp>
@@ -379,6 +405,15 @@ props.put(&quot;topicId&quot;, &quot;${topicId_1}&quot;);</stringProp>
             <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="Assert creator" enabled="true">
               <stringProp name="JSON_PATH">$[0].creator.name</stringProp>
               <stringProp name="EXPECTED_VALUE">Demo Student</stringProp>
+              <boolProp name="JSONVALIDATION">true</boolProp>
+              <boolProp name="EXPECT_NULL">false</boolProp>
+              <boolProp name="INVERT">false</boolProp>
+              <boolProp name="ISREGEX">false</boolProp>
+            </JSONPathAssertion>
+            <hashTree/>
+            <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="Assert Quiz id" enabled="true">
+              <stringProp name="JSON_PATH">$[0].statementQuiz.id</stringProp>
+              <stringProp name="EXPECTED_VALUE">${__property(quizId)}</stringProp>
               <boolProp name="JSONVALIDATION">true</boolProp>
               <boolProp name="EXPECT_NULL">false</boolProp>
               <boolProp name="INVERT">false</boolProp>
@@ -492,15 +527,20 @@ props.put(&quot;topicId&quot;, &quot;${topicId_1}&quot;);</stringProp>
           <stringProp name="timeout">10000</stringProp>
           <stringProp name="transactionIsolation">DEFAULT</stringProp>
           <stringProp name="trimInterval">60000</stringProp>
-          <stringProp name="username">ars</stringProp>
+          <stringProp name="username">proj</stringProp>
         </JDBCDataSource>
         <hashTree/>
         <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="JDBC Request delete data" enabled="true">
           <stringProp name="dataSource">sampleReq</stringProp>
           <stringProp name="query">DELETE FROM topics_tournaments WHERE topics_id=${__property(topicId)};
+DELETE FROM tournaments_enrolled_students WHERE enrolled_students_id=(SELECT id FROM users WHERE name=&apos;Demo Student&apos;);
+DELETE FROM tournaments_enrolled_students WHERE enrolled_students_id=(SELECT id FROM users WHERE name=&apos;Jmeter Test&apos;);
 DELETE FROM tournaments WHERE title LIKE &apos;Jmeter Tournament%&apos;;
 DELETE FROM topics WHERE name=&apos;Jmeter Topic&apos;;
+DELETE FROM quiz_answers WHERE quiz_id=(SELECT id FROM quizzes WHERE title=&apos;Jmeter Quiz&apos;);
+DELETE FROM quizzes WHERE title=&apos;Jmeter Quiz&apos;;
 DELETE FROM users_course_executions WHERE course_executions_id=${__property(executionId)};
+DELETE FROM users WHERE name=&apos;Jmeter Test&apos;;
 DELETE FROM course_executions WHERE acronym=&apos;JMC1&apos;;
 DELETE FROM courses WHERE name=&apos;Jmeter Course&apos;;</stringProp>
           <stringProp name="queryArguments"></stringProp>

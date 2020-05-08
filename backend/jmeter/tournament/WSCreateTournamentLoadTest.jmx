@@ -116,12 +116,11 @@ INSERT INTO users_course_executions VALUES(
           </JDBCSampler>
           <hashTree/>
           <BeanShellSampler guiclass="BeanShellSamplerGui" testclass="BeanShellSampler" testname="BeanShell Sampler store properties" enabled="true">
-            <stringProp name="BeanShellSampler.query">import java.time.LocalDateTime;
+            <stringProp name="BeanShellSampler.query">import java.time.*;
 import java.time.format.DateTimeFormatter;
 
-DateTimeFormatter formatter = DateTimeFormatter.ofPattern(&quot;yyyy-MM-dd HH:mm&quot;);
-String dayOne = LocalDateTime.now().plusDays(1).format(formatter);
-String dayTwo = LocalDateTime.now().plusDays(2).format(formatter);
+String dayOne = ZonedDateTime.now(ZoneOffset.UTC).plusDays(1).format(DateTimeFormatter.ISO_INSTANT);
+String dayTwo = ZonedDateTime.now(ZoneOffset.UTC).plusDays(2).format(DateTimeFormatter.ISO_INSTANT);
 
 props.put(&quot;availableDate&quot;, dayOne);
 props.put(&quot;conclusionDate&quot;, dayTwo);
