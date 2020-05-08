@@ -31,7 +31,7 @@
           </elementProp>
           <elementProp name="dbUser" elementType="Argument">
             <stringProp name="Argument.name">dbUser</stringProp>
-            <stringProp name="Argument.value">jm</stringProp>
+            <stringProp name="Argument.value">hello</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
         </collectionProp>
@@ -79,8 +79,8 @@ insert into quiz_answers values (100000,&apos;1000-01-01 00:00:00&apos;, false, 
 insert into quiz_questions values (100000, 4, 1800, 5370);
 insert into question_answers values (100000, 100000, 7663, 100000, 100000);
 insert into discussions values (1, false, false, 1800, 676);
-insert into messages values (1, 1, &apos;student_question1&apos;, 1, 676);
-insert into messages values (2, 2, &apos;teacher_answer&apos;, 1, 677);</stringProp>
+insert into messages values (1000, 0, &apos;student_question1&apos;, 1, 676);
+insert into messages values (1001, 1, &apos;teacher_answer&apos;, 1, 677);</stringProp>
           <stringProp name="queryArguments"></stringProp>
           <stringProp name="queryArgumentsTypes"></stringProp>
           <stringProp name="variableNames"></stringProp>
@@ -375,7 +375,7 @@ update users set enrolled_courses_acronyms=&apos;&apos; where username=&apos;Dem
 delete from question_answers where id=100000;
 delete from quiz_answers where id=100000;
 delete from quiz_questions where id=100000;
-delete from messages where counter = 1 or counter = 2 or counter = 3;
+delete from messages where counter = 0 or counter = 1 or counter = 2;
 delete from discussions where id = 1;</stringProp>
           <stringProp name="queryArguments"></stringProp>
           <stringProp name="queryArgumentsTypes"></stringProp>
