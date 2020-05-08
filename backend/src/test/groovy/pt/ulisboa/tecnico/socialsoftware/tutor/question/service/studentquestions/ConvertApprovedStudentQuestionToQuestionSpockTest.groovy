@@ -150,6 +150,7 @@ class ConvertApprovedStudentQuestionToQuestionSpockTest extends Specification {
 
         for (int i = 0; i < 4; i++) {
             def option = new Option()
+            option.setSequence(i)
             option.setContent(content)
             option.setStudentQuestion(studentQuestion)
             options.add(option)
