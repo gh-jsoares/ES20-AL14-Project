@@ -130,6 +130,14 @@
             </v-btn>
           </template>
           <v-list dense>
+            <v-list-item to="/student/tournaments-stats">
+              <v-list-item-action>
+                <v-icon>mdi-crown</v-icon>
+              </v-list-item-action>
+              <v-list-item-content data-cy="tournamentsDashTab">
+                <v-list-item-title>Tournaments</v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
             <v-list-item to="/dashboard/questions/student">
               <v-list-item-action>
                 <v-icon>question_answer</v-icon>
@@ -446,6 +454,12 @@
               <v-icon>drafts</v-icon>
             </v-list-item-action>
             <v-list-item-content>Discussions</v-list-item-content>
+          </v-list-item>
+          <v-list-item to="/student/tournaments-stats">
+            <v-list-item-action>
+              <v-icon>mdi-crown</v-icon>
+            </v-list-item-action>
+            <v-list-item-content>Tournaments Stats</v-list-item-content>
           </v-list-item>
           <v-list-item to="/dashboard/questions/student">
             <v-list-item-action>

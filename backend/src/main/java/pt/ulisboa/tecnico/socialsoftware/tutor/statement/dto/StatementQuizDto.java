@@ -21,6 +21,8 @@ public class StatementQuizDto implements Serializable {
     private Long timeToAvailability;
     private Long timeToSubmission;
     private Long timeToResults;
+    private boolean tournament = false;
+    private boolean completed = false;
     private List<StatementQuestionDto> questions = new ArrayList<>();
     private List<StatementAnswerDto> answers = new ArrayList<>();
 
@@ -33,6 +35,9 @@ public class StatementQuizDto implements Serializable {
         this.oneWay = quizAnswer.getQuiz().isOneWay();
         this.availableDate = DateHandler.toISOString(quizAnswer.getQuiz().getAvailableDate());
         this.conclusionDate = DateHandler.toISOString(quizAnswer.getQuiz().getConclusionDate());
+
+        this.tournament = quizAnswer.getQuiz().isTournament();
+        this.completed = quizAnswer.isCompleted();
 
         if (quizAnswer.getQuiz().getConclusionDate() != null && quizAnswer.getQuiz().getType().equals(Quiz.QuizType.IN_CLASS)) {
             this.timeToSubmission = ChronoUnit.MILLIS.between(DateHandler.now(), quizAnswer.getQuiz().getConclusionDate());
@@ -136,6 +141,14 @@ public class StatementQuizDto implements Serializable {
     public void setAnswers(List<StatementAnswerDto> answers) {
         this.answers = answers;
     }
+
+    public boolean isTournament() { return tournament; }
+
+    public void setTournament(boolean tournament) { this.tournament = tournament; }
+
+    public boolean isCompleted() { return completed; }
+
+    public void setCompleted(boolean completed) { this.completed = completed; }
 
     @Override
     public String toString() {

@@ -1,6 +1,6 @@
 {
   "A1": ["CypressTest A1", "Demo-Student", ["Chrome"], "10", "0", "2030-02-20 16:23", "2030-02-21 16:23", "Not Started"],
   "A2": ["CypressTest A2", "Demo-Student", ["Uber"], "15", "0", "2030-02-20 16:23", "2030-02-21 16:23", "Not Started"],
-  "B1": ["CypressTest B1", "Demo-Student", ["Chrome"], "10", "0", "2020-02-20 16:23", "2030-02-21 16:23", "Started"],
+  "B1": ["CypressTest B1", "Demo-Student", ["Software Architecture"], "1", "2", "2020-02-20 16:23", "2030-02-21 16:23", "Started"],
   "B2": ["CypressTest B2", "Demo-Student", ["Chrome", "Uber"], "25", "0", "2030-02-20 16:23", "2030-02-21 16:23", "Not Started"]
 }

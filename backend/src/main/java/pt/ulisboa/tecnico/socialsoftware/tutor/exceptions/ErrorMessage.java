@@ -87,6 +87,12 @@ public enum ErrorMessage {
     TOURNAMENT_STUDENT_NOT_ENROLLED_IN_TOURNAMENT_COURSE("The user with id %d is not enrolled in the course execution of the tournament"),
     TOURNAMENT_NOT_OPEN("The tournament with id %d is not open"),
     TOURNAMENT_TOPIC_WRONG_COURSE("The topic with id %d doesn't belong to the same course as the tournament"),
+    TOURNAMENT_USER_IS_NOT_CREATOR("The user with username %s is not the creator of the tournament"),
+    TOURNAMENT_HAS_STARTED("The tournament with id %d is no longer in enrollment phase"),
+    TOURNAMENT_QUIZ_ALREADY_GENERATED("The quiz associated the tournament with id %d was already generated"),
+    TOURNAMENT_NOT_AVAILABLE("Tournament with id %d is not yet available"),
+    TOURNAMENT_IS_CLOSED("Tournament with id %d is already closed"),
+    TOURNAMENT_NOT_ENOUGH_ENROLLS("Tournament with id %d doesn't have enough enrolled students to start"),
 
     USER_IS_NULL("The user was not specified"),
     USER_IS_NOT_TEACHER("User with name %s is not a teacher"),
