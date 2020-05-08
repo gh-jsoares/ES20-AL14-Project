@@ -21,3 +21,4 @@ import './discussion/discussionCommands';
 import './database';
 import './questions/student/commands';
 import './tournament/tournamentCommands';
+import './dashboard/dashboardCommands';

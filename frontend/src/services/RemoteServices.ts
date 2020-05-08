@@ -811,8 +811,8 @@ export default class RemoteServices {
 
   static async changeTournamentStatsPrivacy() {
     return httpClient
-    .post(
-    `/executions/${Store.getters.getCurrentCourse.courseExecutionId}/dashboard/tournaments/changePrivacy`
+      .post(
+        `/executions/${Store.getters.getCurrentCourse.courseExecutionId}/dashboard/tournaments/changePrivacy`
       )
       .catch(async error => {
         throw Error(await this.errorMessage(error));
