@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jmeterTestPlan version="1.2" properties="5.0" jmeter="5.2.1">
   <hashTree>
-    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Load Test Web Service getOpenTournaments" enabled="true">
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Test Web Service getTournamentStats" enabled="true">
       <stringProp name="TestPlan.comments"></stringProp>
       <boolProp name="TestPlan.functional_mode">false</boolProp>
       <boolProp name="TestPlan.tearDown_on_shutdown">true</boolProp>
@@ -67,16 +67,44 @@
         <hashTree/>
         <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="JDBC Request create data" enabled="true">
           <stringProp name="dataSource">sampleReq</stringProp>
-          <stringProp name="query">INSERT INTO courses(name, type) VALUES (&apos;Jmeter Course&apos;, &apos;TECNICO&apos;);
+          <stringProp name="query">
+INSERT INTO quizzes(available_date, creation_date, title, type, course_execution_id) VALUES (&apos;2019-05-23 10:51&apos;,&apos;2019-05-23 10:51&apos;,&apos;Jmeter Test&apos;, &apos;TOURNAMENT&apos;, (SELECT id FROM course_executions WHERE acronym=&apos;DemoCourse&apos;));
 
-INSERT INTO course_executions(academic_term, acronym, status, course_id, type) 
-	VALUES (&apos;1st Semester&apos;, &apos;JMC1&apos;, &apos;ACTIVE&apos;, (SELECT id FROM courses WHERE name=&apos;Jmeter Course&apos;), &apos;TECNICO&apos;);
-	
-INSERT INTO topics(name, course_id) VALUES(&apos;Jmeter Topic&apos;, (SELECT id FROM courses WHERE name=&apos;Jmeter Course&apos;));
+INSERT INTO quiz_questions(sequence, question_id, quiz_id) VALUES (0, (SELECT id FROM questions WHERE title=&apos;Allowing the incorporation of independently developed components&apos;), (SELECT id FROM quizzes WHERE title=&apos;Jmeter Test&apos;));
+INSERT INTO quiz_questions(sequence, question_id, quiz_id) VALUES (3, (SELECT id FROM questions WHERE title=&apos;Restrict vocabulary&apos;), (SELECT id FROM quizzes WHERE title=&apos;Jmeter Test&apos;));
+INSERT INTO quiz_questions(sequence, question_id, quiz_id) VALUES (2, (SELECT id FROM questions WHERE title=&apos;The impact of functionalities on the architecture&apos;), (SELECT id FROM quizzes WHERE title=&apos;Jmeter Test&apos;));
+INSERT INTO quiz_questions(sequence, question_id, quiz_id) VALUES (1, (SELECT id FROM questions WHERE title=&apos;Impact of the business goals on the architecture&apos;), (SELECT id FROM quizzes WHERE title=&apos;Jmeter Test&apos;));
 
-INSERT INTO users_course_executions VALUES(
-	(SELECT id FROM users WHERE name=&apos;Demo Student&apos;), 
-	(SELECT id FROM course_executions WHERE acronym=&apos;JMC1&apos;));</stringProp>
+INSERT INTO quiz_answers(answer_date, completed, quiz_id, user_id, used_in_statistics, creation_date) VALUES (&apos;2019-05-24 10:51&apos;,true,(SELECT id FROM quizzes WHERE title=&apos;Jmeter Test&apos;),(SELECT id FROM users WHERE name=&apos;Demo Student&apos;),true,&apos;2019-05-24 09:51&apos;);
+
+
+INSERT INTO question_answers(time_taken, option_id, quiz_answer_id, quiz_question_id, sequence) VALUES (10000, (select id from options where question_id=(SELECT id FROM questions WHERE  title=&apos;Allowing the incorporation of independently developed components&apos;) AND correct=true), (SELECT id from quiz_answers WHERE creation_date=&apos;2019-05-24 09:51&apos;),
+    (SELECT id FROM quiz_questions WHERE question_id=(SELECT id FROM questions WHERE  title=&apos;Allowing the incorporation of independently developed components&apos;) AND quiz_id IN (SELECT id FROM quizzes WHERE title=&apos;Jmeter Test&apos;)),
+    (SELECT sequence FROM quiz_questions WHERE question_id=(SELECT id FROM questions WHERE  title=&apos;Allowing the incorporation of independently developed components&apos;) AND quiz_id IN (SELECT id FROM quizzes WHERE title=&apos;Jmeter Test&apos;)));
+
+INSERT INTO question_answers(time_taken, option_id, quiz_answer_id, quiz_question_id, sequence) VALUES (10000, (select id from options where question_id=(SELECT id FROM questions WHERE  title=&apos;Restrict vocabulary&apos;) AND correct=true), (SELECT id from quiz_answers WHERE creation_date=&apos;2019-05-24 09:51&apos;),
+    (SELECT id FROM quiz_questions WHERE question_id=(SELECT id FROM questions WHERE  title=&apos;Restrict vocabulary&apos;) AND quiz_id IN (SELECT id FROM quizzes WHERE title=&apos;Jmeter Test&apos;)),
+    (SELECT sequence FROM quiz_questions WHERE question_id=(SELECT id FROM questions WHERE  title=&apos;Restrict vocabulary&apos;) AND quiz_id IN (SELECT id FROM quizzes WHERE title=&apos;Jmeter Test&apos;)));
+
+INSERT INTO question_answers(time_taken, option_id, quiz_answer_id, quiz_question_id, sequence) VALUES (10000, (select id from options where question_id=(SELECT id FROM questions WHERE  title=&apos;The impact of functionalities on the architecture&apos;) AND correct=false LIMIT 1), (SELECT id from quiz_answers WHERE creation_date=&apos;2019-05-24 09:51&apos;),
+    (SELECT id FROM quiz_questions WHERE question_id=(SELECT id FROM questions WHERE  title=&apos;The impact of functionalities on the architecture&apos;) AND quiz_id IN (SELECT id FROM quizzes WHERE title=&apos;Jmeter Test&apos;)),
+    (SELECT sequence FROM quiz_questions WHERE question_id=(SELECT id FROM questions WHERE  title=&apos;The impact of functionalities on the architecture&apos;) AND quiz_id IN (SELECT id FROM quizzes WHERE title=&apos;Jmeter Test&apos;)));
+
+INSERT INTO question_answers(time_taken, option_id, quiz_answer_id, quiz_question_id, sequence) VALUES (10000, (select id from options where question_id=(SELECT id FROM questions WHERE  title=&apos;Impact of the business goals on the architecture&apos;) AND correct=false LIMIT 1), (SELECT id from quiz_answers WHERE creation_date=&apos;2019-05-24 09:51&apos;),
+    (SELECT id FROM quiz_questions WHERE question_id=(SELECT id FROM questions WHERE  title=&apos;Impact of the business goals on the architecture&apos;) AND quiz_id IN (SELECT id FROM quizzes WHERE title=&apos;Jmeter Test&apos;)),
+    (SELECT sequence FROM quiz_questions WHERE question_id=(SELECT id FROM questions WHERE  title=&apos;Impact of the business goals on the architecture&apos;) AND quiz_id IN (SELECT id FROM quizzes WHERE title=&apos;Jmeter Test&apos;)));
+
+
+INSERT INTO tournaments(state, title, course_execution_id, creator_id, creation_date, available_date, conclusion_date, number_of_questions, quiz_id) VALUES
+    (&apos;CLOSED&apos;, &apos;Jmeter Test&apos;, (SELECT id FROM course_executions WHERE acronym=&apos;DemoCourse&apos;),(SELECT id FROM users WHERE username=&apos;Demo-Student&apos;),
+      &apos;2019-05-23 10:50&apos;,&apos;2019-05-23 10:51&apos;,&apos;2019-06-23 10:51&apos;, 4, (SELECT id FROM quizzes WHERE title=&apos;Jmeter Test&apos;));
+
+INSERT INTO topics_tournaments VALUES(
+    (SELECT id FROM topics WHERE name=&apos;Software Architecture&apos;),
+    (SELECT id FROM tournaments WHERE title=&apos;Jmeter Test&apos;));
+
+INSERT INTO tournaments_enrolled_students(enrolled_tournaments_id, enrolled_students_id) VALUES ((SELECT id FROM tournaments WHERE title=&apos;Jmeter Test&apos;), (SELECT id FROM users WHERE name=&apos;Demo Student&apos;));
+</stringProp>
           <stringProp name="queryArguments"></stringProp>
           <stringProp name="queryArgumentsTypes"></stringProp>
           <stringProp name="queryTimeout"></stringProp>
@@ -87,50 +115,11 @@ INSERT INTO users_course_executions VALUES(
           <stringProp name="variableNames"></stringProp>
         </JDBCSampler>
         <hashTree/>
-        <LoopController guiclass="LoopControlPanel" testclass="LoopController" testname="Loop 500 times" enabled="true">
-          <boolProp name="LoopController.continue_forever">true</boolProp>
-          <stringProp name="LoopController.loops">500</stringProp>
-        </LoopController>
-        <hashTree>
-          <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="CSV Data Set Config" enabled="true">
-            <stringProp name="filename">GetTournamentData.csv</stringProp>
-            <stringProp name="fileEncoding"></stringProp>
-            <stringProp name="variableNames"></stringProp>
-            <boolProp name="ignoreFirstLine">true</boolProp>
-            <stringProp name="delimiter">,</stringProp>
-            <boolProp name="quotedData">false</boolProp>
-            <boolProp name="recycle">true</boolProp>
-            <boolProp name="stopThread">false</boolProp>
-            <stringProp name="shareMode">shareMode.all</stringProp>
-          </CSVDataSet>
-          <hashTree/>
-          <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="JDBC Request create tournament" enabled="true">
-            <stringProp name="dataSource">sampleReq</stringProp>
-            <stringProp name="query">INSERT INTO tournaments(creation_date, available_date, conclusion_date, number_of_questions, state, title, course_execution_id, creator_id) VALUES 
-	(&apos;${creation}&apos;, &apos;${available}&apos;, &apos;${conclusion}&apos;, 
-	&apos;${questNum}&apos;, &apos;${state}&apos;, &apos;${title}&apos;, 
-	(SELECT id FROM course_executions WHERE acronym=&apos;JMC1&apos;), 
-	(SELECT id FROM users WHERE name=&apos;Demo Student&apos;));
-
-INSERT INTO topics_tournaments VALUES(
-	(SELECT id FROM topics WHERE name=&apos;Jmeter Topic&apos;), 
-	(SELECT id FROM tournaments WHERE title=&apos;${title}&apos;));</stringProp>
-            <stringProp name="queryArguments"></stringProp>
-            <stringProp name="queryArgumentsTypes"></stringProp>
-            <stringProp name="queryTimeout"></stringProp>
-            <stringProp name="queryType">Callable Statement</stringProp>
-            <stringProp name="resultSetHandler">Store as String</stringProp>
-            <stringProp name="resultSetMaxRows"></stringProp>
-            <stringProp name="resultVariable"></stringProp>
-            <stringProp name="variableNames"></stringProp>
-          </JDBCSampler>
-          <hashTree/>
-        </hashTree>
         <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="Get data for tests" enabled="true"/>
         <hashTree>
           <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="JDBC Request to get executionId" enabled="true">
             <stringProp name="dataSource">sampleReq</stringProp>
-            <stringProp name="query">SELECT id FROM course_executions WHERE acronym=&apos;JMC1&apos;</stringProp>
+            <stringProp name="query">SELECT id FROM course_executions WHERE acronym=&apos;DemoCourse&apos;</stringProp>
             <stringProp name="queryArguments"></stringProp>
             <stringProp name="queryArgumentsTypes"></stringProp>
             <stringProp name="queryTimeout"></stringProp>
@@ -141,9 +130,9 @@ INSERT INTO topics_tournaments VALUES(
             <stringProp name="variableNames">executionId</stringProp>
           </JDBCSampler>
           <hashTree/>
-          <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="JDBC Request to get topicId" enabled="true">
+          <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="JDBC Request to get tournId" enabled="true">
             <stringProp name="dataSource">sampleReq</stringProp>
-            <stringProp name="query">SELECT id FROM topics WHERE name=&apos;Jmeter Topic&apos;</stringProp>
+            <stringProp name="query">SELECT id FROM tournaments WHERE title=&apos;Jmeter Test&apos;</stringProp>
             <stringProp name="queryArguments"></stringProp>
             <stringProp name="queryArgumentsTypes"></stringProp>
             <stringProp name="queryTimeout"></stringProp>
@@ -151,12 +140,26 @@ INSERT INTO topics_tournaments VALUES(
             <stringProp name="resultSetHandler">Store as String</stringProp>
             <stringProp name="resultSetMaxRows"></stringProp>
             <stringProp name="resultVariable"></stringProp>
-            <stringProp name="variableNames">topicId</stringProp>
+            <stringProp name="variableNames">tournId</stringProp>
+          </JDBCSampler>
+          <hashTree/>
+          <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="JDBC Request to get quizId" enabled="true">
+            <stringProp name="dataSource">sampleReq</stringProp>
+            <stringProp name="query">SELECT id FROM quizzes WHERE title=&apos;Jmeter Test&apos;</stringProp>
+            <stringProp name="queryArguments"></stringProp>
+            <stringProp name="queryArgumentsTypes"></stringProp>
+            <stringProp name="queryTimeout"></stringProp>
+            <stringProp name="queryType">Select Statement</stringProp>
+            <stringProp name="resultSetHandler">Store as String</stringProp>
+            <stringProp name="resultSetMaxRows"></stringProp>
+            <stringProp name="resultVariable"></stringProp>
+            <stringProp name="variableNames">quizId</stringProp>
           </JDBCSampler>
           <hashTree/>
           <BeanShellSampler guiclass="BeanShellSamplerGui" testclass="BeanShellSampler" testname="BeanShell Sampler store properties" enabled="true">
             <stringProp name="BeanShellSampler.query">props.put(&quot;executionId&quot;, &quot;${executionId_1}&quot;);
-props.put(&quot;topicId&quot;, &quot;${topicId_1}&quot;);</stringProp>
+props.put(&quot;tournId&quot;, &quot;${tournId_1}&quot;);
+props.put(&quot;quizId&quot;, &quot;${quizId_1}&quot;);</stringProp>
             <stringProp name="BeanShellSampler.filename"></stringProp>
             <stringProp name="BeanShellSampler.parameters"></stringProp>
             <boolProp name="BeanShellSampler.resetInterpreter">false</boolProp>
@@ -201,13 +204,13 @@ props.put(&quot;topicId&quot;, &quot;${topicId_1}&quot;);</stringProp>
         </ResultCollector>
         <hashTree/>
       </hashTree>
-      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="100 Users Thread Group" enabled="true">
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Users Thread Group" enabled="true">
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
           <boolProp name="LoopController.continue_forever">false</boolProp>
           <stringProp name="LoopController.loops">1</stringProp>
         </elementProp>
-        <stringProp name="ThreadGroup.num_threads">100</stringProp>
+        <stringProp name="ThreadGroup.num_threads">1</stringProp>
         <stringProp name="ThreadGroup.ramp_time">1</stringProp>
         <boolProp name="ThreadGroup.scheduler">false</boolProp>
         <stringProp name="ThreadGroup.duration"></stringProp>
@@ -241,7 +244,7 @@ props.put(&quot;topicId&quot;, &quot;${topicId_1}&quot;);</stringProp>
           </JSONPostProcessor>
           <hashTree/>
         </hashTree>
-        <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="Authenticated Requests" enabled="true"/>
+        <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="Student create tournament" enabled="true"/>
         <hashTree>
           <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
             <collectionProp name="HeaderManager.headers">
@@ -256,29 +259,177 @@ props.put(&quot;topicId&quot;, &quot;${topicId_1}&quot;);</stringProp>
             </collectionProp>
           </HeaderManager>
           <hashTree/>
-          <LoopController guiclass="LoopControlPanel" testclass="LoopController" testname="Loop 10 times" enabled="true">
-            <boolProp name="LoopController.continue_forever">true</boolProp>
-            <stringProp name="LoopController.loops">10</stringProp>
-          </LoopController>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="HTTP Request to create tournament" enabled="true">
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+              <collectionProp name="Arguments.arguments"/>
+            </elementProp>
+            <stringProp name="HTTPSampler.domain">${server}</stringProp>
+            <stringProp name="HTTPSampler.port">${port}</stringProp>
+            <stringProp name="HTTPSampler.protocol"></stringProp>
+            <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+            <stringProp name="HTTPSampler.path">/executions/${__property(executionId)}/dashboard/tournaments</stringProp>
+            <stringProp name="HTTPSampler.method">GET</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+            <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+            <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+            <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          </HTTPSamplerProxy>
           <hashTree>
-            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="HTTP Request to get open tournaments" enabled="true">
-              <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
-                <collectionProp name="Arguments.arguments"/>
-              </elementProp>
-              <stringProp name="HTTPSampler.domain">${server}</stringProp>
-              <stringProp name="HTTPSampler.port">${port}</stringProp>
-              <stringProp name="HTTPSampler.protocol"></stringProp>
-              <stringProp name="HTTPSampler.contentEncoding"></stringProp>
-              <stringProp name="HTTPSampler.path">/executions/${__property(executionId)}/tournaments</stringProp>
-              <stringProp name="HTTPSampler.method">GET</stringProp>
-              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
-              <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
-              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
-              <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
-              <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
-              <stringProp name="HTTPSampler.connect_timeout"></stringProp>
-              <stringProp name="HTTPSampler.response_timeout"></stringProp>
-            </HTTPSamplerProxy>
+            <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="Assert total" enabled="true">
+              <stringProp name="JSON_PATH">$.totalTournaments</stringProp>
+              <stringProp name="EXPECTED_VALUE">1</stringProp>
+              <boolProp name="JSONVALIDATION">true</boolProp>
+              <boolProp name="EXPECT_NULL">false</boolProp>
+              <boolProp name="INVERT">false</boolProp>
+              <boolProp name="ISREGEX">false</boolProp>
+            </JSONPathAssertion>
+            <hashTree/>
+            <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="Assert first" enabled="true">
+              <stringProp name="JSON_PATH">$.totalFirstPlace</stringProp>
+              <stringProp name="EXPECTED_VALUE">1</stringProp>
+              <boolProp name="JSONVALIDATION">true</boolProp>
+              <boolProp name="EXPECT_NULL">false</boolProp>
+              <boolProp name="INVERT">false</boolProp>
+              <boolProp name="ISREGEX">false</boolProp>
+            </JSONPathAssertion>
+            <hashTree/>
+            <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="Assert second" enabled="true">
+              <stringProp name="JSON_PATH">$.totalSecondPlace</stringProp>
+              <stringProp name="EXPECTED_VALUE">0</stringProp>
+              <boolProp name="JSONVALIDATION">true</boolProp>
+              <boolProp name="EXPECT_NULL">false</boolProp>
+              <boolProp name="INVERT">false</boolProp>
+              <boolProp name="ISREGEX">false</boolProp>
+            </JSONPathAssertion>
+            <hashTree/>
+            <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="Assert third" enabled="true">
+              <stringProp name="JSON_PATH">$.totalThirdPlace</stringProp>
+              <stringProp name="EXPECTED_VALUE">0</stringProp>
+              <boolProp name="JSONVALIDATION">true</boolProp>
+              <boolProp name="EXPECT_NULL">false</boolProp>
+              <boolProp name="INVERT">false</boolProp>
+              <boolProp name="ISREGEX">false</boolProp>
+            </JSONPathAssertion>
+            <hashTree/>
+            <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="Assert unranked" enabled="true">
+              <stringProp name="JSON_PATH">$.totalUnrankedPlace</stringProp>
+              <stringProp name="EXPECTED_VALUE">0</stringProp>
+              <boolProp name="JSONVALIDATION">true</boolProp>
+              <boolProp name="EXPECT_NULL">false</boolProp>
+              <boolProp name="INVERT">false</boolProp>
+              <boolProp name="ISREGEX">false</boolProp>
+            </JSONPathAssertion>
+            <hashTree/>
+            <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="Assert solved" enabled="true">
+              <stringProp name="JSON_PATH">$.totalSolved</stringProp>
+              <stringProp name="EXPECTED_VALUE">1</stringProp>
+              <boolProp name="JSONVALIDATION">true</boolProp>
+              <boolProp name="EXPECT_NULL">false</boolProp>
+              <boolProp name="INVERT">false</boolProp>
+              <boolProp name="ISREGEX">false</boolProp>
+            </JSONPathAssertion>
+            <hashTree/>
+            <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="Assert unsolved" enabled="true">
+              <stringProp name="JSON_PATH">$.totalUnsolved</stringProp>
+              <stringProp name="EXPECTED_VALUE">0</stringProp>
+              <boolProp name="JSONVALIDATION">true</boolProp>
+              <boolProp name="EXPECT_NULL">false</boolProp>
+              <boolProp name="INVERT">false</boolProp>
+              <boolProp name="ISREGEX">false</boolProp>
+            </JSONPathAssertion>
+            <hashTree/>
+            <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="Assert perfect" enabled="true">
+              <stringProp name="JSON_PATH">$.totalPerfect</stringProp>
+              <stringProp name="EXPECTED_VALUE">0</stringProp>
+              <boolProp name="JSONVALIDATION">true</boolProp>
+              <boolProp name="EXPECT_NULL">false</boolProp>
+              <boolProp name="INVERT">false</boolProp>
+              <boolProp name="ISREGEX">false</boolProp>
+            </JSONPathAssertion>
+            <hashTree/>
+            <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="Assert correct answers" enabled="true">
+              <stringProp name="JSON_PATH">$.totalCorrectAnswers</stringProp>
+              <stringProp name="EXPECTED_VALUE">2</stringProp>
+              <boolProp name="JSONVALIDATION">true</boolProp>
+              <boolProp name="EXPECT_NULL">false</boolProp>
+              <boolProp name="INVERT">false</boolProp>
+              <boolProp name="ISREGEX">false</boolProp>
+            </JSONPathAssertion>
+            <hashTree/>
+            <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="Assert wrong answers" enabled="true">
+              <stringProp name="JSON_PATH">$.totalWrongAnswers</stringProp>
+              <stringProp name="EXPECTED_VALUE">2</stringProp>
+              <boolProp name="JSONVALIDATION">true</boolProp>
+              <boolProp name="EXPECT_NULL">false</boolProp>
+              <boolProp name="INVERT">false</boolProp>
+              <boolProp name="ISREGEX">false</boolProp>
+            </JSONPathAssertion>
+            <hashTree/>
+            <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="Assert score" enabled="true">
+              <stringProp name="JSON_PATH">$.score</stringProp>
+              <stringProp name="EXPECTED_VALUE">10.0</stringProp>
+              <boolProp name="JSONVALIDATION">true</boolProp>
+              <boolProp name="EXPECT_NULL">false</boolProp>
+              <boolProp name="INVERT">false</boolProp>
+              <boolProp name="ISREGEX">false</boolProp>
+            </JSONPathAssertion>
+            <hashTree/>
+            <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="Assert closed tournaments size" enabled="true">
+              <stringProp name="JSON_PATH">$.closedTournaments.size()</stringProp>
+              <stringProp name="EXPECTED_VALUE">1</stringProp>
+              <boolProp name="JSONVALIDATION">true</boolProp>
+              <boolProp name="EXPECT_NULL">false</boolProp>
+              <boolProp name="INVERT">false</boolProp>
+              <boolProp name="ISREGEX">false</boolProp>
+            </JSONPathAssertion>
+            <hashTree/>
+            <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="Assert tournament id" enabled="true">
+              <stringProp name="JSON_PATH">$.closedTournaments[0].id</stringProp>
+              <stringProp name="EXPECTED_VALUE">${__property(tournId)}</stringProp>
+              <boolProp name="JSONVALIDATION">true</boolProp>
+              <boolProp name="EXPECT_NULL">false</boolProp>
+              <boolProp name="INVERT">false</boolProp>
+              <boolProp name="ISREGEX">false</boolProp>
+            </JSONPathAssertion>
+            <hashTree/>
+            <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="Assert tournament title" enabled="true">
+              <stringProp name="JSON_PATH">$.closedTournaments[0].title</stringProp>
+              <stringProp name="EXPECTED_VALUE">Jmeter Test</stringProp>
+              <boolProp name="JSONVALIDATION">true</boolProp>
+              <boolProp name="EXPECT_NULL">false</boolProp>
+              <boolProp name="INVERT">false</boolProp>
+              <boolProp name="ISREGEX">false</boolProp>
+            </JSONPathAssertion>
+            <hashTree/>
+            <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="Assert tournament creator" enabled="true">
+              <stringProp name="JSON_PATH">$.closedTournaments[0].creator.name</stringProp>
+              <stringProp name="EXPECTED_VALUE">Demo Student</stringProp>
+              <boolProp name="JSONVALIDATION">true</boolProp>
+              <boolProp name="EXPECT_NULL">false</boolProp>
+              <boolProp name="INVERT">false</boolProp>
+              <boolProp name="ISREGEX">false</boolProp>
+            </JSONPathAssertion>
+            <hashTree/>
+            <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="Assert tournament ranking" enabled="true">
+              <stringProp name="JSON_PATH">$.closedTournaments[0].ranking</stringProp>
+              <stringProp name="EXPECTED_VALUE">1</stringProp>
+              <boolProp name="JSONVALIDATION">true</boolProp>
+              <boolProp name="EXPECT_NULL">false</boolProp>
+              <boolProp name="INVERT">false</boolProp>
+              <boolProp name="ISREGEX">false</boolProp>
+            </JSONPathAssertion>
+            <hashTree/>
+            <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="Assert tournament quiz" enabled="true">
+              <stringProp name="JSON_PATH">$.closedTournaments[0].solvedQuiz.statementQuiz.id</stringProp>
+              <stringProp name="EXPECTED_VALUE">${__property(quizId)}</stringProp>
+              <boolProp name="JSONVALIDATION">true</boolProp>
+              <boolProp name="EXPECT_NULL">false</boolProp>
+              <boolProp name="INVERT">false</boolProp>
+              <boolProp name="ISREGEX">false</boolProp>
+            </JSONPathAssertion>
             <hashTree/>
           </hashTree>
         </hashTree>
@@ -392,12 +543,14 @@ props.put(&quot;topicId&quot;, &quot;${topicId_1}&quot;);</stringProp>
         <hashTree/>
         <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="JDBC Request delete data" enabled="true">
           <stringProp name="dataSource">sampleReq</stringProp>
-          <stringProp name="query">DELETE FROM topics_tournaments WHERE topics_id=${__property(topicId)};
-DELETE FROM tournaments WHERE title LIKE &apos;Jmeter Tournament%&apos;;
-DELETE FROM topics WHERE name=&apos;Jmeter Topic&apos;;
-DELETE FROM users_course_executions WHERE course_executions_id=${__property(executionId)};
-DELETE FROM course_executions WHERE acronym=&apos;JMC1&apos;;
-DELETE FROM courses WHERE name=&apos;Jmeter Course&apos;;</stringProp>
+          <stringProp name="query">DELETE FROM question_answers WHERE quiz_answer_id IN (SELECT id FROM quiz_answers WHERE quiz_id IN (SELECT quiz_id FROM tournaments WHERE title LIKE &apos;Jmeter Test%&apos;));
+DELETE FROM quiz_answers WHERE quiz_id IN (SELECT quiz_id FROM tournaments WHERE title LIKE &apos;Jmeter Test%&apos;);
+DELETE FROM quiz_questions WHERE quiz_id IN (SELECT quiz_id FROM tournaments WHERE title LIKE &apos;Jmeter Test%&apos;);
+DELETE FROM topics_tournaments WHERE tournaments_id IN (SELECT id FROM tournaments WHERE title LIKE &apos;Jmeter Test%&apos;);
+DELETE FROM tournaments_enrolled_students WHERE enrolled_tournaments_id in
+  (SELECT id FROM tournaments WHERE title LIKE &apos;Jmeter Test%&apos;);
+DELETE FROM tournaments WHERE title LIKE &apos;Jmeter Test%&apos;;
+DELETE FROM quizzes WHERE type=&apos;TOURNAMENT&apos;;</stringProp>
           <stringProp name="queryArguments"></stringProp>
           <stringProp name="queryArgumentsTypes"></stringProp>
           <stringProp name="queryTimeout"></stringProp>

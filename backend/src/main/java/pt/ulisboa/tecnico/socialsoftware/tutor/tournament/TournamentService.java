@@ -28,8 +28,12 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+
+import java.util.*;
+
 import java.util.Comparator;
 import java.util.List;
+
 import java.util.stream.Collectors;
 
 
@@ -163,20 +167,7 @@ public class TournamentService {
         CourseExecution courseExecution = getCourseExecution(executionId);
 
         LocalDateTime now = DateHandler.now();
-
-        courseExecution.getTournaments().forEach(tourn -> {
-            if (tourn.getQuiz() == null &&
-                    tourn.getEnrolledStudents().size() > 1 &&
-                    tourn.getAvailableDate().isBefore(now)) {
-                generateTournamentQuiz(tourn.getId());
-                tourn.setState(Tournament.State.ONGOING);
-            }
-            if (!tourn.getState().equals(Tournament.State.CLOSED) &&
-                    (tourn.getConclusionDate().isBefore(now) ||
-                            tourn.getAvailableDate().isBefore(now) && tourn.getEnrolledStudents().size() <= 1)) {
-                tourn.setState(Tournament.State.CLOSED);
-            }
-        });
+        updateTournamentsState(courseExecution.getTournaments());
 
         return courseExecution.getTournaments().stream()
                 .filter(tourn -> !tourn.getState().equals(Tournament.State.CLOSED))
@@ -191,6 +182,24 @@ public class TournamentService {
                     return tournDto;
                 })
                 .collect(Collectors.toList());
+    }
+
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public void updateTournamentsState(Set<Tournament> tournaments) {
+        tournaments.forEach(tourn -> {
+            LocalDateTime now = DateHandler.now();
+            if (tourn.getQuiz() == null &&
+                    tourn.getEnrolledStudents().size() > 1 &&
+                    tourn.getAvailableDate().isBefore(now)) {
+                generateTournamentQuiz(tourn.getId());
+                tourn.setState(Tournament.State.ONGOING);
+            }
+            if (!tourn.getState().equals(Tournament.State.CLOSED) &&
+                    (tourn.getConclusionDate().isBefore(now) ||
+                            tourn.getAvailableDate().isBefore(now) && tourn.getEnrolledStudents().size() <= 1)) {
+                tourn.setState(Tournament.State.CLOSED);
+            }
+        });
     }
 
     private StatementQuizDto getUserQuizAnswer(int userId, Tournament tourn) {
