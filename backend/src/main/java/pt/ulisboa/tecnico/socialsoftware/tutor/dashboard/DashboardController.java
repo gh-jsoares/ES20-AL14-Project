@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RestController;
+import pt.ulisboa.tecnico.socialsoftware.tutor.dashboard.dto.DiscussionStatsDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.dashboard.dto.StudentQuestionStatsDto;
 
 import pt.ulisboa.tecnico.socialsoftware.tutor.dashboard.dto.TournamentDashDto;
@@ -27,6 +28,30 @@ public class DashboardController {
 
     public DashboardController(DashboardService dashboardService) {
         this.dashboardService = dashboardService;
+    }
+
+    @GetMapping("/discussions/stats")
+    @PreAuthorize("hasRole('ROLE_STUDENT')")
+    public DiscussionStatsDto getDiscussionsStats(Principal principal) {
+        User user = (User) ((Authentication) principal).getPrincipal();
+
+        if(user == null){
+            throw new TutorException(AUTHENTICATION_ERROR);
+        }
+
+        return dashboardService.getDiscussionStats(user.getId());
+    }
+
+    @GetMapping("/discussions/stats/toggle")
+    @PreAuthorize("hasRole('ROLE_STUDENT')")
+    public DiscussionStatsDto toggleDiscussionStats(Principal principal) {
+        User user = (User) ((Authentication) principal).getPrincipal();
+
+        if(user == null){
+            throw new TutorException(AUTHENTICATION_ERROR);
+        }
+
+        return dashboardService.toggleDiscussionStats(user.getId());
     }
 
     @GetMapping("/executions/{executionId}/dashboard/tournaments")
@@ -84,4 +109,3 @@ public class DashboardController {
     }
 
 }
-

@@ -4,6 +4,7 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.answer.domain.QuestionAnswer;
 import pt.ulisboa.tecnico.socialsoftware.tutor.answer.repository.QuestionAnswerRepository;
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecution;
+import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.dto.MessageDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.repository.DiscussionRepository;
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.dto.DiscussionDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.domain.Discussion;
@@ -26,6 +27,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -62,8 +64,9 @@ public class DiscussionService {
         QuestionAnswer questionAnswer = getQuestionAnswer(discussionDto.getId());
 
         checkDuplicates(student.getId(), questionId);
+        verifyIfAnsweredQuestion(questionAnswer, questionId, userId);
 
-        Discussion discussion = new Discussion(questionAnswer, student, question, discussionDto);
+        Discussion discussion = new Discussion(student, question, discussionDto);
         this.entityManager.persist(discussion);
         return new DiscussionDto(discussion);
     }
@@ -82,11 +85,11 @@ public class DiscussionService {
     }
 
     private User getTeacherById(Integer teacherId) {
-        User student = userRepository.findById(teacherId).orElseThrow(() -> new TutorException(ErrorMessage.USER_NOT_FOUND, teacherId));
-        if (student.getRole() != User.Role.TEACHER) {
+        User user = userRepository.findById(teacherId).orElseThrow(() -> new TutorException(ErrorMessage.USER_NOT_FOUND, teacherId));
+        if (user.getRole() != User.Role.TEACHER) {
             throw new TutorException(ErrorMessage.USER_IS_NOT_TEACHER, teacherId);
         }
-        return student;
+        return user;
     }
 
     private Question getQuestion(Integer questionId) {
@@ -103,12 +106,23 @@ public class DiscussionService {
         value = { SQLException.class },
         backoff = @Backoff(delay = 5000))
     @Transactional(isolation = Isolation.REPEATABLE_READ)
-    public DiscussionDto teacherAnswersStudent(Integer userId, Integer discussionId, DiscussionDto discussionDto) {
+    public DiscussionDto teacherAnswersStudent(Integer userId, Integer discussionId, MessageDto messageDto) {
         Discussion discussion = discussionRepository.findById(discussionId).orElseThrow(() -> new TutorException(ErrorMessage.DISCUSSION_NOT_FOUND, discussionId));
         User teacher = getTeacherById(userId);
 
-        discussion.updateTeacherAnswer(teacher, discussionDto);
+        discussion.updateTeacherAnswer(teacher, messageDto);
         return new DiscussionDto(discussion);
+    }
+
+    @Retryable(
+            value = { SQLException.class },
+            backoff = @Backoff(delay = 5000))
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public void openDiscussionToOtherStudents(Integer userId, Integer discussionId) {
+        Discussion discussion = discussionRepository.findById(discussionId).orElseThrow(() -> new TutorException(ErrorMessage.DISCUSSION_NOT_FOUND, discussionId));
+        User teacher = getTeacherById(userId);
+
+        discussion.openDiscussion(teacher);
     }
 
     @Retryable(
@@ -162,8 +176,43 @@ public class DiscussionService {
                 .map(QuizQuestion::getQuestion)
                 .map(Question::getDiscussions)
                 .flatMap(Collection::stream)
-                .filter(Discussion::needsAnswer)
                 .distinct()
+                .sorted(Comparator.comparing(Discussion::needsAnswer, Comparator.reverseOrder()))
                 .collect(Collectors.toList());
+    }
+
+    private void verifyIfAnsweredQuestion(QuestionAnswer questionAnswer, Integer questionId, Integer studentId) {
+        if (!questionAnswer.getQuizQuestion().getQuestion().getId().equals(questionId) ||
+                !questionAnswer.getQuizAnswer().getUser().getId().equals(studentId))
+            throw new TutorException(ErrorMessage.DISCUSSION_QUESTION_NOT_ANSWERED, studentId);
+    }
+
+    @Retryable(
+            value = { SQLException.class },
+            backoff = @Backoff(delay = 5000))
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public List<DiscussionDto> getDiscussionsQuestion(Integer userId, Integer questionId, Integer questionAnswerId) {
+        getStudentById(userId);
+        Question question = getQuestion(questionId);
+        QuestionAnswer questionAnswer = getQuestionAnswer(questionAnswerId);
+
+        verifyIfAnsweredQuestion(questionAnswer, questionId, userId);
+
+        return question.getDiscussions().stream()
+                .filter(Discussion::isVisibleToOtherStudents)
+                .map(DiscussionDto::new)
+                .collect(Collectors.toList());
+    }
+
+    @Retryable(
+            value = { SQLException.class },
+            backoff = @Backoff(delay = 5000))
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public DiscussionDto studentMakesNewQuestion(Integer userId, Integer discussionId, MessageDto messageDto) {
+        Discussion discussion = discussionRepository.findById(discussionId).orElseThrow(() -> new TutorException(ErrorMessage.DISCUSSION_NOT_FOUND, discussionId));
+        User student = getStudentById(userId);
+
+        discussion.updateStudentQuestion(student, messageDto);
+        return new DiscussionDto(discussion);
     }
 }

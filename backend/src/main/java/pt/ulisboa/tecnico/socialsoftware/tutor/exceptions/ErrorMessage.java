@@ -44,9 +44,12 @@ public enum ErrorMessage {
     COURSE_EXECUTION_MISMATCH("Course Execution %d does not have quiz %d"),
 
     DUPLICATE_DISCUSSION("Duplicate discussion"),
+    DISCUSSION_ALREADY_OPEN("This discussion is already open"),
+    DISCUSSION_CANT_BE_OPEN("You can't open this discussion"),
     DUPLICATE_TOPIC("Duplicate topic: %s"),
     DUPLICATE_USER("Duplicate user: %s"),
     DUPLICATE_COURSE_EXECUTION("Duplicate course execution: %s"),
+    NO_PERMISSION_TO_SEE_QUESTION_DISCUSSIONS("You don't have permission to see discussions of this question"),
 
     USERS_IMPORT_ERROR("Error importing users: %s"),
     QUESTIONS_IMPORT_ERROR("Error importing questions: %s"),
@@ -66,7 +69,6 @@ public enum ErrorMessage {
     CANNOT_CHANGE_ANSWERED_QUESTION("Can not change answered question"),
     QUIZ_HAS_ANSWERS("Quiz already has answers"),
     QUIZ_ALREADY_COMPLETED("Quiz already completed"),
-    DISCUSSION_ALREADY_ANSWERED("This request was already answered"),
     QUIZ_ALREADY_STARTED("Quiz was already started"),
     QUIZ_QUESTION_HAS_ANSWERS("Quiz question has answers"),
     FENIX_ERROR("Fenix Error"),
@@ -79,6 +81,7 @@ public enum ErrorMessage {
     DISCUSSION_MESSAGE_EMPTY("The message is an empty or blank string."),
     DISCUSSION_NOT_FOUND("Discussion not found with id %d"),
     DISCUSSION_QUESTION_NOT_ANSWERED("Student with id %d tried to create a discussion about a question he didn't answer"),
+    INVALID_STUDENT("Student with id: %d doesn't belong to this discussion"),
 
     TOURNAMENT_NOT_FOUND("Tournament not found with id %d"),
     TOURNAMENT_NOT_CONSISTENT("Field %s of tournament is not consistent"),

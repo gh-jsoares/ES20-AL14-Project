@@ -5,6 +5,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.domain.Discussion
+import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.domain.Message
 import spock.lang.Specification
 
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.User
@@ -13,7 +14,6 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.user.UserRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Question
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.repository.QuestionRepository
 
-import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.dto.DiscussionDto
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.repository.DiscussionRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.DiscussionService
 
@@ -133,16 +133,20 @@ class StudentSeesTeacherAnswerServiceSpockPerformanceTest extends Specification 
 
     def createDiscussion(it) {
         def discussion = new Discussion()
-        discussion.setId(it)
-        discussion.setMessageFromStudent(MESSAGE)
+        Message message = new Message()
+        message.setCounter(0)
+        message.setUser(students[it])
+        message.setMessage(MESSAGE)
+        discussion.addMessage(message)
+        message = new Message()
+        message.setCounter(1)
+        message.setUser(teacher)
+        message.setMessage(TEACHER_ANSWER)
+        discussion.addMessage(message)
         discussion.setQuestion(questions[it])
-        discussion.setStudent(students[it])
-        discussion.setTeacher(teacher)
-        discussion.setTeacherAnswer(TEACHER_ANSWER)
 
         discussions[it] = discussion
         discussionRepository.save(discussion)
-
     }
 
     @TestConfiguration

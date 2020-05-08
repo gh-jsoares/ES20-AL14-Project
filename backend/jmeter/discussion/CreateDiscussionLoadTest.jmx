@@ -228,14 +228,13 @@ insert into question_answers values (&apos;${range}&apos;, 40000, 7663, &apos;${
                 <collectionProp name="Arguments.arguments">
                   <elementProp name="" elementType="HTTPArgument">
                     <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                    <stringProp name="Argument.value">{&#xd;
+                    <stringProp name="Argument.value">{ &#xd;
 	&quot;id&quot;:${range},&#xd;
-	&quot;userId&quot;: 676,&#xd;
+	&quot;userId&quot;:676,&#xd;
 	&quot;questionId&quot;:${range},&#xd;
-	&quot;messageFromStudent&quot;: &quot;???&quot;,&#xd;
-	&quot;teacherAnswer&quot;: null,&#xd;
-	&quot;userName&quot;:&quot;Demo-Student&quot;&#xd;
+	&quot;messages&quot;:[{&quot;message&quot;: &quot;studentQuestion&quot;, &quot;userName&quot;: &quot;Demo-Student&quot;}]&#xd;
 }&#xd;
+&#xd;
 </stringProp>
                     <stringProp name="Argument.metadata">=</stringProp>
                   </elementProp>
@@ -369,6 +368,7 @@ insert into question_answers values (&apos;${range}&apos;, 40000, 7663, &apos;${
         <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="JDBC Request" enabled="true">
           <stringProp name="dataSource">sampleReq</stringProp>
           <stringProp name="query">update users set enrolled_courses_acronyms=&apos;&apos; where username=&apos;Demo-Student&apos;;
+delete from messages;
 delete from discussions where student_id=676;
 delete from question_answers where id between 100000 and 101001;
 delete from quiz_answers where id between 100000 and 101001;

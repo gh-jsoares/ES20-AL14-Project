@@ -5,6 +5,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.domain.Discussion
+import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.domain.Message
 import spock.lang.Specification
 
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.User
@@ -132,13 +133,16 @@ class TeacherSeesStudentRequestServiceSpockPerformanceTest extends Specification
     def createDiscussion(it) {
         def discussion = new Discussion()
         discussion.setId(it)
-        discussion.setMessageFromStudent(MESSAGE)
+        Message message = new Message()
+        message.setCounter(0)
+        message.setUser(students[it])
+        message.setMessage(MESSAGE)
+        discussion.addMessage(message)
+        discussion.setNeedsAnswer(true)
         discussion.setQuestion(questions[it])
-        discussion.setStudent(students[it])
 
         discussions[it] = discussion
         discussionRepository.save(discussion)
-
     }
 
     @TestConfiguration

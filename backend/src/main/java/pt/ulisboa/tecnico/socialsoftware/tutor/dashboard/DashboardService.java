@@ -12,7 +12,9 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.answer.domain.QuizAnswer;
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecution;
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecutionRepository;
 import pt.ulisboa.tecnico.socialsoftware.tutor.dashboard.dto.ClosedTournamentDto;
+import pt.ulisboa.tecnico.socialsoftware.tutor.dashboard.dto.DiscussionStatsDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.dashboard.dto.TournamentDashDto;
+import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.domain.Discussion;
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage;
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Option;
@@ -200,5 +202,49 @@ public class DashboardService {
             return true;
         User user = userRepository.findById(userId).orElseThrow(() -> new TutorException(USER_NOT_FOUND, userId));
         return user.getStudentQuestionStatsVisibility();
+    }
+
+    @Retryable(
+            value = { SQLException.class },
+            backoff = @Backoff(delay = 5000))
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public DiscussionStatsDto getDiscussionStats(Integer userId) {
+        User student = getStudentById(userId);
+
+        return getDiscussionStatsDto(student);
+    }
+
+    @Retryable(
+            value = { SQLException.class },
+            backoff = @Backoff(delay = 5000))
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public DiscussionStatsDto toggleDiscussionStats(Integer userId){
+        User student = getStudentById(userId);
+        student.toggleDiscussionsPrivacy();
+
+        return getDiscussionStatsDto(student);
+    }
+
+    private DiscussionStatsDto getDiscussionStatsDto(User student) {
+        DiscussionStatsDto discussionStatsDto = new DiscussionStatsDto();
+
+        int discussionsNumber = student.getDiscussions().size();
+
+        int publicDiscussionsNumber = (int) student.getDiscussions().stream()
+                .filter(Discussion::isVisibleToOtherStudents)
+                .count();
+
+        discussionStatsDto.setAreDiscussionsPublic(student.getDiscussionsPrivacy());
+        discussionStatsDto.setDiscussionsNumber(discussionsNumber);
+        discussionStatsDto.setPublicDiscussionsNumber(publicDiscussionsNumber);
+        return discussionStatsDto;
+    }
+
+    private User getStudentById(Integer studentId) {
+        User student = userRepository.findById(studentId).orElseThrow(() -> new TutorException(ErrorMessage.USER_NOT_FOUND, studentId));
+        if (student.getRole() != User.Role.STUDENT) {
+            throw new TutorException(ErrorMessage.USER_IS_NOT_STUDENT, studentId);
+        }
+        return student;
     }
 }

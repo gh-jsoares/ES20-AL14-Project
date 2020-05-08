@@ -29,6 +29,7 @@ import CreateQuizzesView from '@/views/student/CreateQuizzesView.vue';
 import CoursesView from '@/views/admin/Courses/CoursesView.vue';
 import DiscussionsView from '@/views/teacher/discussions/DiscussionsView.vue';
 import StudentDiscussionsView from '@/views/student/discussion/StudentDiscussionsView.vue';
+import DiscussionsStatsView from '@/views/student/dashboard/DiscussionsStatsView.vue';
 
 import OpenTournamentsView from '@/views/student/tournament/OpenTournamentsView.vue';
 import CreateTournamentView from '@/views/student/tournament/CreateTournamentView.vue';
@@ -219,7 +220,16 @@ let router = new Router({
           name: 'discussions',
           component: StudentDiscussionsView,
           meta: {
-            title: process.env.VUE_APP_NAME + ' - Scan',
+            title: process.env.VUE_APP_NAME + ' - Discussions',
+            requiredAuth: 'Student'
+          }
+        },
+        {
+          path: 'discussions-stats',
+          name: 'discussions-stats',
+          component: DiscussionsStatsView,
+          meta: {
+            title: process.env.VUE_APP_NAME + ' - Discussions Stats',
             requiredAuth: 'Student'
           }
         },

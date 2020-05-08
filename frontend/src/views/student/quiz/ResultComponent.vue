@@ -24,8 +24,16 @@
         class="question-content"
         v-html="convertMarkDown(question.content, question.image)"
       ></div>
+      <div
+        @click="getQuestionDiscussions()"
+        v-if="!discussionsDiv"
+        class="square"
+        data-cy="getDiscussionsButton"
+      >
+        <i class="fas fa-comment-alt mt-3"></i>
+      </div>
       <div @click="createDiscussion" class="square" data-cy="Open Discussion">
-        <i class="fas fa-comment-alt mt-3" />
+        <i class="fas fa-question" />
       </div>
       <div @click="increaseOrder" class="square">
         <i
@@ -63,6 +71,52 @@
         />
       </li>
     </ul>
+    <v-toolbar
+      class="mt-12"
+      v-if="discussionsDiv && discussions[0]"
+      color="teal"
+      dark
+    >
+      <v-toolbar-title>Discussions about this question</v-toolbar-title>
+    </v-toolbar>
+    <v-toolbar class="mt-12" v-else-if="discussionsDiv" color="teal" dark>
+      <v-toolbar-title
+        >There are no discussions for this question.</v-toolbar-title
+      >
+    </v-toolbar>
+    <v-list v-if="discussionsDiv" data-cy="questionDiscussions">
+      <v-list-group
+        v-for="discussion in discussions"
+        :key="discussion.messages[0].userName"
+        v-model="discussion.active"
+      >
+        <template v-slot:activator>
+          <v-list-item-title
+            data-cy="visibleDiscussion"
+            v-text="
+              discussion.messages[0].userName +
+                ' asked ' +
+                discussion.messages[0].message
+            "
+          ></v-list-item-title>
+        </template>
+
+        <v-list-item
+          disabled
+          v-for="message in discussion.messages.slice(
+            1,
+            discussion.messages.length
+          )"
+          :key="message.message"
+        >
+          <v-list-item-content>
+            <v-list-item-title
+              v-text="message.userName + ' answered ' + message.message"
+            ></v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+      </v-list-group>
+    </v-list>
     <create-discussion-dialog
       v-if="createDiscussionDialog"
       v-model="createDiscussionDialog"
@@ -85,6 +139,8 @@ import StatementAnswer from '@/models/statement/StatementAnswer';
 import StatementCorrectAnswer from '@/models/statement/StatementCorrectAnswer';
 import Image from '@/models/management/Image';
 import CreateDiscussionDialog from '@/views/student/discussion/CreateDiscussionDialog.vue';
+import RemoteServices from '@/services/RemoteServices';
+import { Discussion } from '@/models/management/Discussion';
 
 @Component({
   components: {
@@ -97,9 +153,11 @@ export default class ResultComponent extends Vue {
   @Prop(StatementCorrectAnswer) readonly correctAnswer!: StatementCorrectAnswer;
   @Prop(StatementAnswer) readonly answer!: StatementAnswer;
   @Prop() readonly questionNumber!: number;
+  @Prop() discussionsDiv!: boolean;
   hover: boolean = false;
   optionLetters: string[] = ['A', 'B', 'C', 'D'];
   createDiscussionDialog: boolean = false;
+  discussions: Discussion[] = [];
 
   @Emit()
   increaseOrder() {
@@ -125,6 +183,18 @@ export default class ResultComponent extends Vue {
 
   discussionCreated() {
     this.createDiscussionDialog = false;
+  }
+
+  async getQuestionDiscussions() {
+    try {
+      this.discussions = await RemoteServices.getQuestionDiscussions(
+        this.question.questionId,
+        this.answer.questionAnswerId
+      );
+      this.discussionsDiv = true;
+    } catch (error) {
+      await this.$store.dispatch('error', error);
+    }
   }
 }
 </script>
