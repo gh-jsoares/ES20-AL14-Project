@@ -134,7 +134,7 @@
               <v-list-item-action>
                 <v-icon>mdi-crown</v-icon>
               </v-list-item-action>
-              <v-list-item-content>
+              <v-list-item-content data-cy="tournamentsDashTab">
                 <v-list-item-title>Tournaments</v-list-item-title>
               </v-list-item-content>
             </v-list-item>
