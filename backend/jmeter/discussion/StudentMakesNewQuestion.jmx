@@ -189,7 +189,11 @@ insert into messages values (2, 2, &apos;teacher_answer&apos;, 1, 677);</stringP
               <collectionProp name="Arguments.arguments">
                 <elementProp name="" elementType="HTTPArgument">
                   <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                  <stringProp name="Argument.value">{&quot;message&quot;:&quot;student_question2&quot;,&quot;userName&quot;:&quot;Demo-Student&quot;}</stringProp>
+                  <stringProp name="Argument.value">{ &#xd;
+	&quot;message&quot;:&quot;student_question2&quot;,&#xd;
+	&quot;userName&quot;:&quot;Demo-Student&quot;&#xd;
+}&#xd;
+</stringProp>
                   <stringProp name="Argument.metadata">=</stringProp>
                 </elementProp>
               </collectionProp>
