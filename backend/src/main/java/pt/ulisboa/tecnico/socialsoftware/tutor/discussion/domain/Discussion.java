@@ -25,7 +25,7 @@ public class Discussion {
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "discussion", orphanRemoval=true)
     private List<Message> messages = new ArrayList<>();
 
-    @Column(nullable = false)
+    @Column(columnDefinition = "boolean default false")
     private boolean isVisibleToOtherStudents;
 
     @ManyToOne
