@@ -13,17 +13,17 @@ describe('Student changes privacy of tournament stats walkthrough', () => {
 
   it('make tournament stats information private and then make it public', () => {
     cy.log('try to make tournament stats private');
-    cy.contains('Make Private').parent().click();
-    cy.contains('Make Public');
+    cy.contains('Private').parent().click();
+    cy.contains('Public');
     cy.log('logout and log back in');
     cy.contains('Logout').click();
     cy.demoStudentLogin();
     cy.log('got to tournaments dashboard and check if its still private');
     cy.goToTournamentsDashboard();
-    cy.contains('Make Public');
+    cy.contains('Public');
     cy.log('try to make tournament stats public');
-    cy.contains('Make Public').parent().click();
-    cy.contains('Make Private');
+    cy.contains('Public').parent().click();
+    cy.contains('Private');
   });
 
 });

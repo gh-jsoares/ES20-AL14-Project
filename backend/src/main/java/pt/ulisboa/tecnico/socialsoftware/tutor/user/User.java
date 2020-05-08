@@ -53,7 +53,7 @@ public class User implements UserDetails, DomainEntity {
     private Integer numberOfCorrectStudentAnswers;
 
 
-    @Column(columnDefinition = "boolean default false")
+    @Column(columnDefinition = "boolean default true")
     private boolean anonymizeTournamentStats;
 
     @Column(name = "student_questions_stats_visibility", columnDefinition = "boolean default true")

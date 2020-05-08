@@ -7,17 +7,18 @@
       </v-col>
       <v-col>
         <v-card
-          width="165"
+          width="135"
           color="white"
           height="50"
           outlined
           raised
+          class="px-3 mx-5 switch-private"
           data-cy="privacySwitch"
         >
           <v-switch
             v-model="privacySetting"
             class="ma-2"
-            :label="privacySetting ? 'Make Public' : 'Make Private'"
+            :label="privacySetting ? 'Public' : 'Private'"
             @change="changePrivacySetting()"
           ></v-switch>
         </v-card>
@@ -173,7 +174,7 @@ export default class TournamentsTabView extends Vue {
     await this.$store.dispatch('loading');
     try {
       this.stats = await RemoteServices.getTournamentsDashboardStats();
-      this.privacySetting = this.stats.anonimize;
+      this.privacySetting = !this.stats.anonimize;
     } catch (error) {
       await this.$store.dispatch('error', error);
     }
@@ -330,6 +331,10 @@ ul {
 
   .list-row:hover {
     background-color: #deedf8;
+  }
+
+  .switch-private {
+    display: inline-block;
   }
 }
 </style>
