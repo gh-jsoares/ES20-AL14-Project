@@ -78,7 +78,9 @@ update users set enrolled_courses_acronyms=&apos;DemoCourse&apos; where username
 insert into quiz_answers values (100000,&apos;1000-01-01 00:00:00&apos;, false, 5370, 676, false);
 insert into quiz_questions values (100000, 4, 1800, 5370);
 insert into question_answers values (100000, 100000, 7663, 100000, 100000);
-insert into discussions values (1, &apos;???&apos;, &apos;yes&apos;, 1800, 676, 677);</stringProp>
+insert into discussions values (1, false, false, 1800, 676);
+insert into messages values (1, 0, &apos;studentQuestion&apos;, 1, 676);
+insert into messages values (2, 1, &apos;teacherAnswer&apos;, 1, 677);</stringProp>
           <stringProp name="queryArguments"></stringProp>
           <stringProp name="queryArgumentsTypes"></stringProp>
           <stringProp name="variableNames"></stringProp>
@@ -206,8 +208,8 @@ insert into discussions values (1, &apos;???&apos;, &apos;yes&apos;, 1800, 676, 
             </JSONPathAssertion>
             <hashTree/>
             <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="Assert message from student" enabled="true">
-              <stringProp name="JSON_PATH">$[0].messageFromStudent</stringProp>
-              <stringProp name="EXPECTED_VALUE">???</stringProp>
+              <stringProp name="JSON_PATH">$[0].messages[0].message</stringProp>
+              <stringProp name="EXPECTED_VALUE">studentQuestion</stringProp>
               <boolProp name="JSONVALIDATION">true</boolProp>
               <boolProp name="EXPECT_NULL">false</boolProp>
               <boolProp name="INVERT">false</boolProp>
@@ -215,7 +217,7 @@ insert into discussions values (1, &apos;???&apos;, &apos;yes&apos;, 1800, 676, 
             </JSONPathAssertion>
             <hashTree/>
             <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="Assert teacher name" enabled="true">
-              <stringProp name="JSON_PATH">$[0].teacherName</stringProp>
+              <stringProp name="JSON_PATH">$[0].messages[1].userName</stringProp>
               <stringProp name="EXPECTED_VALUE">Demo-Teacher</stringProp>
               <boolProp name="JSONVALIDATION">true</boolProp>
               <boolProp name="EXPECT_NULL">false</boolProp>
@@ -224,8 +226,8 @@ insert into discussions values (1, &apos;???&apos;, &apos;yes&apos;, 1800, 676, 
             </JSONPathAssertion>
             <hashTree/>
             <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="Assert teacher answer" enabled="true">
-              <stringProp name="JSON_PATH">$[0].teacherAnswer</stringProp>
-              <stringProp name="EXPECTED_VALUE">yes</stringProp>
+              <stringProp name="JSON_PATH">$[0].messages[1].message</stringProp>
+              <stringProp name="EXPECTED_VALUE">teacherAnswer</stringProp>
               <boolProp name="JSONVALIDATION">true</boolProp>
               <boolProp name="EXPECT_NULL">false</boolProp>
               <boolProp name="INVERT">false</boolProp>
@@ -349,6 +351,7 @@ update users set enrolled_courses_acronyms=&apos;&apos; where username=&apos;Dem
 delete from question_answers where id=100000;
 delete from quiz_answers where id=100000;
 delete from quiz_questions where id=100000;
+delete from messages;
 delete from discussions where id = 1;</stringProp>
           <stringProp name="queryArguments"></stringProp>
           <stringProp name="queryArgumentsTypes"></stringProp>

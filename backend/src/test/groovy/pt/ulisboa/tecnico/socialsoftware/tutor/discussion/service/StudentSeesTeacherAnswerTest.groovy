@@ -14,7 +14,9 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseService
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.DiscussionService
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.domain.Discussion
+import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.domain.Message
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.dto.DiscussionDto
+import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.dto.MessageDto
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.repository.DiscussionRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException
@@ -100,7 +102,11 @@ class StudentSeesTeacherAnswerTest extends Specification {
 
         questionRepository.save(question)
         DiscussionDto discussionDto = new DiscussionDto()
-        discussionDto.setMessageFromStudent(MESSAGE)
+        def messages = new ArrayList<MessageDto>()
+        def message = new MessageDto()
+        message.setMessage(MESSAGE)
+        messages.add(message)
+        discussionDto.setMessages(messages)
 
         teacher = new User('teacher', TEACHER_NAME, 2, User.Role.TEACHER)
         teacher.getCourseExecutions().add(courseExecution)
@@ -108,13 +114,18 @@ class StudentSeesTeacherAnswerTest extends Specification {
         userRepository.save(teacher)
 
         courseExecution.addUser(teacher)
-        discussionDto.setTeacherName(teacher.getUsername())
+        message.setUserName(teacher.getUsername())
     }
 
     def "student has two discussions with answers"() {
         given: "two answered discussions"
         DiscussionDto discussionDto = new DiscussionDto()
-        discussionDto.setMessageFromStudent(MESSAGE)
+        def messages = new ArrayList<MessageDto>()
+        def message = new MessageDto()
+        message.setMessage(MESSAGE)
+        message.setUserName(STUDENT_NAME)
+        messages.add(message)
+        discussionDto.setMessages(messages)
 
         createBasicDiscussion(student,question, discussionDto)
         createBasicDiscussion(student,question, discussionDto)
@@ -124,26 +135,34 @@ class StudentSeesTeacherAnswerTest extends Specification {
 
         then: "the returned data is correct"
         result.size() == 2
-        result.get(0).teacherName == teacher.getUsername()
-        result.get(0).messageFromStudent == MESSAGE
-        result.get(0).teacherAnswer == TEACHER_ANSWER
-        result.get(1).teacherName == teacher.getUsername()
-        result.get(1).messageFromStudent == MESSAGE
-        result.get(1).teacherAnswer == TEACHER_ANSWER
+        result.get(0).getMessages().size() == 2
+        result.get(1).getMessages().size() == 2
+        result.get(0).getMessages().get(0).getMessage() == MESSAGE
+        result.get(1).getMessages().get(0).getMessage() == MESSAGE
+        result.get(0).getMessages().get(1).getUserName() == teacher.getUsername()
+        result.get(0).getMessages().get(1).getMessage() == TEACHER_ANSWER
+        result.get(1).getMessages().get(1).getUserName() == teacher.getUsername()
+        result.get(1).getMessages().get(1).getMessage() == TEACHER_ANSWER
     }
 
     def "student has one discussion without answer"() {
         given: "one unanswered discussion"
         DiscussionDto discussionDto = new DiscussionDto()
-        discussionDto.setMessageFromStudent(MESSAGE)
-        new Discussion(questionAnswer, student, question, discussionDto)
+        def messages = new ArrayList<MessageDto>()
+        def message = new MessageDto()
+        message.setMessage(MESSAGE)
+        message.setUserName(STUDENT_NAME)
+        messages.add(message)
+        discussionDto.setMessages(messages)
+        new Discussion(student, question, discussionDto)
 
         when: "search for student discussions"
         def result = discussionService.getDiscussionStudent(student.getId())
 
         then: "the returned data is correct"
         result.size() == 1
-        result.get(0).getTeacherAnswer() == null
+        result.get(0).getMessages().size() == 1
+        userRepository.findByUsername(result.get(0).getMessages().get(0).getUserName()).getRole() == User.Role.STUDENT
     }
 
     def "student doesn't have discussions"() {
@@ -173,9 +192,11 @@ class StudentSeesTeacherAnswerTest extends Specification {
     }
 
     def createBasicDiscussion(User student, Question question, DiscussionDto discussionDto) {
-        Discussion discussion = new Discussion(questionAnswer, student, question, discussionDto)
-        discussion.setTeacherAnswer(TEACHER_ANSWER)
-        discussion.setTeacher(teacher)
+        Discussion discussion = new Discussion(student, question, discussionDto)
+        MessageDto messageDto = new MessageDto()
+        messageDto.setMessage(TEACHER_ANSWER)
+        messageDto.setUserName(TEACHER_NAME)
+        new Message(discussion, teacher, messageDto)
         discussionRepository.save(discussion)
 
         student.addDiscussion(discussion)

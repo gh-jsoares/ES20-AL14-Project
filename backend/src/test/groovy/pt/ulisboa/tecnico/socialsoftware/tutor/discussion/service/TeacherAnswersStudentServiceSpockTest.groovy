@@ -15,6 +15,7 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseService
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.DiscussionService
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.domain.Discussion
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.dto.DiscussionDto
+import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.dto.MessageDto
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.repository.DiscussionRepository
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Question
@@ -102,92 +103,72 @@ class TeacherAnswersStudentServiceSpockTest extends Specification {
         questionAnswer = new QuestionAnswer(quizAnswer, quizQuestion,  10, null,  0)
 
         DiscussionDto discussionDto = new DiscussionDto()
-        discussionDto.setMessageFromStudent(MESSAGE)
+        def messages = new ArrayList<MessageDto>()
+        def message = new MessageDto()
+        message.setMessage(MESSAGE)
+        messages.add(message)
+        discussionDto.setMessages(messages)
 
         questionRepository.save(question)
         userRepository.save(student)
 
-        discussion = new Discussion(questionAnswer, student, question, discussionDto)
+        discussion = new Discussion(student, question, discussionDto)
         discussionRepository.save(discussion)
     }
 
-    def discussionDtoCreation(int id, String message) {
-        def discussionDto = new DiscussionDto()
-        discussionDto.setId(id)
-        discussionDto.setTeacherAnswer(message)
-        return discussionDto
+    def messageDtoCreation(String name, String message) {
+        def messageDto = new MessageDto()
+        messageDto.setUserName(name)
+        messageDto.setMessage(message)
+        return messageDto
     }
 
     def "teacher from the same course execution answers student and there is no answer from teacher yet"() {
-        given: "a discussionDto with an answer from a teacher from the same course execution"
-        def discussionDto = discussionDtoCreation(discussion.getId(), TEACHER_ANSWER)
+        given: "a messageDto with an answer from a teacher from the same course execution"
+        def messageDto = messageDtoCreation(TEACHER_NAME, TEACHER_ANSWER)
 
         def teacher = new User('teacher', TEACHER_NAME, 2, User.Role.TEACHER)
         teacher.getCourseExecutions().add(courseExecution)
         courseExecution.addUser(teacher)
-        discussionDto.setTeacherName(teacher.getUsername())
         userRepository.save(teacher)
 
         when: "adding the answer from the teacher to the discussion"
-        discussionService.teacherAnswersStudent(teacher.getId(), discussionDto.getId(), discussionDto)
+        discussionService.teacherAnswersStudent(teacher.getId(), discussion.getId(), messageDto)
 
-        then: "the data are correct"
+        then: "the data is correct"
         discussionRepository.count() == 1L
         def result = discussionRepository.findAll().get(0)
-        result.getTeacherAnswer() == TEACHER_ANSWER
-        result.getTeacher() == teacher
-        result.getTeacher().getRole() == User.Role.TEACHER
-        result.getMessageFromStudent() == MESSAGE
-        result.getStudent() == student
+        result.getMessages().get(1).getMessage() == TEACHER_ANSWER
+        result.getMessages().get(1).getUser() == teacher
+        result.getMessages().get(1).getUser().getRole() == User.Role.TEACHER
+        result.getMessages().get(0).getMessage() == MESSAGE
+        result.getMessages().get(0).getUser() == student
     }
 
     def "the teacher is not in the course execution that has the question the student has a clarification request about"() {
         given: "a discussionDto with an answer from a teacher that is not in the same course execution"
-        def discussionDto = discussionDtoCreation(discussion.getId(), TEACHER_ANSWER)
+        def messageDto = messageDtoCreation(TEACHER_NAME, TEACHER_ANSWER)
 
         def teacher = new User('teacher', TEACHER_NAME, 2, User.Role.TEACHER)
-        discussionDto.setTeacherName(teacher.getUsername())
         userRepository.save(teacher)
 
         when: "adding the answer from the teacher"
-        discussionService.teacherAnswersStudent(teacher.getId(), discussionDto.getId(), discussionDto)
+        discussionService.teacherAnswersStudent(teacher.getId(), discussion.getId(), messageDto)
 
         then: "an exception is thrown"
         def exception = thrown(TutorException)
         exception.errorMessage == ErrorMessage.TEACHER_NOT_IN_COURSE_EXECUTION
     }
 
-    def "teacher answers student and there is already an answer from a teacher"() {
-        given: "a discussionDto with an answer from a teacher"
-        def discussionDto = discussionDtoCreation(discussion.getId(), TEACHER_ANSWER)
-
-        def teacher = new User('teacher', TEACHER_NAME, 2, User.Role.TEACHER)
-        teacher.getCourseExecutions().add(courseExecution)
-        discussionDto.setTeacherName(teacher.getUsername())
-        userRepository.save(teacher)
-
-        and: "the discussion was already answered"
-        discussion.setTeacherAnswer(TEACHER_ANSWER)
-        discussion.setTeacher(teacher)
-
-        when: "adding the answer from the teacher"
-        discussionService.teacherAnswersStudent(teacher.getId(), discussionDto.getId(), discussionDto)
-
-        then: "an exception is thrown"
-        def exception = thrown(TutorException)
-        exception.errorMessage == ErrorMessage.DISCUSSION_ALREADY_ANSWERED
-    }
-
     def "non-teacher user tries to answer to a discussion"() {
-        given: "a discussionDto with an answer from a teacher"
-        def discussionDto = discussionDtoCreation(discussion.getId(), TEACHER_ANSWER)
+        given: "a messageDto with an answer from a teacher"
+        def messageDto = messageDtoCreation(TEACHER_NAME, TEACHER_ANSWER)
 
         def teacher = new User('admin', TEACHER_NAME, 2, User.Role.STUDENT)
-        discussionDto.setTeacherName(student.getUsername())
         userRepository.save(teacher)
 
         when: "adding the answer from the teacher"
-        discussionService.teacherAnswersStudent(teacher.getId(), discussionDto.getId(), discussionDto)
+        discussionService.teacherAnswersStudent(teacher.getId(), discussion.getId(), messageDto)
 
         then: "an exception is thrown"
         def exception = thrown(TutorException)
@@ -195,16 +176,15 @@ class TeacherAnswersStudentServiceSpockTest extends Specification {
     }
 
     def "teacher tries to answer a non-existing discussion"() {
-        given: "a discussionDto with an answer from a teacher from the same course execution"
-        def discussionDto = discussionDtoCreation(-1, TEACHER_ANSWER)
+        given: "a messageDto with an answer from a teacher from the same course execution"
+        def messageDto = messageDtoCreation(TEACHER_NAME, TEACHER_ANSWER)
 
         def teacher = new User('teacher', TEACHER_NAME, 2, User.Role.TEACHER)
         teacher.getCourseExecutions().add(courseExecution)
-        discussionDto.setTeacherName(teacher.getUsername())
         userRepository.save(teacher)
 
         when: "adding the answer from the teacher"
-        discussionService.teacherAnswersStudent(teacher.getId(), discussionDto.getId(), discussionDto)
+        discussionService.teacherAnswersStudent(teacher.getId(), -1, messageDto)
 
         then: "an exception is thrown"
         def exception = thrown(TutorException)
@@ -212,12 +192,11 @@ class TeacherAnswersStudentServiceSpockTest extends Specification {
     }
 
     def "non-existent teacher tries to answer"() {
-        given: "a discussionDto"
-        def discussionDto = discussionDtoCreation(discussion.getId(), TEACHER_ANSWER)
-        discussionDto.setTeacherName(NON_EXISTING_TEACHER)
+        given: "a messageDto"
+        def messageDto = messageDtoCreation(NON_EXISTING_TEACHER, TEACHER_ANSWER)
 
         when: "adding the answer from the teacher"
-        discussionService.teacherAnswersStudent(INVALID_ID, discussionDto.getId(), discussionDto)
+        discussionService.teacherAnswersStudent(INVALID_ID, discussion.getId(), messageDto)
 
         then: "an exception is thrown"
         def exception = thrown(TutorException)
@@ -227,15 +206,14 @@ class TeacherAnswersStudentServiceSpockTest extends Specification {
     @Unroll
     def "invalid values answer=#answer, username=#username"() {
         given: "a discussionDto"
-        def discussionDto = discussionDtoCreation(discussion.getId(), answer)
+        def messageDto = messageDtoCreation(TEACHER_NAME, answer)
 
         def teacher = new User('teacher', TEACHER_NAME, 2, User.Role.TEACHER)
         teacher.getCourseExecutions().add(courseExecution)
-        discussionDto.setTeacherName(username)
         userRepository.save(teacher)
 
         when: "adding the answer from the teacher"
-        discussionService.teacherAnswersStudent(teacher.getId(), discussionDto.getId(), discussionDto)
+        discussionService.teacherAnswersStudent(teacher.getId(), discussion.getId(), messageDto)
 
         then: "an exception is thrown"
         def exception = thrown(TutorException)

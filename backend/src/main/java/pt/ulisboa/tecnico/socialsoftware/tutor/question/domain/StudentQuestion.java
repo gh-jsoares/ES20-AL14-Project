@@ -95,7 +95,7 @@ public class StudentQuestion {
 
         populateCreationDate(studentQuestionDto);
         populateImage(studentQuestionDto);
-        populateOptions(studentQuestionDto);
+        populateOptions(studentQuestionDto.getOptions());
     }
 
     private void generateKeys() {
@@ -327,9 +327,9 @@ public class StudentQuestion {
         }
     }
 
-    private void populateOptions(StudentQuestionDto studentQuestionDto) {
+    private void populateOptions(Set<OptionDto> options) {
         int index = 0;
-        for (OptionDto optionDto : studentQuestionDto.getOptions()) {
+        for (OptionDto optionDto : options) {
             optionDto.setSequence(index++);
             Option option = new Option(optionDto);
             this.options.add(option);

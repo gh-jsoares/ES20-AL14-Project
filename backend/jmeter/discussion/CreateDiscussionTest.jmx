@@ -189,9 +189,7 @@ insert into question_answers values (61000, 40000, 7663, 15000, 40000);</stringP
 	&quot;id&quot;:61000,&#xd;
 	&quot;userId&quot;:676,&#xd;
 	&quot;questionId&quot;:1800,&#xd;
-	&quot;messageFromStudent&quot;: &quot;???&quot;,&#xd;
-	&quot;teacherAnswer&quot;: null,&#xd;
-	&quot;userName&quot;:&quot;Demo-Student&quot;&#xd;
+	&quot;messages&quot;:[{&quot;message&quot;: &quot;studentQuestion&quot;, &quot;userName&quot;: &quot;Demo-Student&quot;}]&#xd;
 }&#xd;
 </stringProp>
                   <stringProp name="Argument.metadata">=</stringProp>
@@ -223,8 +221,8 @@ insert into question_answers values (61000, 40000, 7663, 15000, 40000);</stringP
             </JSONPathAssertion>
             <hashTree/>
             <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="Assert message from student" enabled="true">
-              <stringProp name="JSON_PATH">$.messageFromStudent</stringProp>
-              <stringProp name="EXPECTED_VALUE">???</stringProp>
+              <stringProp name="JSON_PATH">$.messages[0].message</stringProp>
+              <stringProp name="EXPECTED_VALUE">studentQuestion</stringProp>
               <boolProp name="JSONVALIDATION">true</boolProp>
               <boolProp name="EXPECT_NULL">false</boolProp>
               <boolProp name="INVERT">false</boolProp>
@@ -232,7 +230,7 @@ insert into question_answers values (61000, 40000, 7663, 15000, 40000);</stringP
             </JSONPathAssertion>
             <hashTree/>
             <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="Assert student name" enabled="true">
-              <stringProp name="JSON_PATH">$.studentName</stringProp>
+              <stringProp name="JSON_PATH">$.messages[0].userName</stringProp>
               <stringProp name="EXPECTED_VALUE">Demo-Student</stringProp>
               <boolProp name="JSONVALIDATION">true</boolProp>
               <boolProp name="EXPECT_NULL">false</boolProp>
@@ -356,6 +354,7 @@ insert into question_answers values (61000, 40000, 7663, 15000, 40000);</stringP
 delete from question_answers where id=61000;
 delete from quiz_answers where id=15000;
 delete from quiz_questions where id=40000;
+delete from messages;
 delete from discussions where student_id=676;</stringProp>
           <stringProp name="queryArguments"></stringProp>
           <stringProp name="queryArgumentsTypes"></stringProp>

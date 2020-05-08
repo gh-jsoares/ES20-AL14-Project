@@ -1,10 +1,12 @@
 package pt.ulisboa.tecnico.socialsoftware.tutor.discussion;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.dto.DiscussionDto;
+import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.dto.MessageDto;
 import pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.TutorException;
 import pt.ulisboa.tecnico.socialsoftware.tutor.user.User;
 
@@ -24,14 +26,18 @@ public class DiscussionController {
     @PreAuthorize("hasRole('ROLE_STUDENT') and hasPermission(#questionId, 'QUESTION.ACCESS')")
     public DiscussionDto createDiscussion(Principal principal, @PathVariable Integer questionId, @Valid @RequestBody DiscussionDto discussionDto) {
         User user = (User) ((Authentication) principal).getPrincipal();
+        if (user == null)
+            throw new TutorException(AUTHENTICATION_ERROR);
         return this.discussionService.createDiscussion(user.getId(), questionId, discussionDto);
     }
 
     @PostMapping("/discussions/{discussionId}")
     @PreAuthorize("hasRole('ROLE_TEACHER') and hasPermission(#discussionId, 'DISCUSSION.ACCESS')")
-    public DiscussionDto teacherAnswersStudent(Principal principal, @PathVariable Integer discussionId, @Valid @RequestBody DiscussionDto discussionDto) {
+    public DiscussionDto teacherAnswersStudent(Principal principal, @PathVariable Integer discussionId, @Valid @RequestBody MessageDto messageDto) {
         User user = (User) ((Authentication) principal).getPrincipal();
-        return discussionService.teacherAnswersStudent(user.getId(), discussionId, discussionDto);
+        if (user == null)
+            throw new TutorException(AUTHENTICATION_ERROR);
+        return discussionService.teacherAnswersStudent(user.getId(), discussionId, messageDto);
     }
 
     @GetMapping("/student/discussions/")
@@ -58,4 +64,37 @@ public class DiscussionController {
         return discussionService.getDiscussionTeacher(user.getId());
     }
 
+    @GetMapping("/questions/{questionId}/{questionAnswerId}/discussions/get")
+    @PreAuthorize("hasRole('ROLE_STUDENT') and hasPermission(#questionId, 'QUESTION.ACCESS')")
+    public List<DiscussionDto> getDiscussionsQuestion(Principal principal, @PathVariable Integer questionId, @PathVariable Integer questionAnswerId) {
+        User user = (User) ((Authentication) principal).getPrincipal();
+
+        if(user == null){
+            throw new TutorException(AUTHENTICATION_ERROR);
+        }
+
+        return discussionService.getDiscussionsQuestion(user.getId(), questionId, questionAnswerId);
+    }
+
+    @PostMapping("/discussions/{discussionId}/public")
+    @PreAuthorize("hasRole('ROLE_TEACHER') and hasPermission(#discussionId, 'DISCUSSION.ACCESS')")
+    public ResponseEntity teacherOpensDiscussionToOtherStudents(Principal principal, @PathVariable Integer discussionId) {
+        User user = (User) ((Authentication) principal).getPrincipal();
+
+        if(user == null){
+            throw new TutorException(AUTHENTICATION_ERROR);
+        }
+
+        discussionService.openDiscussionToOtherStudents(user.getId(), discussionId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/discussions/{discussionId}/message")
+    @PreAuthorize("hasRole('ROLE_STUDENT') and hasPermission(#discussionId, 'DISCUSSION.ACCESS')")
+    public DiscussionDto studentMakesNewQuestion(Principal principal, @PathVariable Integer discussionId, @Valid @RequestBody MessageDto messageDto) {
+        User user = (User) ((Authentication) principal).getPrincipal();
+        if (user == null)
+            throw new TutorException(AUTHENTICATION_ERROR);
+        return discussionService.studentMakesNewQuestion(user.getId(), discussionId, messageDto);
+    }
 }

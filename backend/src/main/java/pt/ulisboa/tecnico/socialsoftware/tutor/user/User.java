@@ -7,6 +7,7 @@ import pt.ulisboa.tecnico.socialsoftware.tutor.answer.domain.QuizAnswer;
 import pt.ulisboa.tecnico.socialsoftware.tutor.config.DateHandler;
 import pt.ulisboa.tecnico.socialsoftware.tutor.course.CourseExecution;
 import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.domain.Discussion;
+import pt.ulisboa.tecnico.socialsoftware.tutor.discussion.domain.Message;
 import pt.ulisboa.tecnico.socialsoftware.tutor.impexp.domain.DomainEntity;
 import pt.ulisboa.tecnico.socialsoftware.tutor.impexp.domain.Visitor;
 import pt.ulisboa.tecnico.socialsoftware.tutor.question.domain.Question;
@@ -50,6 +51,9 @@ public class User implements UserDetails, DomainEntity {
     private Integer numberOfCorrectInClassAnswers;
     private Integer numberOfCorrectStudentAnswers;
 
+    @Column(columnDefinition = "boolean default false")
+    private boolean areDiscussionsPublic;
+
     @Column(name = "creation_date")
     private LocalDateTime creationDate;
 
@@ -62,9 +66,11 @@ public class User implements UserDetails, DomainEntity {
     @ManyToMany
     private Set<CourseExecution> courseExecutions = new HashSet<>();
 
-
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "student", fetch = FetchType.LAZY, orphanRemoval=true)
     private Set<Discussion> discussions = new HashSet<>();
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.LAZY, orphanRemoval=true)
+    private Set<Message> messages = new HashSet<>();
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "student", fetch = FetchType.LAZY, orphanRemoval=true)
     private Set<StudentQuestion> studentQuestions = new HashSet<>();
@@ -96,6 +102,7 @@ public class User implements UserDetails, DomainEntity {
         this.numberOfCorrectTeacherAnswers = 0;
         this.numberOfCorrectInClassAnswers = 0;
         this.numberOfCorrectStudentAnswers = 0;
+        this.areDiscussionsPublic = false;
     }
 
     @Override
@@ -188,12 +195,28 @@ public class User implements UserDetails, DomainEntity {
         this.discussions.add(discussion);
     }
 
+    public boolean getDiscussionsPrivacy() {
+        return areDiscussionsPublic;
+    }
+
+    public void toggleDiscussionsPrivacy() {
+        areDiscussionsPublic = !areDiscussionsPublic;
+    }
+
     public Set<StudentQuestion> getStudentQuestions() {
         return studentQuestions;
     }
 
     public Set<StudentQuestion> getReviewedStudentQuestions() {
         return reviewedStudentQuestions;
+    }
+
+    public Set<Message> getMessages() {
+        return messages;
+    }
+
+    public void addMessage(Message message) {
+        messages.add(message);
     }
 
     public void addReviewedStudentQuestion(StudentQuestion studentQuestion) {

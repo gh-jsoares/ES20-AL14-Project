@@ -50,7 +50,9 @@
             </v-flex>
             <v-flex xs24 sm12 md8>
               <v-text-field
-                v-model="newDiscussion.messageFromStudent"
+                v-model="message.message"
+                counter="250"
+                maxlength="250"
                 label="Your question"
                 data-cy="Your question"
               />
@@ -83,6 +85,7 @@ import { Component, Model, Prop, Vue } from 'vue-property-decorator';
 import RemoteServices from '@/services/RemoteServices';
 import { Discussion } from '@/models/management/Discussion';
 import Option from '@/models/management/Option';
+import Message from '@/models/management/Message';
 
 @Component
 export default class CreateDiscussionDialog extends Vue {
@@ -94,20 +97,23 @@ export default class CreateDiscussionDialog extends Vue {
   @Prop(Number) correct!: number;
 
   newDiscussion!: Discussion;
+  message!: Message;
   isExpanded: boolean = false;
 
   created() {
     this.newDiscussion = new Discussion();
+    this.message = new Message();
   }
 
   async createDiscussion() {
-    if (this.newDiscussion && !this.newDiscussion.messageFromStudent) {
+    if (this.newDiscussion && !this.message.message) {
       await this.$store.dispatch('error', 'You need to write a question.');
       return;
     }
 
     try {
       this.newDiscussion.id = this.questionAnswerId;
+      this.newDiscussion.messages.push(this.message);
       const result = await RemoteServices.createDiscussion(
         this.questionId,
         this.newDiscussion

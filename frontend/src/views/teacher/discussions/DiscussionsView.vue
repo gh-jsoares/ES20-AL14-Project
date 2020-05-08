@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <h2>Discussions To Answer</h2>
+    <h2>Discussions</h2>
     <ul>
       <li class="list-header">
         <div class="col">Discussion Question Title</div>
@@ -10,22 +10,32 @@
         class="list-row"
         v-for="discussion in discussions"
         :key="discussion.question.title"
-        @click="answerDiscussion(discussion)"
+        @click="changeDiscussion(discussion)"
         data-cy="questionTitleButton"
       >
         <div class="col">
           {{ discussion.question.title }}
         </div>
         <div class="col last-col">
-          <i class="fas fa-chevron-circle-right"></i>
+          <i
+            v-if="discussion.needsAnswer"
+            data-cy="notAnswered"
+            class="fas fa-exclamation"
+          ></i>
+          <i
+            v-else
+            data-cy="isAnswered"
+            class="fas fa-chevron-circle-right"
+          ></i>
         </div>
       </li>
     </ul>
-    <answer-discussion-dialog
+    <change-discussion-dialog
       v-if="currentDiscussion"
       v-model="editDiscussionDialog"
       :discussion="currentDiscussion"
       v-on:answer-discussion="onAnsweringDiscussion"
+      v-on:change-discussion="onChangingDiscussion"
       v-on:close-dialog="onCloseDialog"
     />
   </div>
@@ -35,11 +45,11 @@
 import { Component, Vue } from 'vue-property-decorator';
 import RemoteServices from '@/services/RemoteServices';
 import { Discussion } from '@/models/management/Discussion';
-import AnswerDiscussionDialog from '@/views/teacher/discussions/AnswerDiscussionDialog.vue';
+import ChangeDiscussionDialog from '@/views/teacher/discussions/ChangeDiscussionDialog.vue';
 
 @Component({
   components: {
-    'answer-discussion-dialog': AnswerDiscussionDialog
+    'change-discussion-dialog': ChangeDiscussionDialog
   }
 })
 export default class DiscussionsView extends Vue {
@@ -85,10 +95,10 @@ export default class DiscussionsView extends Vue {
     await this.$store.dispatch('clearLoading');
   }
 
-  async onAnsweringDiscussion(discussion: Discussion) {
-    this.discussions = this.discussions.filter(
-      disc => disc.id !== discussion.id
-    );
+  async onChangingDiscussion(discussion: Discussion) {
+    if (this.currentDiscussion)
+      this.currentDiscussion.visibleToOtherStudents =
+        discussion.visibleToOtherStudents;
     this.editDiscussionDialog = false;
     this.currentDiscussion = null;
   }
@@ -98,9 +108,19 @@ export default class DiscussionsView extends Vue {
     this.currentDiscussion = null;
   }
 
-  async answerDiscussion(discussion: Discussion) {
-    this.currentDiscussion = new Discussion(discussion);
-    this.currentDiscussion.teacherAnswer = undefined;
+  async onAnsweringDiscussion(discussion: Discussion) {
+    if (this.currentDiscussion) {
+      this.currentDiscussion.needsAnswer = discussion.needsAnswer;
+      this.currentDiscussion.visibleToOtherStudents =
+        discussion.visibleToOtherStudents;
+      this.currentDiscussion.messages = discussion.messages;
+    }
+    this.editDiscussionDialog = false;
+    this.currentDiscussion = null;
+  }
+
+  async changeDiscussion(discussion: Discussion) {
+    this.currentDiscussion = discussion;
     this.editDiscussionDialog = true;
   }
 }

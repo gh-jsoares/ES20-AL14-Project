@@ -23,7 +23,10 @@ describe('creating Discussion walkthrough', () => {
   it('student tries to create duplicate discussion', () => {
     cy.answerQuiz('Allocation viewtype');
     cy.createDiscussion('Allocation viewtype', 'This is my discussion.');
-    cy.createDiscussion('Allocation viewtype', 'This is the duplicate discussion.');
+    cy.createDiscussion(
+      'Allocation viewtype',
+      'This is the duplicate discussion.'
+    );
 
     cy.closeErrorMessage();
     cy.log('close dialog');
