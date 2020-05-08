@@ -1,7 +1,5 @@
 package pt.ulisboa.tecnico.socialsoftware.tutor.dashboard;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,8 +16,6 @@ import static pt.ulisboa.tecnico.socialsoftware.tutor.exceptions.ErrorMessage.AU
 
 @RestController
 public class DashboardController {
-    private static Logger logger = LoggerFactory.getLogger(DashboardController.class);
-
     private final DashboardService dashboardService;
 
     DashboardController(DashboardService dashboardService) {

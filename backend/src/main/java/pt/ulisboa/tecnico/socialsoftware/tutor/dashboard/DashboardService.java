@@ -1,7 +1,6 @@
 package pt.ulisboa.tecnico.socialsoftware.tutor.dashboard;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
@@ -47,5 +46,16 @@ public class DashboardService {
         User user = userRepository.findById(userId).orElseThrow(() -> new TutorException(USER_NOT_FOUND, userId));
 
         return user.toggleStudentQuestionStatsVisibility();
+    }
+
+    @Retryable(
+            value = { SQLException.class },
+            backoff = @Backoff(delay = 5000))
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public boolean canAccessStudentQuestionStats(int userId, int dashboardId) {
+        if (dashboardId == userId)
+            return true;
+        User user = userRepository.findById(userId).orElseThrow(() -> new TutorException(USER_NOT_FOUND, userId));
+        return user.getStudentQuestionStatsVisibility();
     }
 }
