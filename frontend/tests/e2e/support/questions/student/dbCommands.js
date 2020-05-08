@@ -66,11 +66,28 @@ Cypress.Commands.add('initStudentQuestions', ({ amount, student_id, course_id, o
     });
 });
 
+Cypress.Commands.add('cleanupStudentQuestion', (id) => {
+    cy.queryDatabase(
+        `DELETE FROM options WHERE student_question_id = '${id}';\
+        DELETE FROM student_questions WHERE id = '${id}';\
+    `);
+});
+
+
 Cypress.Commands.add('cleanupStudentQuestions', () => {
     cy.queryDatabase(
         `WITH sq_id AS (\
             SELECT id FROM student_questions WHERE title LIKE 'Student Question Title%'\
         ) DELETE FROM options WHERE student_question_id IN (SELECT id FROM sq_id);\
         DELETE FROM student_questions WHERE title LIKE 'Student Question Title%';\
+    `);
+});
+
+Cypress.Commands.add('cleanupGeneratedQuestions', () => {
+    cy.queryDatabase(
+        `WITH q_id AS (\
+            SELECT id FROM questions WHERE title LIKE '%Student Question Title%'\
+        ) DELETE FROM options WHERE question_id IN (SELECT id FROM q_id);\
+        DELETE FROM questions WHERE title LIKE '%Student Question Title%';\
     `);
 });
