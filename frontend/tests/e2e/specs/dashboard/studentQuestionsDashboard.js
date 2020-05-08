@@ -5,7 +5,7 @@ describe('Student question Dashboard walkthrough', () => {
         cy.cleanupStudentQuestions();
         cy.initStudentQuestions();
 
-        cy.queryDatabase('UPDATE users SET student_questions_stats_visibility = TRUE WHERE id = "676;"')
+        cy.queryDatabase('UPDATE users SET student_questions_stats_visibility = TRUE WHERE id = 676;')
 
         cy.get('[data-cy="dashboardButton"]').click();
         cy.get('[data-cy="studentQuestionDashboardLink"]').click();
@@ -13,7 +13,7 @@ describe('Student question Dashboard walkthrough', () => {
 
     afterEach(() => {
         cy.cleanupStudentQuestions();
-        cy.queryDatabase('UPDATE users SET student_questions_stats_visibility = TRUE WHERE id = "676;"')
+        cy.queryDatabase('UPDATE users SET student_questions_stats_visibility = TRUE WHERE id = 676;')
     });
 
     it('login view student question dashboard', () => {
