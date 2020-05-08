@@ -285,7 +285,7 @@ public class Tournament {
             throw new TutorException(TOURNAMENT_USER_IS_NOT_STUDENT, user.getId());
         if (this.getState() != Tournament.State.ENROLL)
             throw new TutorException(TOURNAMENT_HAS_STARTED, this.getId());
-        else if (this.getCreator().getId() != user.getId())
+        else if (!this.getCreator().getId().equals(user.getId()))
             throw new TutorException(ErrorMessage.TOURNAMENT_USER_IS_NOT_CREATOR, user.getUsername());
         this.remove();
     }

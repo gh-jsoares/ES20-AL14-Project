@@ -1,4 +1,4 @@
-package pt.ulisboa.tecnico.socialsoftware.tutor.dashboard;
+package pt.ulisboa.tecnico.socialsoftware.tutor.dashboard.dto;
 
 import pt.ulisboa.tecnico.socialsoftware.tutor.answer.domain.QuizAnswer;
 import pt.ulisboa.tecnico.socialsoftware.tutor.config.DateHandler;
