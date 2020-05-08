@@ -10,6 +10,7 @@
       data-cy="privacyToggle"
     >
       <v-switch
+        v-if="stats != null"
         v-model="stats.areDiscussionsPublic"
         class="ma-2"
         :label="stats.areDiscussionsPublic ? 'Make Private' : 'Make Public'"

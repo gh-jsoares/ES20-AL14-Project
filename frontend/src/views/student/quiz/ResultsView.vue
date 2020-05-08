@@ -44,9 +44,10 @@
       :correctAnswer="statementManager.correctAnswers[questionOrder]"
       :question="statementManager.statementQuiz.questions[questionOrder]"
       :questionNumber="statementManager.statementQuiz.questions.length"
-      :discussionDiv="discussionsDiv"
+      :discussions="discussions"
       @increase-order="increaseOrder"
       @decrease-order="decreaseOrder"
+      @see-discussions="seeDiscussions"
     />
   </div>
 </template>
@@ -55,6 +56,7 @@
 import { Component, Vue } from 'vue-property-decorator';
 import StatementManager from '@/models/statement/StatementManager';
 import ResultComponent from '@/views/student/quiz/ResultComponent.vue';
+import { Discussion } from '@/models/management/Discussion';
 
 @Component({
   components: {
@@ -64,7 +66,7 @@ import ResultComponent from '@/views/student/quiz/ResultComponent.vue';
 export default class ResultsView extends Vue {
   statementManager: StatementManager = StatementManager.getInstance;
   questionOrder: number = 0;
-  discussionsDiv: boolean = false;
+  discussions: Discussion[] | null = null;
 
   async created() {
     if (this.statementManager.isEmpty()) {
@@ -86,21 +88,25 @@ export default class ResultsView extends Vue {
     ) {
       this.questionOrder += 1;
     }
-    this.discussionsDiv = false;
+    this.discussions = null;
   }
 
   decreaseOrder(): void {
     if (this.questionOrder > 0) {
       this.questionOrder -= 1;
     }
-    this.discussionsDiv = false;
+    this.discussions = null;
   }
 
   changeOrder(n: number): void {
     if (n >= 0 && n < +this.statementManager.statementQuiz!.questions.length) {
       this.questionOrder = n;
     }
-    this.discussionsDiv = false;
+    this.discussions = null;
+  }
+
+  seeDiscussions(disc: Discussion[]) {
+    this.discussions = disc;
   }
 }
 </script>
