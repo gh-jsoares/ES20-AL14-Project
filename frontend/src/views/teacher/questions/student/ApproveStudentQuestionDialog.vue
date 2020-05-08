@@ -92,7 +92,7 @@
                 </v-card>
                 <v-btn text @click="currentStep = 1">Back</v-btn>
                 <v-btn
-                  data-cy="stepperContinueContent"
+                  data-cy="stepperContinueReview"
                   color="primary"
                   @click="currentStep = 3"
                 >
