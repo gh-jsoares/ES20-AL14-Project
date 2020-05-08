@@ -1,4 +1,4 @@
-describe('Submit Student Question walkthrough', () => {
+describe('Edit rejected Student Question walkthrough', () => {
     beforeEach(() => {
         cy.demoStudentLogin();
         cy.cleanupStudentQuestion(10003);
